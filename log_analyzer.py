@@ -71,15 +71,15 @@ def clean_log(filename):
     os.remove(dir_unpacked_path + filename + '.txt')
 
 
-
-
 def main():
     j = 0
     os.chdir(dir_panda_path)
     for filename in sorted(os.listdir(dir_pandalogs_path)):
         # each file has to be unpacked using the PANDA tool
         unpack_log(filename)
+        # analyze the unpacked log file
         analyze_log(filename)
+        # since the size of the unpacked logs will engulf the disk, delete the file after the process
         clean_log(filename)
 
         j += 1
