@@ -2,12 +2,14 @@ import os
 import subprocess
 import pprint
 import sys
+import db_manager
 from malware_object import Malware
 
 dir_unpacked_path = '/home/yogaub/projects/seminar/unpacked_logs/'
 dir_pandalogs_path = '/home/yogaub/projects/seminar/pandalogs/'
 dir_panda_path = '/home/yogaub/projects/seminar/panda/qemu/panda'
 dir_analyzed_logs = '/home/yogaub/projects/seminar/analyzed_logs/'
+dir_malware_db = '/home/yogaub/projects/seminar/database'
 
 malware_list = ['16223bcdeecb43', 'c2556a4275cfa4', 'c34498f94110af', 'c3d6b7f9684101', '4830e9a6906469',
                 'e1f2df81e63964', '69974072a4743d']
@@ -52,7 +54,7 @@ def is_malware(new_malware_name, new_filename, new_pid, new_current_instruction)
     return 1
 
 
-def analyze_log(filename):
+def analyze_log(filename, malware_name):
     print 'analyzing: ' + filename
     process_dict = {}
     inverted_process_dict = {}
@@ -74,7 +76,7 @@ def analyze_log(filename):
                 current_instruction = (words[0].split('='))[1]
 
                 # check if the process name is in the known malware list
-                if proc_name in malware_list:
+                if proc_name == malware_name:
                     is_malware(proc_name, filename, pid, current_instruction)
 
                 # since it is a context switch save in the process dictionary the pid and process name
@@ -114,11 +116,12 @@ def clean_log(filename):
 def main():
     j = 0
     os.chdir(dir_panda_path)
+    big_file_malware_dict = db_manager.acquire_malware_file_dict()
     for filename in sorted(os.listdir(dir_pandalogs_path)):
         # each file has to be unpacked using the PANDA tool
         unpack_log(filename)
         # analyze the unpacked log file
-        analyze_log(filename)
+        analyze_log(filename, big_file_malware_dict[filename[:-9]])
         # since the size of the unpacked logs will engulf the disk, delete the file after the process
         # clean_log(filename)
 
