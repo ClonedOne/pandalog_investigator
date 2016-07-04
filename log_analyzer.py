@@ -5,6 +5,7 @@ import sys
 import db_manager
 from malware_object import Malware
 
+dir_project_path = '/home/yogaub/projects/seminar/'
 dir_unpacked_path = '/home/yogaub/projects/seminar/unpacked_logs/'
 dir_pandalogs_path = '/home/yogaub/projects/seminar/pandalogs/'
 dir_panda_path = '/home/yogaub/projects/seminar/panda/qemu/panda'
@@ -129,6 +130,7 @@ def main():
     j = 0
     os.chdir(dir_panda_path)
     big_file_malware_dict = db_manager.acquire_malware_file_dict()
+
     for filename in sorted(os.listdir(dir_pandalogs_path)):
         global active_malware
         active_malware = False
@@ -142,11 +144,23 @@ def main():
         else:
             print 'ERROR filename not in db'
         # since the size of the unpacked logs will engulf the disk, delete the file after the process
-        clean_log(filename)
+        #clean_log(filename)
 
         j += 1
         if j == 10:
-            exit()
+            break
+
+    res_file =  open(dir_project_path + 'resfile.txt', 'w')
+    for entry in malware_dict:
+        res_file.write(entry + '\n')
+        res_file.write(str(malware_dict[entry]) + '\n')
+
+    ''' FOR TESTING PURPOSES
+    filename = '4fc89505-75a0-4734-ac6d-1ebbdca28caa.txz.plog'
+    if filename[:-9] in big_file_malware_dict:
+        initialize_malware_object(filename[:-9], big_file_malware_dict[filename[:-9]])
+    analyze_log(filename, big_file_malware_dict[filename[:-9]])
+    '''
 
 
 if __name__ == '__main__':
