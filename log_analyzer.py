@@ -94,12 +94,13 @@ def analyze_log(filename, malware_name):
                 current_instruction = int((words[0].split('='))[1])
 
                 # check if the process name is in the known malware list
-                if proc_name == malware_name:
+                if proc_name == malware_name and active_malware:
+                    update_malware_instruction_count(filename[:-9], current_instruction)
+                    is_malware(filename[:-9], pid, current_instruction)
+                elif proc_name == malware_name:
                     is_malware(filename[:-9], pid, current_instruction)
                 elif active_malware:
-                    res = update_malware_instruction_count(filename[:-9], current_instruction)
-                    if res == -1:
-                        print line
+                    update_malware_instruction_count(filename[:-9], current_instruction)
 
                 # since it is a context switch save in the process dictionary the pid and process name
                 if pid in process_dict:
