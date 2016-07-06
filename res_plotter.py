@@ -1,25 +1,35 @@
 import matplotlib.pyplot as plt
 import numpy
+import ast
+
 
 dir_resfile_path = '/home/yogaub/Desktop/resfile.txt'
 dir_accumulationfile_path = '/home/yogaub/Desktop/accfile.txt'
 dir_reduced_accumulationfile_path = '/home/yogaub/Desktop/accfile_red.txt'
+empty_list = '[]'
 
 malware_dict = {}
 inverted_malware_dict = {}
+reduced_malware_dict = {}
+reduced_inverted_malware_dict = {}
+terminating_malware_dict = {}
+
 mean = 0
 standard_deviation = 0
 variance = 0
+reduced_mean = 0
+reduced_standard_deviation = 0
+reduced_variance = 0
 
 file_list = []
 next_file_name = True
 next_malware_name = False
 
-reduced_malware_dict = {}
-reduced_inverted_malware_dict = {}
-reduced_mean = 0
-reduced_standard_deviation = 0
-reduced_variance = 0
+
+def compute_terminating_malware_stats():
+    global terminating_malware_dict
+    print 'computing stats for terminating malwares'
+    print len(terminating_malware_dict)
 
 
 def reduce_data():
@@ -92,11 +102,12 @@ def plot_data(reduced=False):
     print ranges
 
     plt.plot(ranges, accumulation_list, "H", markersize=12)
+    #plt.plot(values, "h", markersize=8)
     plt.plot(ranges, accumulation_list, "b", linewidth=2)
     plt.title("Instruction executed")
     plt.xlabel("Value range")
     plt.ylabel("Frequency")
-    plt.xticks(ranges)
+    #plt.xticks(ranges)
     plt.show()
 
 
@@ -147,36 +158,49 @@ def print_results(reduced=False):
             accfile.write('Variance: ' + str(variance) + '\n')
 
 
+def find_terminating_malwares(resfile, filename):
+    print 'finding terminating malwares'
+    global terminating_malware_dict
+    next_file_name = False
+    last_file_name = filename
+    for line in resfile:
+        line = line.strip()
+        if not next_file_name:
+            if line != empty_list:
+                pid_list = ast.literal_eval(line)
+                terminating_malware_dict[last_file_name] = pid_list
+            next_file_name = True
+        else:
+            last_file_name = line
+            next_file_name = False
+
+
+
 def accumulate_data():
     print 'accumulating data'
     global next_file_name, next_malware_name, file_list, malware_dict
     with open(dir_resfile_path, 'r') as resfile:
         last_malware_name = ''
         for line in resfile:
-
             if not line.strip():
                 next_file_name = True
                 continue
-
             line = line.strip()
-
             if next_file_name:
                 filename = line
                 if filename in file_list:
+                    find_terminating_malwares(resfile, filename)
                     return
                 file_list.append(filename)
                 next_file_name = False
                 next_malware_name = True
                 continue
-
             if next_malware_name:
                 last_malware_name = line.replace('-', '').strip()
                 malware_dict[last_malware_name] = 0
                 next_malware_name = False
                 continue
-
             words = line.split('\t')
-            #print words[2].split()[2]
             instruction_count = int(words[2].split()[2])
             malware_dict[last_malware_name] += instruction_count
 
@@ -192,6 +216,7 @@ def main():
     compute_stats(reduced=True)
     print_results(reduced=True)
     plot_data(reduced=True)
+    compute_terminating_malware_stats()
 
 if __name__ == '__main__':
     main()

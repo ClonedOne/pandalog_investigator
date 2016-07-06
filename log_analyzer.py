@@ -144,6 +144,7 @@ def main():
     j = 0
     os.chdir(dir_panda_path)
     big_file_malware_dict = db_manager.acquire_malware_file_dict()
+    '''
 
     for filename in sorted(os.listdir(dir_pandalogs_path)):
         global active_malware
@@ -158,7 +159,7 @@ def main():
         else:
             print 'ERROR filename not in db'
         # since the size of the unpacked logs will engulf the disk, delete the file after the process
-        #clean_log(filename)
+        clean_log(filename)
         j += 1
         if j == 10:
             break
@@ -177,7 +178,6 @@ def main():
     if filename[:-9] in big_file_malware_dict:
         initialize_malware_object(filename[:-9], big_file_malware_dict[filename[:-9]])
     analyze_log(filename, big_file_malware_dict[filename[:-9]])
-    '''
 
 
 if __name__ == '__main__':
