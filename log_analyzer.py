@@ -14,10 +14,22 @@ dir_malware_db = '/home/yogaub/projects/seminar/database'
 
 unpack_command = './pandalog_reader'
 new_proc = 'new_pid,'
-termination_instruction = 'num=369)'
-termination_dict = {}
+termination_instruction = 'num=370)'
 malware_dict = {}
 active_malware = False
+termination_dict = {}
+
+
+def is_terminating(filename, termination_list, current_instruction):
+    # print 'checking if malware active'
+    if not active_malware:
+        return
+    # print 'malware was active'
+    malware = malware_dict[filename]
+    position = malware.get_active_pid()
+    if position == -1:
+        return -1
+    termination_list.append((malware.get_pid(position), current_instruction))
 
 
 def unpack_log(filename):
@@ -71,7 +83,8 @@ def analyze_log(filename, malware_name):
         for line in logfile:
             # check if the line contains the system call for termination NtTerminateProcess
             if termination_instruction in line:
-                termination_list.append(line.strip())
+                current_instruction = int((line.split()[0].split('='))[1])
+                is_terminating(filename[:-9], termination_list, current_instruction)
             words = line.split()
 
             # for each log line check if it logs a context switch
@@ -108,6 +121,7 @@ def analyze_log(filename, malware_name):
                     inverted_process_dict[proc_name] = {}
                     inverted_process_dict[proc_name][pid] = 1
 
+    termination_dict[filename[:-9]] = termination_list
     sys.stdout = open(dir_analyzed_logs + filename + '_a.txt', 'w')
     pprint.pprint(process_dict)
     pprint.pprint(inverted_process_dict)
@@ -144,18 +158,22 @@ def main():
         else:
             print 'ERROR filename not in db'
         # since the size of the unpacked logs will engulf the disk, delete the file after the process
-        #clean_log(filename)
+        clean_log(filename)
 
-        j += 1
-        if j == 10:
-            break
+        # j += 1
+        # if j == 10:
+        #     break
 
     res_file =  open(dir_project_path + 'resfile.txt', 'w')
     for entry in malware_dict:
         res_file.write(entry + '\n')
         res_file.write(str(malware_dict[entry]) + '\n')
 
-    ''' FOR TESTING PURPOSES
+    for entry in termination_dict:
+        res_file.write(entry + '\n')
+        res_file.write(str(termination_dict[entry]) + '\n')
+
+    '''  # FOR TESTING PURPOSES
     filename = '4fc89505-75a0-4734-ac6d-1ebbdca28caa.txz.plog'
     if filename[:-9] in big_file_malware_dict:
         initialize_malware_object(filename[:-9], big_file_malware_dict[filename[:-9]])

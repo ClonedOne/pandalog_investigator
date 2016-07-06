@@ -1,5 +1,4 @@
 import sqlite3
-import pprint
 
 # malware process names are the first 14 characters of the md5
 # the file name is actually the uuid
@@ -20,7 +19,6 @@ def acquire_malware_file_dict():
     all_rows = c.fetchall()
     for row in all_rows:
         big_file_malware_dict[row[0]] = row[1][:14]
-    #pprint.pprint(big_file_malware_dict)
 
     conn.close()
     return big_file_malware_dict
