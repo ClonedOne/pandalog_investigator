@@ -158,11 +158,10 @@ def main():
         else:
             print 'ERROR filename not in db'
         # since the size of the unpacked logs will engulf the disk, delete the file after the process
-        clean_log(filename)
-
-        # j += 1
-        # if j == 10:
-        #     break
+        #clean_log(filename)
+        j += 1
+        if j == 10:
+            break
 
     res_file =  open(dir_project_path + 'resfile.txt', 'w')
     for entry in malware_dict:
