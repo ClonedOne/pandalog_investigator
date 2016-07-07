@@ -13,18 +13,56 @@ dir_analyzed_logs = '/home/yogaub/projects/seminar/analyzed_logs/'
 dir_malware_db = '/home/yogaub/projects/seminar/database'
 
 unpack_command = './pandalog_reader'
-new_proc = 'new_pid,'
-termination_instruction = 'num=370)'
+context_switch = 'new_pid,'
+instruction_termination = 'nt_terminate_process'
+instruction_process_Creation = 'nt_create_user_process'
+
 malware_dict = {}
-active_malware = False
 termination_dict = {}
+
+active_malware = False
+
+
+def update_dictionaries(pid, process_dict, proc_name, inverted_process_dict):
+    if pid in process_dict:
+        if proc_name in process_dict[pid]:
+            process_dict[pid][proc_name] += 1
+        else:
+            process_dict[pid][proc_name] = 1
+    else:
+        process_dict[pid] = {}
+        process_dict[pid][proc_name] = 1
+
+    # the same values will also be added to the inverted dictionary
+    if proc_name in inverted_process_dict:
+        if pid in inverted_process_dict[proc_name]:
+            inverted_process_dict[proc_name][pid] += 1
+        else:
+            inverted_process_dict[proc_name][pid] = 1
+    else:
+        inverted_process_dict[proc_name] = {}
+        inverted_process_dict[proc_name][pid] = 1
+
+
+def is_context_switch(words, filename, current_instruction, malware, process_dict, inverted_process_dict):
+    pid = int(words[4].replace(',', ''))
+    proc_name = words[5].replace(')', '')
+    # check if the process name is in the known malware list
+    if proc_name == malware.get_name() and active_malware:
+        update_malware_instruction_count(filename[:-9], current_instruction)
+        is_malware(filename[:-9], pid, current_instruction)
+    elif proc_name == malware.get_name():
+        is_malware(filename[:-9], pid, current_instruction)
+    elif active_malware:
+        update_malware_instruction_count(filename[:-9], current_instruction)
+
+    # since it is a context switch save in the process dictionary the pid and process name
+    update_dictionaries(pid, process_dict, proc_name, inverted_process_dict)
 
 
 def is_terminating(filename, termination_list, current_instruction):
-    # print 'checking if malware active'
     if not active_malware:
         return
-    # print 'malware was active'
     malware = malware_dict[filename]
     position = malware.get_active_pid()
     if position == -1:
@@ -73,7 +111,7 @@ def update_malware_instruction_count(filename, current_instruction):
     return 1
 
 
-def analyze_log(filename, malware_name):
+def analyze_log(filename, malware):
     print 'analyzing: ' + filename
     process_dict = {}
     inverted_process_dict = {}
@@ -81,46 +119,18 @@ def analyze_log(filename, malware_name):
 
     with open(dir_unpacked_path + filename + '.txt', 'r') as logfile:
         for line in logfile:
-            # check if the line contains the system call for termination NtTerminateProcess
-            if termination_instruction in line:
-                current_instruction = int((line.split()[0].split('='))[1])
-                is_terminating(filename[:-9], termination_list, current_instruction)
+            if not line.strip(): break
+            line = line.strip()
             words = line.split()
+            current_instruction = int((words[0].split('='))[1])
+
+            # check if the line contains the system call for termination NtTerminateProcess
+            if instruction_termination in line:
+                is_terminating(filename[:-9], termination_list, current_instruction)
 
             # for each log line check if it logs a context switch
-            if new_proc in words:
-                pid = int(words[4].replace(',', ''))
-                proc_name = words[5].replace(')', '')
-                current_instruction = int((words[0].split('='))[1])
-
-                # check if the process name is in the known malware list
-                if proc_name == malware_name and active_malware:
-                    update_malware_instruction_count(filename[:-9], current_instruction)
-                    is_malware(filename[:-9], pid, current_instruction)
-                elif proc_name == malware_name:
-                    is_malware(filename[:-9], pid, current_instruction)
-                elif active_malware:
-                    update_malware_instruction_count(filename[:-9], current_instruction)
-
-                # since it is a context switch save in the process dictionary the pid and process name
-                if pid in process_dict:
-                    if proc_name in process_dict[pid]:
-                        process_dict[pid][proc_name] += 1
-                    else:
-                        process_dict[pid][proc_name] = 1
-                else:
-                    process_dict[pid] = {}
-                    process_dict[pid][proc_name] = 1
-
-                # the same values will also be added to the inverted dictionary
-                if proc_name in inverted_process_dict:
-                    if pid in inverted_process_dict[proc_name]:
-                        inverted_process_dict[proc_name][pid] += 1
-                    else:
-                        inverted_process_dict[proc_name][pid] = 1
-                else:
-                    inverted_process_dict[proc_name] = {}
-                    inverted_process_dict[proc_name][pid] = 1
+            if context_switch in words:
+                is_context_switch(words, filename, current_instruction, malware, process_dict, inverted_process_dict)
 
     termination_dict[filename[:-9]] = termination_list
     sys.stdout = open(dir_analyzed_logs + filename + '_a.txt', 'w')
@@ -137,8 +147,7 @@ def clean_log(filename):
 
 
 def initialize_malware_object(filename, malware_name):
-    new_malware = Malware(malware_name)
-    malware_dict[filename] = new_malware
+    malware_dict[filename] = Malware(malware_name)
 
 
 def main():
@@ -156,7 +165,7 @@ def main():
         if filename[:-9] in big_file_malware_dict:
             initialize_malware_object(filename[:-9], big_file_malware_dict[filename[:-9]])
             #print malware_dict
-            analyze_log(filename, big_file_malware_dict[filename[:-9]])
+            analyze_log(filename, malware_dict[filename[:-9]])
         else:
             print 'ERROR filename not in db'
         # since the size of the unpacked logs will engulf the disk, delete the file after the process
@@ -178,7 +187,7 @@ def main():
     filename = '4fc89505-75a0-4734-ac6d-1ebbdca28caa.txz.plog'
     if filename[:-9] in big_file_malware_dict:
         initialize_malware_object(filename[:-9], big_file_malware_dict[filename[:-9]])
-    analyze_log(filename, big_file_malware_dict[filename[:-9]])
+    analyze_log(filename, malware_dict[filename[:-9]])
 
 
 if __name__ == '__main__':
