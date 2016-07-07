@@ -175,7 +175,6 @@ def find_terminating_malwares(resfile, filename):
             next_file_name = False
 
 
-
 def accumulate_data():
     print 'accumulating data'
     global next_file_name, next_malware_name, file_list, malware_dict
@@ -217,6 +216,7 @@ def main():
     print_results(reduced=True)
     plot_data(reduced=True)
     compute_terminating_malware_stats()
+
 
 if __name__ == '__main__':
     main()
