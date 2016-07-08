@@ -61,11 +61,22 @@ def is_context_switch(words, filename, malware, process_dict, inverted_process_d
     update_dictionaries(pid, process_dict, proc_name, inverted_process_dict)
 
 
-def is_terminating(filename, termination_list, words):
+def is_terminating(malware, words):
     current_instruction = int((words[0].split('='))[1])
-    malware = malware_dict[filename]
-    active_pid = malware.get_active_pid()
-    termination_list.append((active_pid, current_instruction))
+    terminating_pid = 0
+    terminating_name = ''
+    terminated_pid = 0
+    terminated_name = ''
+    for i in range(len(words)):
+        if words[i] == 'cur,':
+            terminating_pid = int(words[i+1].strip().replace(',', ''))
+            terminating_name = words[i+2].strip().replace(')', '')
+        elif words[i] == 'term,':
+            terminated_pid = int(words[i+1].strip().replace(',', ''))
+            terminated_name = words[i+2].strip().replace(')', '')
+    if terminating_name == malware.get_name() and malware.is_valid_pid(terminating_pid):
+        active_pid = malware.get_active_pid()
+        malware.add_terminated_process(active_pid, terminated_pid, terminated_name, current_instruction)
 
 
 def unpack_log(filename):
@@ -110,7 +121,6 @@ def analyze_log(filename, malware):
     print 'analyzing: ' + filename
     process_dict = {}
     inverted_process_dict = {}
-    termination_list = []
 
     with open(dir_unpacked_path + filename + '.txt', 'r') as logfile:
         for line in logfile:
@@ -120,19 +130,19 @@ def analyze_log(filename, malware):
 
             # check if the line contains the system call for termination NtTerminateProcess
             if instruction_termination in line:
-                is_terminating(filename[:-9], termination_list, words)
+                is_terminating(malware, words)
+                continue
 
             # for each log line check if it logs a context switch
             if context_switch in words:
                 is_context_switch(words, filename, malware, process_dict, inverted_process_dict)
 
-    termination_dict[filename[:-9]] = termination_list
-    sys.stdout = open(dir_analyzed_logs + filename + '_a.txt', 'w')
-    pprint.pprint(process_dict)
-    pprint.pprint(inverted_process_dict)
-    pprint.pprint(termination_list)
-    pprint.pprint(malware_dict[filename[:-9]])
-    sys.stdout = sys.__stdout__
+    outfile = open(dir_analyzed_logs + filename + '_a.txt', 'w')
+    pprint.pprint(process_dict, outfile)
+    pprint.pprint(inverted_process_dict, outfile)
+    for pid in malware.get_pid_list():
+        pprint.pprint(malware.get_terminated_processes(pid), outfile)
+    pprint.pprint(malware_dict[filename[:-9]], outfile)
 
 
 def clean_log(filename):
@@ -145,11 +155,10 @@ def initialize_malware_object(filename, malware_name):
 
 
 def main():
-    j = 0
     os.chdir(dir_panda_path)
     big_file_malware_dict = db_manager.acquire_malware_file_dict()
     '''
-
+    j = 0
     for filename in sorted(os.listdir(dir_pandalogs_path)):
         global active_malware
         active_malware = False
