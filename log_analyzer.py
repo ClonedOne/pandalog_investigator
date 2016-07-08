@@ -44,9 +44,10 @@ def update_dictionaries(pid, process_dict, proc_name, inverted_process_dict):
         inverted_process_dict[proc_name][pid] = 1
 
 
-def is_context_switch(words, filename, current_instruction, malware, process_dict, inverted_process_dict):
+def is_context_switch(words, filename, malware, process_dict, inverted_process_dict):
     pid = int(words[4].replace(',', ''))
     proc_name = words[5].replace(')', '')
+    current_instruction = int((words[0].split('='))[1])
     # check if the process name is in the known malware list
     if proc_name == malware.get_name() and active_malware:
         update_malware_instruction_count(filename[:-9], current_instruction)
@@ -60,14 +61,11 @@ def is_context_switch(words, filename, current_instruction, malware, process_dic
     update_dictionaries(pid, process_dict, proc_name, inverted_process_dict)
 
 
-def is_terminating(filename, termination_list, current_instruction):
-    if not active_malware:
-        return
+def is_terminating(filename, termination_list, words):
+    current_instruction = int((words[0].split('='))[1])
     malware = malware_dict[filename]
-    position = malware.get_active_pid()
-    if position == -1:
-        return -1
-    termination_list.append((malware.get_pid(position), current_instruction))
+    active_pid = malware.get_active_pid()
+    termination_list.append((active_pid, current_instruction))
 
 
 def unpack_log(filename):
@@ -82,16 +80,13 @@ def is_malware(filename, pid, current_instruction):
     malware = malware_dict[filename]
     pid_list = malware.get_pid_list()
 
-    # check if the current pid is already in the pid list of the malware
-    if pid in pid_list:
-        position = malware.get_pid_position(pid)
-    else:
+    # check if the current pid is not already in the pid list of the malware
+    if pid not in pid_list:
         malware.add_pid(pid)
-        position = malware.get_pid_position(pid)
 
     # once the current malware has been identified, update its current instruction value
-    malware.update_starting_instruction(position, current_instruction)
-    malware.set_active_pid(position)
+    malware.update_starting_instruction(pid, current_instruction)
+    malware.set_active_pid(pid)
     global active_malware
     active_malware = True
     return 1
@@ -99,13 +94,13 @@ def is_malware(filename, pid, current_instruction):
 
 def update_malware_instruction_count(filename, current_instruction):
     malware = malware_dict[filename]
-    position = malware.get_active_pid()
-    if position == -1:
+    active_pid = malware.get_active_pid()
+    if active_pid == -1:
         return -1
-    malware_starting_instruction = malware.get_starting_instruction(position)
+    malware_starting_instruction = malware.get_starting_instruction(active_pid)
     instruction_delta = current_instruction - malware_starting_instruction
-    malware.add_instruction_executed(position, instruction_delta)
-    malware.deactivate_pid(position)
+    malware.add_instruction_executed(active_pid, instruction_delta)
+    malware.deactivate_pid(active_pid)
     global active_malware
     active_malware = False
     return 1
@@ -122,15 +117,14 @@ def analyze_log(filename, malware):
             if not line.strip(): break
             line = line.strip()
             words = line.split()
-            current_instruction = int((words[0].split('='))[1])
 
             # check if the line contains the system call for termination NtTerminateProcess
             if instruction_termination in line:
-                is_terminating(filename[:-9], termination_list, current_instruction)
+                is_terminating(filename[:-9], termination_list, words)
 
             # for each log line check if it logs a context switch
             if context_switch in words:
-                is_context_switch(words, filename, current_instruction, malware, process_dict, inverted_process_dict)
+                is_context_switch(words, filename, malware, process_dict, inverted_process_dict)
 
     termination_dict[filename[:-9]] = termination_list
     sys.stdout = open(dir_analyzed_logs + filename + '_a.txt', 'w')
