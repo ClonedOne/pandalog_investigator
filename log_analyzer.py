@@ -18,8 +18,6 @@ instruction_process_creation = 'nt_create_user_process'
 instruction_write_memory = 'nt_write_virtual_memory'
 
 malware_dict = {}
-termination_dict = {}
-
 active_malware = False
 
 
@@ -30,7 +28,6 @@ def get_new_path(words):
         line += word + ' '
     index = line.find(fixed)
     line = line[index:]
-    # line = line.replace("\\", "\\\\")
     return os.path.normpath(line.split('[')[1].replace(']', ''))
 
 
@@ -66,7 +63,6 @@ def output_on_file(filename, process_dict, inverted_process_dict, malware):
 def is_creating_process(malware, words):
     current_instruction = int((words[0].split('='))[1])
     new_path = get_new_path(words)
-    # new_path = words[-1].split('[')[1].replace(']', '')
     creating_pid = 0
     creating_name = ''
     created_pid = 0
@@ -214,10 +210,16 @@ def initialize_malware_object(filename, malware_name):
     malware_dict[filename] = Malware(malware_name)
 
 
+def final_output():
+    res_file = open(dir_project_path + 'resfile.txt', 'w')
+    for entry in malware_dict:
+        res_file.write('File name: ' + entry + '\n\n')
+        res_file.write(str(malware_dict[entry]) + '\n\n\n')
+
+
 def main():
     os.chdir(dir_panda_path)
     big_file_malware_dict = db_manager.acquire_malware_file_dict()
-
     j = 0
     for filename in sorted(os.listdir(dir_pandalogs_path)):
         global active_malware
@@ -227,24 +229,15 @@ def main():
         # analyze the unpacked log file
         if filename[:-9] in big_file_malware_dict:
             initialize_malware_object(filename[:-9], big_file_malware_dict[filename[:-9]])
-            #print malware_dict
             analyze_log(filename, malware_dict[filename[:-9]])
         else:
             print 'ERROR filename not in db'
-        # since the size of the unpacked logs will engulf the disk, delete the file after the process
+        # since the size of the unpacked logs may engulf the disk, delete the file after the process
         # clean_log(filename)
         j += 1
         if j == 5:
             break
-
-    res_file = open(dir_project_path + 'resfile.txt', 'w')
-    for entry in malware_dict:
-        res_file.write(entry + '\n')
-        res_file.write(str(malware_dict[entry]) + '\n')
-
-    for entry in termination_dict:
-        res_file.write(entry + '\n')
-        res_file.write(str(termination_dict[entry]) + '\n')
+    final_output()
 
     '''  # FOR TESTING PURPOSES
     filename = '4fc89505-75a0-4734-ac6d-1ebbdca28caa.txz.plog'
