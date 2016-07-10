@@ -1,7 +1,6 @@
 import os
 import subprocess
 import pprint
-import sys
 import db_manager
 from malware_object import Malware
 
@@ -15,12 +14,74 @@ dir_malware_db = '/home/yogaub/projects/seminar/database'
 unpack_command = './pandalog_reader'
 context_switch = 'new_pid,'
 instruction_termination = 'nt_terminate_process'
-instruction_process_Creation = 'nt_create_user_process'
+instruction_process_creation = 'nt_create_user_process'
+instruction_write_memory = 'nt_write_virtual_memory'
 
 malware_dict = {}
 termination_dict = {}
 
 active_malware = False
+
+
+def get_new_path(words):
+    line = ''
+    fixed = 'name=['
+    for word in words:
+        line += word + ' '
+    index = line.find(fixed)
+    line = line[index:]
+    # line = line.replace("\\", "\\\\")
+    return os.path.normpath(line.split('[')[1].replace(']', ''))
+
+
+def is_writing_memory(malware, words):
+    current_instruction = int((words[0].split('='))[1])
+    writing_pid = 0
+    writing_name = ''
+    written_pid = 0
+    written_name = ''
+    for i in range(len(words)):
+        if words[i] == 'proc,':
+            writing_pid = int(words[i + 1].strip().replace(',', ''))
+            # compensate for problem in formatting of log
+            writing_name = (words[i + 2].strip().replace(')', '')).split('(')[0]
+        elif words[i] == 'target,':
+            written_pid = int(words[i + 1].strip().replace(',', ''))
+            written_name = words[i + 2].strip().replace(')', '')
+    if writing_name == malware.get_name() and malware.is_valid_pid(writing_pid) \
+            and malware.get_active_pid() == writing_pid:
+        active_pid = malware.get_active_pid()
+        malware.add_written_memory(active_pid, written_pid, written_name, current_instruction)
+
+
+def output_on_file(filename, process_dict, inverted_process_dict, malware):
+    outfile = open(dir_analyzed_logs + filename + '_a.txt', 'w')
+    pprint.pprint(process_dict, outfile)
+    outfile.write('\n')
+    pprint.pprint(inverted_process_dict, outfile)
+    outfile.write('\n')
+    outfile.write(str(malware))
+
+
+def is_creating_process(malware, words):
+    current_instruction = int((words[0].split('='))[1])
+    new_path = get_new_path(words)
+    # new_path = words[-1].split('[')[1].replace(']', '')
+    creating_pid = 0
+    creating_name = ''
+    created_pid = 0
+    created_name = ''
+    for i in range(len(words)):
+        if words[i] == 'cur,':
+            creating_pid = int(words[i + 1].strip().replace(',', ''))
+            creating_name = words[i + 2].strip().replace(')', '')
+        elif words[i] == 'new,':
+            created_pid = int(words[i + 1].strip().replace(',', ''))
+            created_name = words[i + 2].strip().replace(')', '')
+    if creating_name == malware.get_name() and malware.is_valid_pid(creating_pid) \
+            and malware.get_active_pid() == creating_pid:
+        active_pid = malware.get_active_pid()
+        malware.add_spawned_process(active_pid, created_pid, created_name, current_instruction, new_path)
 
 
 def update_dictionaries(pid, process_dict, proc_name, inverted_process_dict):
@@ -74,7 +135,8 @@ def is_terminating(malware, words):
         elif words[i] == 'term,':
             terminated_pid = int(words[i+1].strip().replace(',', ''))
             terminated_name = words[i+2].strip().replace(')', '')
-    if terminating_name == malware.get_name() and malware.is_valid_pid(terminating_pid):
+    if terminating_name == malware.get_name() and malware.is_valid_pid(terminating_pid) \
+            and malware.get_active_pid() == terminating_pid:
         active_pid = malware.get_active_pid()
         malware.add_terminated_process(active_pid, terminated_pid, terminated_name, current_instruction)
 
@@ -127,22 +189,20 @@ def analyze_log(filename, malware):
             if not line.strip(): break
             line = line.strip()
             words = line.split()
-
             # check if the line contains the system call for termination NtTerminateProcess
             if instruction_termination in line:
                 is_terminating(malware, words)
-                continue
-
+            # check if the line contains the system call for creation of new processes
+            elif instruction_process_creation in line:
+                is_creating_process(malware, words)
+            # check if malware is writing the virtual memory of another process
+            elif instruction_write_memory in line:
+                is_writing_memory(malware, words)
             # for each log line check if it logs a context switch
-            if context_switch in words:
+            elif context_switch in words:
                 is_context_switch(words, filename, malware, process_dict, inverted_process_dict)
 
-    outfile = open(dir_analyzed_logs + filename + '_a.txt', 'w')
-    pprint.pprint(process_dict, outfile)
-    pprint.pprint(inverted_process_dict, outfile)
-    for pid in malware.get_pid_list():
-        pprint.pprint(malware.get_terminated_processes(pid), outfile)
-    pprint.pprint(malware_dict[filename[:-9]], outfile)
+    output_on_file(filename, process_dict, inverted_process_dict, malware)
 
 
 def clean_log(filename):
@@ -157,7 +217,7 @@ def initialize_malware_object(filename, malware_name):
 def main():
     os.chdir(dir_panda_path)
     big_file_malware_dict = db_manager.acquire_malware_file_dict()
-    '''
+
     j = 0
     for filename in sorted(os.listdir(dir_pandalogs_path)):
         global active_malware
@@ -172,12 +232,12 @@ def main():
         else:
             print 'ERROR filename not in db'
         # since the size of the unpacked logs will engulf the disk, delete the file after the process
-        clean_log(filename)
+        # clean_log(filename)
         j += 1
-        if j == 10:
+        if j == 5:
             break
 
-    res_file =  open(dir_project_path + 'resfile.txt', 'w')
+    res_file = open(dir_project_path + 'resfile.txt', 'w')
     for entry in malware_dict:
         res_file.write(entry + '\n')
         res_file.write(str(malware_dict[entry]) + '\n')
@@ -191,7 +251,7 @@ def main():
     if filename[:-9] in big_file_malware_dict:
         initialize_malware_object(filename[:-9], big_file_malware_dict[filename[:-9]])
     analyze_log(filename, malware_dict[filename[:-9]])
-
+    '''
 
 if __name__ == '__main__':
     main()
