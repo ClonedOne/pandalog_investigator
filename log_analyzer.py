@@ -31,55 +31,6 @@ def get_new_path(words):
     return os.path.normpath(line.split('[')[1].replace(']', ''))
 
 
-def is_writing_memory(malware, words):
-    current_instruction = int((words[0].split('='))[1])
-    writing_pid = 0
-    writing_name = ''
-    written_pid = 0
-    written_name = ''
-    for i in range(len(words)):
-        if words[i] == 'proc,':
-            writing_pid = int(words[i + 1].strip().replace(',', ''))
-            # compensate for problem in formatting of log
-            writing_name = (words[i + 2].strip().replace(')', '')).split('(')[0]
-        elif words[i] == 'target,':
-            written_pid = int(words[i + 1].strip().replace(',', ''))
-            written_name = words[i + 2].strip().replace(')', '')
-    if writing_name == malware.get_name() and malware.is_valid_pid(writing_pid) \
-            and malware.get_active_pid() == writing_pid:
-        active_pid = malware.get_active_pid()
-        malware.add_written_memory(active_pid, written_pid, written_name, current_instruction)
-
-
-def output_on_file(filename, process_dict, inverted_process_dict, malware):
-    outfile = open(dir_analyzed_logs + filename + '_a.txt', 'w')
-    pprint.pprint(process_dict, outfile)
-    outfile.write('\n')
-    pprint.pprint(inverted_process_dict, outfile)
-    outfile.write('\n')
-    outfile.write(str(malware))
-
-
-def is_creating_process(malware, words):
-    current_instruction = int((words[0].split('='))[1])
-    new_path = get_new_path(words)
-    creating_pid = 0
-    creating_name = ''
-    created_pid = 0
-    created_name = ''
-    for i in range(len(words)):
-        if words[i] == 'cur,':
-            creating_pid = int(words[i + 1].strip().replace(',', ''))
-            creating_name = words[i + 2].strip().replace(')', '')
-        elif words[i] == 'new,':
-            created_pid = int(words[i + 1].strip().replace(',', ''))
-            created_name = words[i + 2].strip().replace(')', '')
-    if creating_name == malware.get_name() and malware.is_valid_pid(creating_pid) \
-            and malware.get_active_pid() == creating_pid:
-        active_pid = malware.get_active_pid()
-        malware.add_spawned_process(active_pid, created_pid, created_name, current_instruction, new_path)
-
-
 def update_dictionaries(pid, process_dict, proc_name, inverted_process_dict):
     if pid in process_dict:
         if proc_name in process_dict[pid]:
@@ -113,7 +64,6 @@ def is_context_switch(words, filename, malware, process_dict, inverted_process_d
         is_malware(filename[:-9], pid, current_instruction)
     elif active_malware:
         update_malware_instruction_count(filename[:-9], current_instruction)
-
     # since it is a context switch save in the process dictionary the pid and process name
     update_dictionaries(pid, process_dict, proc_name, inverted_process_dict)
 
@@ -137,12 +87,44 @@ def is_terminating(malware, words):
         malware.add_terminated_process(active_pid, terminated_pid, terminated_name, current_instruction)
 
 
-def unpack_log(filename):
-    print 'unpacking: ' + filename
-    return_code = subprocess.call(unpack_command + " " + dir_pandalogs_path + filename + " > " +
-                                  dir_unpacked_path + filename + ".txt", shell=True)
-    if return_code != 0:
-        print 'return code: ' + str(return_code)
+def is_creating_process(malware, words):
+    current_instruction = int((words[0].split('='))[1])
+    new_path = get_new_path(words)
+    creating_pid = 0
+    creating_name = ''
+    created_pid = 0
+    created_name = ''
+    for i in range(len(words)):
+        if words[i] == 'cur,':
+            creating_pid = int(words[i + 1].strip().replace(',', ''))
+            creating_name = words[i + 2].strip().replace(')', '')
+        elif words[i] == 'new,':
+            created_pid = int(words[i + 1].strip().replace(',', ''))
+            created_name = words[i + 2].strip().replace(')', '')
+    if creating_name == malware.get_name() and malware.is_valid_pid(creating_pid) \
+            and malware.get_active_pid() == creating_pid:
+        active_pid = malware.get_active_pid()
+        malware.add_spawned_process(active_pid, created_pid, created_name, current_instruction, new_path)
+
+
+def is_writing_memory(malware, words):
+    current_instruction = int((words[0].split('='))[1])
+    writing_pid = 0
+    writing_name = ''
+    written_pid = 0
+    written_name = ''
+    for i in range(len(words)):
+        if words[i] == 'proc,':
+            writing_pid = int(words[i + 1].strip().replace(',', ''))
+            # compensate for problem in formatting of log
+            writing_name = (words[i + 2].strip().replace(')', '')).split('(')[0]
+        elif words[i] == 'target,':
+            written_pid = int(words[i + 1].strip().replace(',', ''))
+            written_name = words[i + 2].strip().replace(')', '')
+    if writing_name == malware.get_name() and malware.is_valid_pid(writing_pid) \
+            and malware.get_active_pid() == writing_pid:
+        active_pid = malware.get_active_pid()
+        malware.add_written_memory(active_pid, written_pid, written_name, current_instruction)
 
 
 def is_malware(filename, pid, current_instruction):
@@ -173,6 +155,18 @@ def update_malware_instruction_count(filename, current_instruction):
     global active_malware
     active_malware = False
     return 1
+
+
+def initialize_malware_object(filename, malware_name):
+    malware_dict[filename] = Malware(malware_name)
+
+
+def unpack_log(filename):
+    print 'unpacking: ' + filename
+    return_code = subprocess.call(unpack_command + " " + dir_pandalogs_path + filename + " > " +
+                                  dir_unpacked_path + filename + ".txt", shell=True)
+    if return_code != 0:
+        print 'return code: ' + str(return_code)
 
 
 def analyze_log(filename, malware):
@@ -206,15 +200,20 @@ def clean_log(filename):
     os.remove(dir_unpacked_path + filename + '.txt')
 
 
-def initialize_malware_object(filename, malware_name):
-    malware_dict[filename] = Malware(malware_name)
-
-
 def final_output():
     res_file = open(dir_project_path + 'resfile.txt', 'w')
     for entry in malware_dict:
         res_file.write('File name: ' + entry + '\n\n')
         res_file.write(str(malware_dict[entry]) + '\n\n\n')
+
+
+def output_on_file(filename, process_dict, inverted_process_dict, malware):
+    outfile = open(dir_analyzed_logs + filename + '_a.txt', 'w')
+    pprint.pprint(process_dict, outfile)
+    outfile.write('\n')
+    pprint.pprint(inverted_process_dict, outfile)
+    outfile.write('\n')
+    outfile.write(str(malware))
 
 
 def main():
@@ -245,6 +244,7 @@ def main():
         initialize_malware_object(filename[:-9], big_file_malware_dict[filename[:-9]])
     analyze_log(filename, malware_dict[filename[:-9]])
     '''
+
 
 if __name__ == '__main__':
     main()
