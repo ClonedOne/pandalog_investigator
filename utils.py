@@ -24,20 +24,22 @@ def get_new_path(words):
 def output_on_file(filename, process_dict, inverted_process_dict, dir_analyzed_logs,
                    db_file_malware_dict, file_corrupted_processes_dict):
     outfile = open(dir_analyzed_logs + filename + '_a.txt', 'w')
-    total_instruction_accumulator = 0
+    total_instruction_accumulator = [0, 0, 0, 0]
     pprint.pprint(process_dict, outfile)
     outfile.write('\n')
     pprint.pprint(inverted_process_dict, outfile)
     outfile.write('\n')
     if filename in db_file_malware_dict:
         malware = db_file_malware_dict[filename]
-        total_instruction_accumulator += malware.get_total_executed_instructions()
+        total_instruction_accumulator = [sum(x) for x in zip(total_instruction_accumulator,
+                                                             malware.get_total_executed_instructions())]
         outfile.write(str(malware) + '\n\n')
     if filename in file_corrupted_processes_dict:
         for malware in file_corrupted_processes_dict[filename]:
-            total_instruction_accumulator += malware.get_total_executed_instructions()
+            total_instruction_accumulator = [sum(x) for x in zip(total_instruction_accumulator,
+                                                                 malware.get_total_executed_instructions())]
             outfile.write(str(malware) + '\n\n')
-    outfile.write('Final instruction count: \t' + str(total_instruction_accumulator))
+    outfile.write('\nFinal instruction count: \n' + str(total_instruction_accumulator))
 
 
 def clean_log(filename, dir_unpacked_path):
@@ -49,15 +51,18 @@ def final_output(dir_project_path, filenames, db_file_malware_dict, file_corrupt
     res_file = open(dir_project_path + 'resfile.txt', 'w')
     for filename in filenames:
         filename = filename[:-9]
-        res_file.write('File name: ' + filename + '\n\n')
+        total_instruction_accumulator = [0, 0, 0, 0]
+        res_file.write('File name: ' + filename + '\n')
         if filename in db_file_malware_dict:
             entry = db_file_malware_dict[filename]
-            res_file.write(str(entry) + '\n\n')
+            total_instruction_accumulator = [sum(x) for x in zip(total_instruction_accumulator,
+                                                                 entry.get_total_executed_instructions())]
         if filename in file_corrupted_processes_dict:
             for entry in file_corrupted_processes_dict[filename]:
-                res_file.write(str(entry) + '\n\n')
-        res_file.write('\n')
-
+                total_instruction_accumulator = [sum(x) for x in zip(total_instruction_accumulator,
+                                                                     entry.get_total_executed_instructions())]
+        res_file.write('Final instruction count: \n' + str(total_instruction_accumulator))
+        res_file.write('\n\n')
 
 
 def update_dictionaries(pid, process_dict, proc_name, inverted_process_dict):

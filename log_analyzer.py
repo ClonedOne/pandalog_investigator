@@ -40,7 +40,7 @@ def is_db_malware(proc_name, filename):
 # That is because spawned or memory written processes may have the same name of
 # correct processes in the system. Therefore the method looks only for valid couples name/pid.
 # If found returns the malware.
-def is_corrupted_process(proc_name, pid, filename):
+def is_corrupted_process(proc_name, filename):
     if filename not in file_corrupted_processes_dict:
         return None
     malwares = file_corrupted_processes_dict[filename]
@@ -80,7 +80,7 @@ def is_context_switch(filename, words, process_dict, inverted_process_dict):
 
     malware = is_db_malware(proc_name, filename)
     if not malware:
-        malware = is_corrupted_process(proc_name, pid, filename)
+        malware = is_corrupted_process(proc_name, filename)
         if not malware:
             not_malware = True
 
@@ -141,7 +141,7 @@ def is_terminating(words, filename):
 
     malware = is_db_malware(terminating_name, filename)
     if not malware:
-        malware = is_corrupted_process(terminating_name, terminating_pid, filename)
+        malware = is_corrupted_process(terminating_name, filename)
     if malware and malware.is_valid_pid(terminating_pid) and malware.has_active_pid() \
             and malware.get_active_pid() == terminating_pid:
         if testing:
@@ -176,7 +176,7 @@ def is_creating_process(words, filename):
 
     malware = is_db_malware(creating_name, filename)
     if not malware:
-        malware = is_corrupted_process(creating_name, creating_pid, filename)
+        malware = is_corrupted_process(creating_name, filename)
 
     if malware and malware.is_valid_pid(creating_pid) and malware.has_active_pid() \
             and malware.get_active_pid() == creating_pid:
@@ -187,13 +187,13 @@ def is_creating_process(words, filename):
         malware.add_spawned_process(active_pid, created_pid, created_name, current_instruction, new_path)
         target = is_db_malware(created_name, filename)
         if not target:
-            target = is_corrupted_process(created_name, created_pid, filename)
+            target = is_corrupted_process(created_name, filename)
         if target:
             if not target.is_valid_pid(created_pid):
-                target.add_pid(created_pid)
+                target.add_pid(created_pid, Malware.CREATED)
             return
         new_malware = initialize_malware_object(filename, created_name)
-        new_malware.add_pid(created_pid)
+        new_malware.add_pid(created_pid, Malware.CREATED)
 
 
 # Handles the write on virtual memory system calls.
@@ -220,7 +220,7 @@ def is_writing_memory(words, filename):
 
     malware = is_db_malware(writing_name, filename)
     if not malware:
-        malware = is_corrupted_process(writing_name, writing_pid, filename)
+        malware = is_corrupted_process(writing_name, filename)
 
     if malware and malware.is_valid_pid(writing_pid) and malware.has_active_pid() \
             and malware.get_active_pid() == writing_pid:
@@ -233,15 +233,15 @@ def is_writing_memory(words, filename):
         if not target:
             if testing:
                 print 'process ' + written_name + ' ' + str(written_pid) + ' is not a db malware'
-            target = is_corrupted_process(written_name, written_pid, filename)
+            target = is_corrupted_process(written_name, filename)
         if target:
             if not target.is_valid_pid(written_pid):
-                target.add_pid(written_pid)
+                target.add_pid(written_pid, Malware.WRITTEN)
             return
         if testing:
             print 'process ' + written_name + ' ' + str(written_pid) + ' is not even a corrupted process'
         new_malware = initialize_malware_object(filename, written_name)
-        new_malware.add_pid(written_pid)
+        new_malware.add_pid(written_pid, Malware.WRITTEN)
 
 
 # This method is called if the process being context switched inside CPU is a malicious one.
@@ -253,7 +253,7 @@ def is_malware(malware, pid, current_instruction):
     global is_active_malware
     pid_list = malware.get_pid_list()
     if pid not in pid_list:
-        malware.add_pid(pid)
+        malware.add_pid(pid, Malware.FROM_DB)
     malware.update_starting_instruction(pid, current_instruction)
     malware.set_active_pid(pid)
     is_active_malware = True
@@ -284,6 +284,7 @@ def analyze_log(filename):
 
     with open(dir_unpacked_path + filename + '.txz.plog.txt', 'r') as logfile:
         for line in logfile:
+            line = unicode(line, errors='ignore')
             line = line.strip()
             words = line.split()
             # check if line contains the system call for termination of processes
@@ -321,7 +322,7 @@ def main():
     if testing:
         single_test(db_file_malware_name_map)
         return
-    # j = 0
+    j = 0
     for filename in filenames:
         global is_active_malware
         is_active_malware = False
@@ -333,9 +334,9 @@ def main():
             print 'ERROR filename not in db'
 
         utils.clean_log(filename, dir_unpacked_path)
-        # j += 1
-        # if j == 5:
-        #     break
+        j += 1
+        if j == 500:
+            break
     utils.final_output(dir_project_path, filenames, db_file_malware_dict, file_corrupted_processes_dict)
 
 
