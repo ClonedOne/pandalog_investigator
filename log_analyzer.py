@@ -311,6 +311,9 @@ def single_test(db_file_malware_name_map):
     analyze_log(filename[:-9])
 
 
+# Each file has to be unpacked using the PANDA tool
+# Analyze each unpacked log file calling analyze_log()
+# Since the size of the unpacked logs may engulf the disk, delete the file after the process
 def main():
     os.chdir(dir_panda_path)
     db_file_malware_name_map = db_manager.acquire_malware_file_dict()
@@ -318,23 +321,21 @@ def main():
     if testing:
         single_test(db_file_malware_name_map)
         return
-    j = 0
+    # j = 0
     for filename in filenames:
         global is_active_malware
         is_active_malware = False
-        # each file has to be unpacked using the PANDA tool
         utils.unpack_log(filename, unpack_command, dir_pandalogs_path, dir_unpacked_path)
-        # analyze the unpacked log file
         if filename[:-9] in db_file_malware_name_map:
             initialize_malware_object(filename[:-9], db_file_malware_name_map[filename[:-9]], from_db=True)
             analyze_log(filename[:-9])
         else:
             print 'ERROR filename not in db'
-        # since the size of the unpacked logs may engulf the disk, delete the file after the process
-        # utils.clean_log(filename, dir_unpacked_path)
-        j += 1
-        if j == 5:
-            break
+
+        utils.clean_log(filename, dir_unpacked_path)
+        # j += 1
+        # if j == 5:
+        #     break
     utils.final_output(dir_project_path, filenames, db_file_malware_dict, file_corrupted_processes_dict)
 
 
