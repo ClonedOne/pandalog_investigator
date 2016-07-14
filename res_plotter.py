@@ -4,6 +4,7 @@ import numpy
 
 dir_resfile_path = '/home/yogaub/Desktop/resfile.txt'
 dir_accumulationfile_path = '/home/yogaub/Desktop/accfile.txt'
+dir_analyzed_path = '/home/yogaub/Desktop/analyzed_logs/'
 empty_list = '[0, 0, 0, 0]'
 
 totals_dict = {}
@@ -145,6 +146,7 @@ def do_stuff(chosen_dict, color, shape, title, total=False, log=False):
         inverted_totals = invert_dictionary(chosen_dict)
         stats = compute_stats(chosen_dict)
         print stats
+        compute_number_of_terminated(chosen_dict, stats[0]*0.1)
         print_results(chosen_dict, inverted_totals, stats)
         plot_data(chosen_dict, stats, color, shape, title, log)
     else:
@@ -154,24 +156,61 @@ def do_stuff(chosen_dict, color, shape, title, total=False, log=False):
         plot_data(chosen_dict, stats, color, shape, title, log)
 
 
+def check_self_termination(filename):
+    with open(dir_analyzed_path + filename + '_a.txt', 'r') as a_log:
+        last_mal = ''
+        pids = []
+        terminated_pids = []
+        for line in a_log:
+            if 'Malware name:' in line:
+                last_mal = line.split()[2].strip()
+            if 'Malware pid:' in line:
+                pid = line.split()[2].strip()
+                pids.append((last_mal, pid))
+            if 'Terminated processes:' in line:
+                line = a_log.next()
+                while line.strip():
+                    mal_name = line.split('\t')[1].strip()
+                    mal_pid = line.split('\t')[0].strip()
+                    terminated_pids.append((mal_name, mal_pid))
+                    line = a_log.next()
+    equal = True
+    for entry in pids:
+        if entry not in terminated_pids:
+            equal = False
+    return equal
+
+
+def compute_number_of_terminated(chosen_dict, threshold):
+    below_threshold = 0
+    self_terminated = 0
+    for filename, value in chosen_dict.iteritems():
+        if value < threshold:
+            below_threshold += 1
+            if check_self_termination(filename):
+                self_terminated += 1
+    print below_threshold, self_terminated
+
+
 def main():
     accumulate_data()
 
-    # do_stuff(totals_dict, 'b', 'H', 'Total', total=True)
-    # prune_data(totals_dict, 100)
-    # do_stuff(totals_dict, 'b', 'H', 'Total pruned')
+    do_stuff(totals_dict, 'b', 'H', 'Total', total=True)
+    prune_data(totals_dict, 100)
+    do_stuff(totals_dict, 'b', 'H', 'Total pruned')
 
     # do_stuff(from_db_dict, 'g', 'o', 'Malware from database')
     # prune_data(from_db_dict, 100)
     # do_stuff(from_db_dict, 'g', 'o', 'Malware from database pruned')
 
-    do_stuff(created_dict, 'r', 'o', 'Created processes')
-    prune_data(created_dict, 10)
-    do_stuff(created_dict, 'r', 'o', 'Created processes pruned')
+    # do_stuff(created_dict, 'r', 'o', 'Created processes')
+    # prune_data(created_dict, 10)
+    # do_stuff(created_dict, 'r', 'o', 'Created processes pruned')
 
     # do_stuff(written_dict, 'y', 'o', 'Memory written processes')
     # prune_data(written_dict, 10)
     # do_stuff(written_dict, 'y', 'o', 'Memory written processes pruned')
+
 
 
 if __name__ == '__main__':
