@@ -322,7 +322,7 @@ def main():
     if testing:
         single_test(db_file_malware_name_map)
         return
-    j = 0
+    # j = 0
     for filename in filenames:
         global is_active_malware
         is_active_malware = False
@@ -334,9 +334,9 @@ def main():
             print 'ERROR filename not in db'
 
         utils.clean_log(filename, dir_unpacked_path)
-        j += 1
-        if j == 500:
-            break
+        # j += 1
+        # if j == 200:
+        #     break
     utils.final_output(dir_project_path, filenames, db_file_malware_dict, file_corrupted_processes_dict)
 
 

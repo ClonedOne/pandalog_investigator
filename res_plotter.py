@@ -1,221 +1,177 @@
 import matplotlib.pyplot as plt
 import numpy
-import ast
 
 
 dir_resfile_path = '/home/yogaub/Desktop/resfile.txt'
 dir_accumulationfile_path = '/home/yogaub/Desktop/accfile.txt'
-dir_reduced_accumulationfile_path = '/home/yogaub/Desktop/accfile_red.txt'
-empty_list = '[]'
+empty_list = '[0, 0, 0, 0]'
 
-malware_dict = {}
-inverted_malware_dict = {}
-reduced_malware_dict = {}
-reduced_inverted_malware_dict = {}
-terminating_malware_dict = {}
-
-mean = 0
-standard_deviation = 0
-variance = 0
-reduced_mean = 0
-reduced_standard_deviation = 0
-reduced_variance = 0
+totals_dict = {}
+from_db_dict = {}
+created_dict = {}
+written_dict = {}
 
 file_list = []
 next_file_name = True
-next_malware_name = False
+next_values = False
 
 
-def compute_terminating_malware_stats():
-    global terminating_malware_dict
-    print 'computing stats for terminating malwares'
-    print len(terminating_malware_dict)
-
-
-def reduce_data():
-    global malware_dict, reduced_malware_dict, reduced_inverted_malware_dict
-    threshold = standard_deviation * 0.5
-    #threshold = mean
-    for malware_name, value in malware_dict.iteritems():
-        if value < threshold:
-            reduced_malware_dict[malware_name] = value
-            if value in reduced_inverted_malware_dict:
-                reduced_inverted_malware_dict[value].append(malware_name)
-            else:
-                reduced_inverted_malware_dict[value] = []
-                reduced_inverted_malware_dict[value].append(malware_name)
-    #print len(reduced_malware_dict)
-
-
-def compute_stats(reduced=False):
+def compute_stats(chosen_dict):
     print 'computing stats'
-    if reduced:
-        global reduced_mean, reduced_standard_deviation, reduced_variance
-        values = numpy.array(reduced_malware_dict.values())
-        reduced_mean = values.mean()
-        reduced_standard_deviation = values.std()
-        reduced_variance = values.var()
-    else:
-        global mean, standard_deviation, variance
-        values = numpy.array(malware_dict.values())
-        mean = values.mean()
-        standard_deviation = values.std()
-        variance = values.var()
+    values = numpy.array(chosen_dict.values())
+    mean = values.mean()
+    standard_deviation = values.std()
+    variance = values.var()
+    return mean, standard_deviation, variance
 
 
-def plot_data(reduced=False):
+def plot_data(chosen_dict, stats, color, shape, title, log=False):
     print 'plotting data'
     accumulation_list = []
     ranges = []
-    #std_multiplier = 0
+    standard_deviation = stats[1]
     std_multiplier = 0.0
     i = 0
-    if reduced:
-        values = numpy.array(sorted(reduced_malware_dict.values()))
-        for value in values:
-            if value > reduced_standard_deviation * std_multiplier:
-                accumulation_list.append(0)
-                std_multiplier += 0.5
-                ranges.append(reduced_standard_deviation * std_multiplier)
-                i += 1
-                accumulation_list[i - 1] += 1
-            else:
-                accumulation_list[i - 1] += 1
-    else:
-        values = numpy.array(sorted(malware_dict.values()))
-        for value in values:
-            if value > standard_deviation * std_multiplier:
-                accumulation_list.append(0)
-                #std_multiplier += 1
-                std_multiplier += 0.5
-                ranges.append(standard_deviation * std_multiplier)
-                i += 1
-                #accumulation_list[std_multiplier - 1] += 1
-                accumulation_list[i-1] += 1
-            else:
-                #accumulation_list[std_multiplier-1] += 1
-                accumulation_list[i-1] += 1
+    values = numpy.array(sorted(chosen_dict.values()))
+    # ranges_length = values.max()
+    # print ranges_length / (standard_deviation*0.1)
+    for value in values:
+        while value >= standard_deviation * std_multiplier:
+            accumulation_list.append(0)
+            std_multiplier += 0.1
+            ranges.append(standard_deviation * std_multiplier)
+            i += 1
+        accumulation_list[i-1] += 1
 
     accumulation_list = numpy.array(accumulation_list)
     ranges = numpy.array(ranges)
     print accumulation_list
     print ranges
 
-    plt.plot(ranges, accumulation_list, "H", markersize=12)
-    #plt.plot(values, "h", markersize=8)
-    plt.plot(ranges, accumulation_list, "b", linewidth=2)
-    plt.title("Instruction executed")
-    plt.xlabel("Value range")
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    if log:
+        # ax.set_xscale('log')
+        ax.set_yscale('log')
+    ax.plot(ranges, accumulation_list, color+shape, markersize=8)
+    ax.plot(ranges, accumulation_list, color, linewidth=2)
+    plt.title(title)
+    plt.xlabel("Value range in standard deviations")
     plt.ylabel("Frequency")
-    #plt.xticks(ranges)
     plt.show()
 
 
-def invert_dictionary():
-    global malware_dict, inverted_malware_dict
-    for malware_name, count in malware_dict.iteritems():
-        if count in inverted_malware_dict:
-            inverted_malware_dict[count].append(malware_name)
+def invert_dictionary(chosen_dict):
+    inverted_dict = {}
+    for malware_name, count in chosen_dict.iteritems():
+        if count in inverted_dict:
+            inverted_dict[count].append(malware_name)
         else:
-            inverted_malware_dict[count] = []
-            inverted_malware_dict[count].append(malware_name)
+            inverted_dict[count] = []
+            inverted_dict[count].append(malware_name)
+    return inverted_dict
 
 
-def clean_zero_values():
-    print 'cleaning zero values'
-    global malware_dict
-    temp_dict = {}
-    for entry in malware_dict:
-        if malware_dict[entry] != 0:
-            temp_dict[entry] = malware_dict[entry]
-    malware_dict = temp_dict
-
-
-def print_results(reduced=False):
+def print_results(totals_dict, inverted_totals, stats):
     print 'printing data on file'
-    if reduced:
-        with open(dir_reduced_accumulationfile_path, 'w') as accfile:
-            for entry in reduced_malware_dict:
-                accfile.write(str(entry) + '\t' + str(reduced_malware_dict[entry]) + '\n')
-            accfile.write('\n')
-            for key in sorted(reduced_inverted_malware_dict.keys()):
-                accfile.write(str(key) + '\t' + str(reduced_inverted_malware_dict[key]) + '\n')
-            accfile.write('\n')
-            accfile.write('Mean: ' + str(reduced_mean) + '\n')
-            accfile.write('Standard Deviation: ' + str(reduced_standard_deviation) + '\n')
-            accfile.write('Variance: ' + str(reduced_variance) + '\n')
-
-    else:
-        with open(dir_accumulationfile_path, 'w') as accfile:
-            for entry in malware_dict:
-                accfile.write(str(entry) + '\t' + str(malware_dict[entry]) + '\n')
-            accfile.write('\n')
-            for key in sorted(inverted_malware_dict.keys()):
-                accfile.write(str(key) + '\t' + str(inverted_malware_dict[key]) + '\n')
-            accfile.write('\n')
-            accfile.write('Mean: ' + str(mean) + '\n')
-            accfile.write('Standard Deviation: ' + str(standard_deviation) + '\n')
-            accfile.write('Variance: ' + str(variance) + '\n')
-
-
-def find_terminating_malwares(resfile, filename):
-    print 'finding terminating malwares'
-    global terminating_malware_dict
-    next_file_name = False
-    last_file_name = filename
-    for line in resfile:
-        line = line.strip()
-        if not next_file_name:
-            if line != empty_list:
-                pid_list = ast.literal_eval(line)
-                terminating_malware_dict[last_file_name] = pid_list
-            next_file_name = True
-        else:
-            last_file_name = line
-            next_file_name = False
+    with open(dir_accumulationfile_path, 'w') as accfile:
+        for entry in totals_dict:
+            accfile.write(str(entry) + '\t' + str(totals_dict[entry]) + '\n')
+        accfile.write('\n')
+        for key in sorted(inverted_totals.keys()):
+            accfile.write(str(key) + '\t' + str(inverted_totals[key]) + '\n')
+        accfile.write('\n')
+        accfile.write('Mean: ' + str(stats[0]) + '\n')
+        accfile.write('Standard Deviation: ' + str(stats[1]) + '\n')
+        accfile.write('Variance: ' + str(stats[2]) + '\n')
 
 
 def accumulate_data():
     print 'accumulating data'
-    global next_file_name, next_malware_name, file_list, malware_dict
+    global next_file_name, next_values, file_list, totals_dict
+    skip = False
     with open(dir_resfile_path, 'r') as resfile:
-        last_malware_name = ''
+        last_file_name = ''
         for line in resfile:
             if not line.strip():
                 next_file_name = True
                 continue
             line = line.strip()
             if next_file_name:
-                filename = line
-                if filename in file_list:
-                    find_terminating_malwares(resfile, filename)
-                    return
-                file_list.append(filename)
+                filename = line.split()[2]
+                last_file_name = filename
                 next_file_name = False
-                next_malware_name = True
+                skip = True
                 continue
-            if next_malware_name:
-                last_malware_name = line.replace('-', '').strip()
-                malware_dict[last_malware_name] = 0
-                next_malware_name = False
+            if skip:
+                next_values = True
+                skip = False
                 continue
-            words = line.split('\t')
-            instruction_count = int(words[2].split()[2])
-            malware_dict[last_malware_name] += instruction_count
+            if next_values:
+                if line != empty_list:
+                    values = line.replace('[', '').replace(']', '').replace(',', '').split()
+                    if int(values[0]) == 0:
+                        print 'PANIC NO DB'
+                    if int(values[3]) == 0:
+                        print 'PANIC NO TOT'
+                    from_db_dict[last_file_name] = int(values[0])
+                    if int(values[1]) > 0:
+                        created_dict[last_file_name] = int(values[1])
+                    if int(values[2]) > 0:
+                        written_dict[last_file_name] = int(values[2])
+                    totals_dict[last_file_name] = int(values[3])
+                next_values = False
+                continue
+
+
+def prune_data(chosen_dict, threshold_number):
+    values = sorted(chosen_dict.values())
+    length = len(values)
+    eliminate_vals = []
+    eliminate_keys = []
+    for i in range(length):
+        if i < threshold_number or (length -1) - i < threshold_number:
+            eliminate_vals.append(values[i])
+    for key, value in chosen_dict.iteritems():
+        if value in eliminate_vals:
+            eliminate_keys.append(key)
+    for key in eliminate_keys:
+        chosen_dict.pop(key)
+
+
+def do_stuff(chosen_dict, color, shape, title, total=False, log=False):
+    if total:
+        print len(chosen_dict)
+        inverted_totals = invert_dictionary(chosen_dict)
+        stats = compute_stats(chosen_dict)
+        print stats
+        print_results(chosen_dict, inverted_totals, stats)
+        plot_data(chosen_dict, stats, color, shape, title, log)
+    else:
+        print len(chosen_dict)
+        stats = compute_stats(chosen_dict)
+        print stats
+        plot_data(chosen_dict, stats, color, shape, title, log)
 
 
 def main():
     accumulate_data()
-    clean_zero_values()
-    invert_dictionary()
-    compute_stats()
-    print_results()
-    plot_data()
-    reduce_data()
-    compute_stats(reduced=True)
-    print_results(reduced=True)
-    plot_data(reduced=True)
-    compute_terminating_malware_stats()
+
+    # do_stuff(totals_dict, 'b', 'H', 'Total', total=True)
+    # prune_data(totals_dict, 100)
+    # do_stuff(totals_dict, 'b', 'H', 'Total pruned')
+
+    # do_stuff(from_db_dict, 'g', 'o', 'Malware from database')
+    # prune_data(from_db_dict, 100)
+    # do_stuff(from_db_dict, 'g', 'o', 'Malware from database pruned')
+
+    do_stuff(created_dict, 'r', 'o', 'Created processes')
+    prune_data(created_dict, 10)
+    do_stuff(created_dict, 'r', 'o', 'Created processes pruned')
+
+    # do_stuff(written_dict, 'y', 'o', 'Memory written processes')
+    # prune_data(written_dict, 10)
+    # do_stuff(written_dict, 'y', 'o', 'Memory written processes pruned')
 
 
 if __name__ == '__main__':
