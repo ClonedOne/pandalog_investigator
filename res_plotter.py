@@ -178,6 +178,10 @@ def check_self_termination(filename):
     for entry in pids:
         if entry not in terminated_pids:
             equal = False
+    # if filename == '0cd4c283-1765-42a2-b911-deb1497da527':
+    #     print 'is 0cd4c283-1765-42a2-b911-deb1497da527'
+    #     if equal:
+            print 'is self terminating'
     return equal
 
 
@@ -199,18 +203,17 @@ def main():
     prune_data(totals_dict, 100)
     do_stuff(totals_dict, 'b', 'H', 'Total pruned')
 
-    # do_stuff(from_db_dict, 'g', 'o', 'Malware from database')
-    # prune_data(from_db_dict, 100)
-    # do_stuff(from_db_dict, 'g', 'o', 'Malware from database pruned')
+    do_stuff(from_db_dict, 'g', 'o', 'Malware from database')
+    prune_data(from_db_dict, 100)
+    do_stuff(from_db_dict, 'g', 'o', 'Malware from database pruned')
 
-    # do_stuff(created_dict, 'r', 'o', 'Created processes')
-    # prune_data(created_dict, 10)
-    # do_stuff(created_dict, 'r', 'o', 'Created processes pruned')
+    do_stuff(created_dict, 'r', 'o', 'Created processes')
+    prune_data(created_dict, 10)
+    do_stuff(created_dict, 'r', 'o', 'Created processes pruned')
 
-    # do_stuff(written_dict, 'y', 'o', 'Memory written processes')
-    # prune_data(written_dict, 10)
-    # do_stuff(written_dict, 'y', 'o', 'Memory written processes pruned')
-
+    do_stuff(written_dict, 'y', 'o', 'Memory written processes')
+    prune_data(written_dict, 10)
+    do_stuff(written_dict, 'y', 'o', 'Memory written processes pruned')
 
 
 if __name__ == '__main__':

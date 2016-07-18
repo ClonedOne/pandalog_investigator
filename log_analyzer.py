@@ -15,11 +15,76 @@ context_switch = 'new_pid,'
 instruction_termination = 'nt_terminate_process'
 instruction_process_creation = 'nt_create_user_process'
 instruction_write_memory = 'nt_write_virtual_memory'
+instruction_sleep = '(num=98)'
 
 file_corrupted_processes_dict = {}
 db_file_malware_dict = {}
+file_terminate_dict = {}
+file_sleep_dict = {}
 is_active_malware = False
 testing = False
+
+
+# Checks if the malware_objects associated with the filename have called the sleep function on all theri pids.
+def is_sleeping_all(filename):
+    sleeping_all = True
+    all_pids = []
+    all_sleep = []
+    if filename in db_file_malware_dict:
+        malware = db_file_malware_dict[filename]
+        pid_list = malware.get_pid_list()
+        for pid in pid_list:
+            all_pids.append((malware.get_name(), pid))
+            sleep_list = malware.get_sleep(pid)
+            for sleep in sleep_list:
+                all_sleep.append((malware.get_name(), pid))
+
+    if filename in file_corrupted_processes_dict:
+        for malware in file_corrupted_processes_dict[filename]:
+            pid_list = malware.get_pid_list()
+            for pid in pid_list:
+                all_pids.append((malware.get_name(), pid))
+                sleep_list = malware.get_sleep(pid)
+                for sleep in sleep_list:
+                    all_sleep.append((malware.get_name(), pid))
+
+    for entry in all_pids:
+        if entry not in all_sleep:
+            sleeping_all = False
+    not_empty = len(all_pids) > 0
+    file_sleep_dict[filename] = sleeping_all and not_empty
+    return sleeping_all and not_empty
+
+
+# Checks if the malware_objects associated with the filename have terminated all their pids.
+def is_terminating_all(filename):
+    terminating_all = True
+    all_pids = []
+    all_term = []
+    if filename in db_file_malware_dict:
+        malware = db_file_malware_dict[filename]
+        pid_list = malware.get_pid_list()
+        for pid in pid_list:
+            all_pids.append((malware.get_name(), pid))
+            terms = malware.get_terminated_processes(pid)
+            for term in terms:
+                all_term.append((term[1], term[0]))
+
+    if filename in file_corrupted_processes_dict:
+        for malware in file_corrupted_processes_dict[filename]:
+            pid_list = malware.get_pid_list()
+            for pid in pid_list:
+                all_pids.append((malware.get_name(), pid))
+                terms = malware.get_terminated_processes(pid)
+                for term in terms:
+                    all_term.append((term[1], term[0]))
+
+    for entry in all_pids:
+        if entry not in all_term:
+            terminating_all = False
+    not_empty = len(all_pids) > 0
+    file_terminate_dict[filename] = terminating_all and not_empty
+    return terminating_all and not_empty
 
 
 # Checks if the process name is inside the db_file_malware_dict.
@@ -149,6 +214,19 @@ def is_terminating(words, filename):
               terminated_name + ' ' + str(terminated_pid) + ' at instruction ' + str(current_instruction)
         active_pid = malware.get_active_pid()
         malware.add_terminated_process(active_pid, terminated_pid, terminated_name, current_instruction)
+
+
+# Handles NtDelayExecution system calls.
+# The purpose is to understand if the malicious process is trying to hide itself by calling the sleep function
+# for enough time to avoid examination.
+def is_calling_sleep(words, filename):
+    global is_active_malware
+    current_instruction = int((words[0].split('='))[1])
+    if is_active_malware:
+        malware = find_active_malware(filename)
+        if malware:
+            active_pid = malware.get_active_pid()
+            malware.add_sleep(active_pid, current_instruction)
 
 
 # Handles process creation system calls.
@@ -296,12 +374,17 @@ def analyze_log(filename):
             # check if malware is writing the virtual memory of another process
             elif instruction_write_memory in line:
                 is_writing_memory(words, filename)
+            # check if malware is calling the sleep function
+            elif instruction_sleep in line:
+                is_calling_sleep(words, filename)
             # check if line logs a context switch
             elif context_switch in line:
                 is_context_switch(filename, words, process_dict, inverted_process_dict)
 
+    terminating_all = is_terminating_all(filename)
+    sleeping_all = is_sleeping_all(filename)
     utils.output_on_file(filename, process_dict, inverted_process_dict, dir_analyzed_logs,
-                         db_file_malware_dict, file_corrupted_processes_dict)
+                         db_file_malware_dict, file_corrupted_processes_dict, terminating_all, sleeping_all)
 
 
 # For testing purposes
@@ -322,7 +405,7 @@ def main():
     if testing:
         single_test(db_file_malware_name_map)
         return
-    # j = 0
+    j = 0
     for filename in filenames:
         global is_active_malware
         is_active_malware = False
@@ -334,10 +417,10 @@ def main():
             print 'ERROR filename not in db'
 
         utils.clean_log(filename, dir_unpacked_path)
-        # j += 1
-        # if j == 200:
-        #     break
-    utils.final_output(dir_project_path, filenames, db_file_malware_dict, file_corrupted_processes_dict)
+        j += 1
+        if j == 10:
+            break
+    utils.final_output(dir_project_path, filenames, db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict, file_sleep_dict)
 
 
 if __name__ == '__main__':
