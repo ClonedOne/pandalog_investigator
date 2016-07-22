@@ -6,7 +6,6 @@ import os
 # Unpack the specified log file using the PANDA utility.
 # The content of the log will be saved in a temporary file with the same name.
 def unpack_log(filename, unpack_command, dir_pandalogs_path, dir_unpacked_path):
-    print 'unpacking: ' + filename
     return_code = subprocess.call(unpack_command + " " + dir_pandalogs_path + filename + " > " +
                                   dir_unpacked_path + filename + ".txt", shell=True)
     if return_code != 0:
@@ -15,7 +14,8 @@ def unpack_log(filename, unpack_command, dir_pandalogs_path, dir_unpacked_path):
 
 # Handles the acquisition of the path string from the log file.
 # It is used to handle linux problems with windows style path strings.
-def get_new_path(words):
+def get_new_path(input):
+    words = input.split()
     line = ''
     fixed = 'name=['
     for word in words:
@@ -54,7 +54,6 @@ def output_on_file(filename, process_dict, inverted_process_dict, dir_analyzed_l
 
 # Delete the temporary unpacked log file to avoid disk congestion.
 def clean_log(filename, dir_unpacked_path):
-    print 'deleting: ' + filename + '.txt'
     os.remove(dir_unpacked_path + filename + '.txt')
 
 

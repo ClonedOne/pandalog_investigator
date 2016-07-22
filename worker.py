@@ -1,5 +1,7 @@
 import utils
 import os
+import traceback
+import time
 from malware_object import Malware
 
 dir_unpacked_path = '/home/yogaub/projects/seminar/unpacked_logs/'
@@ -8,80 +10,81 @@ dir_panda_path = '/home/yogaub/projects/seminar/panda/qemu/panda'
 dir_pandalogs_path = '/home/yogaub/projects/seminar/pandalogs/'
 
 unpack_command = './pandalog_reader'
-context_switch = 'new_pid,'
-instruction_termination = 'nt_terminate_process'
-instruction_process_creation = 'nt_create_user_process'
-instruction_write_memory = 'nt_write_virtual_memory'
-instruction_sleep = '(num=98)'
+context_switch = u'new_pid,'
+instruction_termination = u'nt_terminate_process'
+instruction_process_creation = u'nt_create_user_process'
+instruction_write_memory = u'nt_write_virtual_memory'
+instruction_sleep = u'(num=98)'
 
 file_corrupted_processes_dict = {}
 db_file_malware_dict = {}
 file_terminate_dict = {}
 file_sleep_dict = {}
-is_active_malware = False
-testing = False
+active_malware = None
 
 
-# Checks if the malware_objects associated with the filename have called the sleep function on all theri pids.
+# Checks if the malware_objects associated with the filename have called the sleep function on all their pids.
 def is_sleeping_all(filename):
-    sleeping_all = True
-    all_pids = []
-    all_sleep = []
+    all_pids = set()
+    all_sleep = set()
     if filename in db_file_malware_dict:
         malware = db_file_malware_dict[filename]
         pid_list = malware.get_pid_list()
         for pid in pid_list:
-            all_pids.append((malware.get_name(), pid))
-            sleep_list = malware.get_sleep(pid)
-            for sleep in sleep_list:
-                all_sleep.append((malware.get_name(), pid))
+            all_pids.add((malware.get_name(), pid))
+            sleep_count = malware.get_sleep(pid)
+            if sleep_count:
+                all_sleep.add((malware.get_name(), pid))
 
     if filename in file_corrupted_processes_dict:
-        for malware in file_corrupted_processes_dict[filename]:
+        malwares = file_corrupted_processes_dict[filename]
+        for malware in malwares:
             pid_list = malware.get_pid_list()
             for pid in pid_list:
-                all_pids.append((malware.get_name(), pid))
-                sleep_list = malware.get_sleep(pid)
-                for sleep in sleep_list:
-                    all_sleep.append((malware.get_name(), pid))
+                all_pids.add((malware.get_name(), pid))
+                sleep_count = malware.get_sleep(pid)
+                if sleep_count:
+                    all_sleep.add((malware.get_name(), pid))
 
-    for entry in all_pids:
-        if entry not in all_sleep:
-            sleeping_all = False
     not_empty = len(all_pids) > 0
-    file_sleep_dict[filename] = sleeping_all and not_empty
-    return sleeping_all and not_empty
+    if all_pids.issubset(all_sleep) and not_empty:
+        file_sleep_dict[filename] = True
+        return True
+    else:
+        file_sleep_dict[filename] = False
+        return False
 
 
 # Checks if the malware_objects associated with the filename have terminated all their pids.
 def is_terminating_all(filename):
-    terminating_all = True
-    all_pids = []
-    all_term = []
+    all_pids = set()
+    all_term = set()
     if filename in db_file_malware_dict:
         malware = db_file_malware_dict[filename]
         pid_list = malware.get_pid_list()
         for pid in pid_list:
-            all_pids.append((malware.get_name(), pid))
+            all_pids.add((malware.get_name(), pid))
             terms = malware.get_terminated_processes(pid)
             for term in terms:
-                all_term.append((term[1], term[0]))
+                all_term.add((term[1], term[0]))
 
     if filename in file_corrupted_processes_dict:
-        for malware in file_corrupted_processes_dict[filename]:
+        malwares = file_corrupted_processes_dict[filename]
+        for malware in malwares:
             pid_list = malware.get_pid_list()
             for pid in pid_list:
-                all_pids.append((malware.get_name(), pid))
+                all_pids.add((malware.get_name(), pid))
                 terms = malware.get_terminated_processes(pid)
                 for term in terms:
-                    all_term.append((term[1], term[0]))
+                    all_term.add((term[1], term[0]))
 
-    for entry in all_pids:
-        if entry not in all_term:
-            terminating_all = False
     not_empty = len(all_pids) > 0
-    file_terminate_dict[filename] = terminating_all and not_empty
-    return terminating_all and not_empty
+    if all_pids.issubset(all_term) and not_empty:
+        file_terminate_dict[filename] = True
+        return True
+    else:
+        file_terminate_dict[filename] = False
+        return False
 
 
 # Checks if the process name is inside the db_file_malware_dict.
@@ -112,20 +115,6 @@ def is_corrupted_process(proc_name, filename):
     return None
 
 
-# If the global variable is_active_malware is set to True, this method can be used to look for
-# the malware which is currently active (before the context switch).
-# If found returns the active malware.
-def find_active_malware(filename):
-    malware = db_file_malware_dict[filename]
-    if malware.has_active_pid():
-        return malware
-    else:
-        for malware in file_corrupted_processes_dict[filename]:
-            if malware.has_active_pid():
-                return malware
-    return None
-
-
 # If a context switch happens this method is used to gather the information on which process is going in CPU.
 # It gathers the process id and process name of the new process and the current value of the instruction counter.
 # First it updates the related dictionaries with the new information.
@@ -133,10 +122,11 @@ def find_active_malware(filename):
 # If it is a correct process and the previous process was a malware, update that malware instruction count.
 # If it is a malware/corrupt process, update the instruction count of a previous malicious process
 # (if there was one) and call the method is_malware().
-def is_context_switch(filename, words, process_dict, inverted_process_dict):
-    pid = int(words[4].replace(',', ''))
-    proc_name = words[5].replace(')', '')
-    current_instruction = int((words[0].split('='))[1])
+def is_context_switch(filename, line, process_dict, inverted_process_dict):
+    commas = line.strip().split(',')
+    pid = int(commas[2].strip())
+    proc_name = commas[3].split(')')[0].strip()
+    current_instruction = int((commas[0].split()[0].split('='))[1])
     not_malware = False
     utils.update_dictionaries(pid, process_dict, proc_name, inverted_process_dict)
 
@@ -146,28 +136,22 @@ def is_context_switch(filename, words, process_dict, inverted_process_dict):
         if not malware:
             not_malware = True
 
-    if not_malware and is_active_malware:
-        if testing:
-            print 'first' + ' at instruction ' + str(current_instruction)
-        update_malware_instruction_count(filename, current_instruction)
-    elif malware and is_active_malware:
-        if testing:
-            print 'second' + ' at instruction ' + str(current_instruction)
-        update_malware_instruction_count(filename, current_instruction)
+    if not_malware and active_malware:
+        update_malware_instruction_count(current_instruction)
+    elif malware and active_malware:
+        update_malware_instruction_count(current_instruction)
         is_malware(malware, pid, current_instruction)
     elif malware:
-        if testing:
-            print 'third' + ' at instruction ' + str(current_instruction)
         is_malware(malware, pid, current_instruction)
 
 
 # Updates the instruction count of a malicious process once it is context switched out of the CPU.
-# It is called only if the is_active_malware is set to True.
+# It is called only if the active_malware is not None.
 # It finds the active malware, updates its instruction count and deactivates its active pid.
-# Then it sets is_active_malware to False.
-def update_malware_instruction_count(filename, current_instruction):
-    global is_active_malware
-    malware = find_active_malware(filename)
+# Then it sets active_malware to None.
+def update_malware_instruction_count(current_instruction):
+    global active_malware
+    malware = active_malware
     if not malware:
         return -1
     active_pid = malware.get_active_pid()
@@ -177,38 +161,26 @@ def update_malware_instruction_count(filename, current_instruction):
     instruction_delta = current_instruction - malware_starting_instruction
     malware.add_instruction_executed(active_pid, instruction_delta)
     malware.deactivate_pid(active_pid)
-    is_active_malware = False
-    if testing:
-        print 'process ' + malware.get_name() + ' ' + str(active_pid) + ' increased by ' + str(instruction_delta) +\
-          ' at instruction ' + str(current_instruction)
+    active_malware = None
     return 1
 
 
 # Handles termination system calls.
 # Analyze the log to find out process name and id of the terminating and terminated processes.
 # Checks if terminating process is a malware and if so updates malware's termination information.
-def is_terminating(words, filename):
-    current_instruction = int((words[0].split('='))[1])
-    terminating_pid = 0
-    terminating_name = ''
-    terminated_pid = 0
-    terminated_name = ''
-    for i in range(len(words)):
-        if words[i] == 'cur,':
-            terminating_pid = int(words[i+1].strip().replace(',', ''))
-            terminating_name = words[i+2].strip().replace(')', '')
-        elif words[i] == 'term,':
-            terminated_pid = int(words[i+1].strip().replace(',', ''))
-            terminated_name = words[i+2].strip().replace(')', '')
+def is_terminating(line, filename):
+    commas = line.strip().split(',')
+    current_instruction = int((commas[0].split()[0].split('='))[1])
+    terminating_pid = int(commas[2].strip())
+    terminating_name = commas[3].split(')')[0].strip()
+    terminated_pid = int(commas[5].strip())
+    terminated_name = commas[6].split(')')[0].strip()
 
     malware = is_db_malware(terminating_name, filename)
     if not malware:
         malware = is_corrupted_process(terminating_name, filename)
     if malware and malware.is_valid_pid(terminating_pid) and malware.has_active_pid() \
             and malware.get_active_pid() == terminating_pid:
-        if testing:
-            print 'process ' + terminating_name + ' ' + str(terminating_pid) + ' is terminating ' +\
-              terminated_name + ' ' + str(terminated_pid) + ' at instruction ' + str(current_instruction)
         active_pid = malware.get_active_pid()
         malware.add_terminated_process(active_pid, terminated_pid, terminated_name, current_instruction)
 
@@ -216,14 +188,13 @@ def is_terminating(words, filename):
 # Handles NtDelayExecution system calls.
 # The purpose is to understand if the malicious process is trying to hide itself by calling the sleep function
 # for enough time to avoid examination.
-def is_calling_sleep(words, filename):
-    global is_active_malware
-    current_instruction = int((words[0].split('='))[1])
-    if is_active_malware:
-        malware = find_active_malware(filename)
+def is_calling_sleep():
+    global active_malware
+    if active_malware:
+        malware = active_malware
         if malware:
             active_pid = malware.get_active_pid()
-            malware.add_sleep(active_pid, current_instruction)
+            malware.add_sleep(active_pid)
 
 
 # Handles process creation system calls.
@@ -234,20 +205,14 @@ def is_calling_sleep(words, filename):
 # that the created pid is not already a valid pid for that malicious process.
 # Else create a new malware object and initialize it with the created pid.
 # The path for the executable of the created process is gathered through the method get_new_path().
-def is_creating_process(words, filename):
-    current_instruction = int((words[0].split('='))[1])
-    new_path = utils.get_new_path(words)
-    creating_pid = 0
-    creating_name = ''
-    created_pid = 0
-    created_name = ''
-    for i in range(len(words)):
-        if words[i] == 'cur,':
-            creating_pid = int(words[i + 1].strip().replace(',', ''))
-            creating_name = words[i + 2].strip().replace(')', '')
-        elif words[i] == 'new,':
-            created_pid = int(words[i + 1].strip().replace(',', ''))
-            created_name = words[i + 2].strip().replace(')', '')
+def is_creating_process(line, filename):
+    commas = line.strip().split(',')
+    current_instruction = int((commas[0].split()[0].split('='))[1])
+    new_path = utils.get_new_path(line)
+    creating_pid = int(commas[2].strip())
+    creating_name = commas[3].split(')')[0].strip()
+    created_pid = int(commas[5].strip())
+    created_name = commas[6].split(')')[0].strip()
 
     malware = is_db_malware(creating_name, filename)
     if not malware:
@@ -255,9 +220,6 @@ def is_creating_process(words, filename):
 
     if malware and malware.is_valid_pid(creating_pid) and malware.has_active_pid() \
             and malware.get_active_pid() == creating_pid:
-        if testing:
-            print 'process ' + creating_name + ' ' + str(creating_pid) + ' is creating ' + \
-              created_name + ' ' + str(created_pid) + ' at instruction ' + str(current_instruction)
         active_pid = malware.get_active_pid()
         malware.add_spawned_process(active_pid, created_pid, created_name, current_instruction, new_path)
         target = is_db_malware(created_name, filename)
@@ -278,20 +240,13 @@ def is_creating_process(words, filename):
 # If the new malware is already known adds the written pid to that object after having checked
 # that the written pid is not already a valid pid for that malicious process.
 # Else create a new malware object and initialize it with the written pid.
-def is_writing_memory(words, filename):
-    current_instruction = int((words[0].split('='))[1])
-    writing_pid = 0
-    writing_name = ''
-    written_pid = 0
-    written_name = ''
-    for i in range(len(words)):
-        if words[i] == 'proc,':
-            writing_pid = int(words[i + 1].strip().replace(',', ''))
-            # compensate for problem in formatting of log
-            writing_name = (words[i + 2].strip().replace(')', '')).split('(')[0]
-        elif words[i] == 'target,':
-            written_pid = int(words[i + 1].strip().replace(',', ''))
-            written_name = words[i + 2].strip().replace(')', '')
+def is_writing_memory(line, filename):
+    commas = line.strip().split(',')
+    current_instruction = int((commas[0].split()[0].split('='))[1])
+    writing_pid = int(commas[2].strip())
+    writing_name = commas[3].split(')')[0].strip()
+    written_pid = int(commas[5].strip())
+    written_name = commas[6].split(')')[0].strip()
 
     malware = is_db_malware(writing_name, filename)
     if not malware:
@@ -299,22 +254,15 @@ def is_writing_memory(words, filename):
 
     if malware and malware.is_valid_pid(writing_pid) and malware.has_active_pid() \
             and malware.get_active_pid() == writing_pid:
-        if testing:
-            print 'process ' + writing_name + ' ' + str(writing_pid) + ' is writing on ' + \
-              written_name + ' ' + str(written_pid) + ' at instruction ' + str(current_instruction)
         active_pid = malware.get_active_pid()
         malware.add_written_memory(active_pid, written_pid, written_name, current_instruction)
         target = is_db_malware(written_name, filename)
         if not target:
-            if testing:
-                print 'process ' + written_name + ' ' + str(written_pid) + ' is not a db malware'
             target = is_corrupted_process(written_name, filename)
         if target:
             if not target.is_valid_pid(written_pid):
                 target.add_pid(written_pid, Malware.WRITTEN)
             return
-        if testing:
-            print 'process ' + written_name + ' ' + str(written_pid) + ' is not even a corrupted process'
         new_malware = initialize_malware_object(filename, written_name)
         new_malware.add_pid(written_pid, Malware.WRITTEN)
 
@@ -323,15 +271,15 @@ def is_writing_memory(words, filename):
 # Checks if the current pid is not already in the pid list of the malware.
 # If it isn't, it means it is the first instruction of the db_malware.
 # Therefore it adds the new pid value to the malware's list.
-# Then it updates malware's starting instruction for that pid and set is_active_malware to True.
+# Then it updates malware's starting instruction for that pid and set active_malware to specified malware.
 def is_malware(malware, pid, current_instruction):
-    global is_active_malware
+    global active_malware
     pid_list = malware.get_pid_list()
     if pid not in pid_list:
         malware.add_pid(pid, Malware.FROM_DB)
     malware.update_starting_instruction(pid, current_instruction)
     malware.set_active_pid(pid)
-    is_active_malware = True
+    active_malware = malware
 
 
 # Utility method to initialize a new malware object given the relative process name and file name.
@@ -353,53 +301,80 @@ def initialize_malware_object(filename, malware_name, from_db=False):
 # Checks if each line contains a context switch, a process creation, a memory write or a process termination.
 # At the end print a summary of the analyzed mawlares on a file.
 def analyze_log(filename):
-    print 'analyzing: ' + filename
     process_dict = {}
     inverted_process_dict = {}
 
+    # with codecs.open(dir_unpacked_path + filename + '.txz.plog.txt', 'r', encoding='utf-8') as logfile:
     with open(dir_unpacked_path + filename + '.txz.plog.txt', 'r') as logfile:
+    # with io.open(dir_unpacked_path + filename + '.txz.plog.txt', encoding='utf-8', errors='replace') as logfile:
         for line in logfile:
             line = unicode(line, errors='ignore')
-            line = line.strip()
-            words = line.split()
-            # check if line contains the system call for termination of processes
-            if instruction_termination in line:
-                is_terminating(words, filename)
-            # check if the line contains the system call for creation of new processes
+            if context_switch in line:
+                try:
+                    is_context_switch(filename, line, process_dict, inverted_process_dict)
+                except:
+                    traceback.print_exc()
             elif instruction_process_creation in line:
-                is_creating_process(words, filename)
-            # check if malware is writing the virtual memory of another process
+                try:
+                    is_creating_process(line, filename)
+                except:
+                    traceback.print_exc()
             elif instruction_write_memory in line:
-                is_writing_memory(words, filename)
-            # check if malware is calling the sleep function
-            elif instruction_sleep in line:
-                is_calling_sleep(words, filename)
-            # check if line logs a context switch
-            elif context_switch in line:
-                is_context_switch(filename, words, process_dict, inverted_process_dict)
+                try:
+                    is_writing_memory(line, filename)
+                except:
+                    traceback.print_exc()
+            elif instruction_sleep in line and active_malware:
+                try:
+                    is_calling_sleep()
+                except:
+                    traceback.print_exc()
+            elif instruction_termination in line:
+                try:
+                    is_terminating(line, filename)
+                except:
+                    traceback.print_exc()
 
     terminating_all = is_terminating_all(filename)
     sleeping_all = is_sleeping_all(filename)
+    t1 = time.time()
     utils.output_on_file(filename, process_dict, inverted_process_dict, dir_analyzed_logs,
                          db_file_malware_dict, file_corrupted_processes_dict, terminating_all, sleeping_all)
+    return time.time() - t1
 
 
 def work((worker_id, filenames, db_file_malware_name_map)):
-    global is_active_malware
-    j = 0
-    print worker_id, len(filenames), len(db_file_malware_name_map)
+    global active_malware
+    j = 0.0
+    t0 = time.time()
+    unpack_time = 0.0
+    clean_time = 0.0
+    outfile_time = 0.0
+    total_files = float(len(filenames))
     os.chdir(dir_panda_path)
     for filename in filenames:
-        is_active_malware = False
+        reduced_filename = filename[:-9]
+        # if filename == '14127b04-dd53-4295-9efc-6ed48eb3a79d.txz.plog.txt':
+        #     continue
+        active_malware = None
+        t1 = time.time()
         utils.unpack_log(filename, unpack_command, dir_pandalogs_path, dir_unpacked_path)
-        if filename[:-9] in db_file_malware_name_map:
-            initialize_malware_object(filename[:-9], db_file_malware_name_map[filename[:-9]], from_db=True)
-            analyze_log(filename[:-9])
+        unpack_time += time.time() - t1
+        if reduced_filename in db_file_malware_name_map:
+            initialize_malware_object(reduced_filename, db_file_malware_name_map[reduced_filename], from_db=True)
+            outfile_time += analyze_log(reduced_filename)
         else:
             print worker_id, 'ERROR filename not in db'
+        t1 = time.time()
         utils.clean_log(filename, dir_unpacked_path)
+        clean_time += time.time() - t1
         j += 1
-        if j == 2:
-            break
-
+        print worker_id, ((j * 100) / total_files)
+        # if j == 100:
+        #     break
+    total_time = time.time() - t0
+    print worker_id, 'Total unpack time', unpack_time
+    print worker_id, 'Total clean time', clean_time
+    print worker_id, 'Total outfile time', outfile_time
+    print worker_id, 'Total time', total_time
     return db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict, file_sleep_dict

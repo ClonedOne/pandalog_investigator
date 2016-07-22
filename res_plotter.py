@@ -1,20 +1,24 @@
 import matplotlib.pyplot as plt
 import numpy
+import ast
 
 
 dir_resfile_path = '/home/yogaub/Desktop/resfile.txt'
 dir_accumulationfile_path = '/home/yogaub/Desktop/accfile.txt'
-dir_analyzed_path = '/home/yogaub/Desktop/analyzed_logs/'
-empty_list = '[0, 0, 0, 0]'
+# dir_analyzed_path = '/home/yogaub/Desktop/analyzed_logs/'
+empty_list = 'Final instruction count: 	[0, 0, 0, 0]'
 
 totals_dict = {}
 from_db_dict = {}
 created_dict = {}
 written_dict = {}
+terminating_dict = {}
+sleeping_dict = {}
 
 file_list = []
 next_file_name = True
 next_values = False
+next_term_sleep = False
 
 
 def compute_stats(chosen_dict):
@@ -73,7 +77,7 @@ def invert_dictionary(chosen_dict):
     return inverted_dict
 
 
-def print_results(totals_dict, inverted_totals, stats):
+def print_results(totals_dict, inverted_totals, stats, terms):
     print 'printing data on file'
     with open(dir_accumulationfile_path, 'w') as accfile:
         for entry in totals_dict:
@@ -85,12 +89,14 @@ def print_results(totals_dict, inverted_totals, stats):
         accfile.write('Mean: ' + str(stats[0]) + '\n')
         accfile.write('Standard Deviation: ' + str(stats[1]) + '\n')
         accfile.write('Variance: ' + str(stats[2]) + '\n')
+        accfile.write('Number of malwares below threshold: ' + str(terms[0]) + '\n')
+        accfile.write('Number fo malwares below threshold terminating all processes: ' + str(terms[1]) + '\n')
+        accfile.write('Number fo malwares below threshold sleeping all processes: ' + str(terms[2]) + '\n')
 
 
 def accumulate_data():
     print 'accumulating data'
-    global next_file_name, next_values, file_list, totals_dict
-    skip = False
+    global next_file_name, next_values, next_term_sleep, file_list, totals_dict
     with open(dir_resfile_path, 'r') as resfile:
         last_file_name = ''
         for line in resfile:
@@ -102,15 +108,12 @@ def accumulate_data():
                 filename = line.split()[2]
                 last_file_name = filename
                 next_file_name = False
-                skip = True
-                continue
-            if skip:
                 next_values = True
-                skip = False
                 continue
             if next_values:
                 if line != empty_list:
-                    values = line.replace('[', '').replace(']', '').replace(',', '').split()
+                    values = line.split('\t')[1].replace('[', '').replace(']', '').replace(',', '').split()
+                    print values
                     if int(values[0]) == 0:
                         print 'PANIC NO DB'
                     if int(values[3]) == 0:
@@ -122,7 +125,15 @@ def accumulate_data():
                         written_dict[last_file_name] = int(values[2])
                     totals_dict[last_file_name] = int(values[3])
                 next_values = False
+                next_term_sleep = True
                 continue
+            if next_term_sleep:
+                values = line.split('\t')
+                terminating_all = ast.literal_eval(values[1].strip())
+                sleeping_all = ast.literal_eval(values[3].strip())
+                terminating_dict[last_file_name] = terminating_all
+                sleeping_dict[last_file_name] = sleeping_all
+                next_term_sleep = False
 
 
 def prune_data(chosen_dict, threshold_number):
@@ -146,8 +157,8 @@ def do_stuff(chosen_dict, color, shape, title, total=False, log=False):
         inverted_totals = invert_dictionary(chosen_dict)
         stats = compute_stats(chosen_dict)
         print stats
-        compute_number_of_terminated(chosen_dict, stats[0]*0.1)
-        print_results(chosen_dict, inverted_totals, stats)
+        terms = compute_number_of_terminated(chosen_dict, stats[0]*0.1)
+        print_results(chosen_dict, inverted_totals, stats, terms)
         plot_data(chosen_dict, stats, color, shape, title, log)
     else:
         print len(chosen_dict)
@@ -156,44 +167,18 @@ def do_stuff(chosen_dict, color, shape, title, total=False, log=False):
         plot_data(chosen_dict, stats, color, shape, title, log)
 
 
-def check_self_termination(filename):
-    with open(dir_analyzed_path + filename + '_a.txt', 'r') as a_log:
-        last_mal = ''
-        pids = []
-        terminated_pids = []
-        for line in a_log:
-            if 'Malware name:' in line:
-                last_mal = line.split()[2].strip()
-            if 'Malware pid:' in line:
-                pid = line.split()[2].strip()
-                pids.append((last_mal, pid))
-            if 'Terminated processes:' in line:
-                line = a_log.next()
-                while line.strip():
-                    mal_name = line.split('\t')[1].strip()
-                    mal_pid = line.split('\t')[0].strip()
-                    terminated_pids.append((mal_name, mal_pid))
-                    line = a_log.next()
-    equal = True
-    for entry in pids:
-        if entry not in terminated_pids:
-            equal = False
-    # if filename == '0cd4c283-1765-42a2-b911-deb1497da527':
-    #     print 'is 0cd4c283-1765-42a2-b911-deb1497da527'
-    #     if equal:
-            print 'is self terminating'
-    return equal
-
-
 def compute_number_of_terminated(chosen_dict, threshold):
     below_threshold = 0
     self_terminated = 0
+    self_sleeping = 0
     for filename, value in chosen_dict.iteritems():
         if value < threshold:
             below_threshold += 1
-            if check_self_termination(filename):
+            if terminating_dict[filename]:
                 self_terminated += 1
-    print below_threshold, self_terminated
+            if sleeping_dict[filename]:
+                self_sleeping += 1
+    return below_threshold, self_terminated, self_sleeping
 
 
 def main():
@@ -203,17 +188,17 @@ def main():
     prune_data(totals_dict, 100)
     do_stuff(totals_dict, 'b', 'H', 'Total pruned')
 
-    do_stuff(from_db_dict, 'g', 'o', 'Malware from database')
-    prune_data(from_db_dict, 100)
-    do_stuff(from_db_dict, 'g', 'o', 'Malware from database pruned')
-
-    do_stuff(created_dict, 'r', 'o', 'Created processes')
-    prune_data(created_dict, 10)
-    do_stuff(created_dict, 'r', 'o', 'Created processes pruned')
-
-    do_stuff(written_dict, 'y', 'o', 'Memory written processes')
-    prune_data(written_dict, 10)
-    do_stuff(written_dict, 'y', 'o', 'Memory written processes pruned')
+    # do_stuff(from_db_dict, 'g', 'o', 'Malware from database')
+    # prune_data(from_db_dict, 100)
+    # do_stuff(from_db_dict, 'g', 'o', 'Malware from database pruned')
+    #
+    # do_stuff(created_dict, 'r', 'o', 'Created processes')
+    # prune_data(created_dict, 10)
+    # do_stuff(created_dict, 'r', 'o', 'Created processes pruned')
+    #
+    # do_stuff(written_dict, 'y', 'o', 'Memory written processes')
+    # prune_data(written_dict, 10)
+    # do_stuff(written_dict, 'y', 'o', 'Memory written processes pruned')
 
 
 if __name__ == '__main__':
