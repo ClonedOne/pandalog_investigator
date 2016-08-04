@@ -14,8 +14,8 @@ def unpack_log(filename, unpack_command, dir_pandalogs_path, dir_unpacked_path):
 
 # Handles the acquisition of the path string from the log file.
 # It is used to handle linux problems with windows style path strings.
-def get_new_path(input):
-    words = input.split()
+def get_new_path(path_input):
+    words = path_input.split()
     line = ''
     fixed = 'name=['
     for word in words:
@@ -31,7 +31,8 @@ def get_new_path(input):
 # memory_written and total. Each of these counters consider only the instructions executed by pids whose origin
 # corresponds to the specified one.
 def output_on_file(filename, process_dict, inverted_process_dict, dir_analyzed_logs,
-                   db_file_malware_dict, file_corrupted_processes_dict, terminating_all, sleeping_all):
+                   db_file_malware_dict, file_corrupted_processes_dict,
+                   terminating_all, sleeping_all, crashing_all, error_all):
     outfile = open(dir_analyzed_logs + filename + '_a.txt', 'w')
     total_instruction_accumulator = [0, 0, 0, 0]
     pprint.pprint(process_dict, outfile)
@@ -49,7 +50,8 @@ def output_on_file(filename, process_dict, inverted_process_dict, dir_analyzed_l
                                                                  malware.get_total_executed_instructions())]
             outfile.write(str(malware) + '\n\n')
     outfile.write('\nFinal instruction count: \n' + str(total_instruction_accumulator))
-    outfile.write('\nTerminating all: \t' + str(terminating_all) + '\tSleeping all: \t' + str(sleeping_all))
+    outfile.write('\nTerminating all: \t' + str(terminating_all) + '\tSleeping all: \t' + str(sleeping_all) +
+                  '\t Crashing all: \t' + str(crashing_all) + '\t Raising hard error all: \t' + str(error_all))
 
 
 # Delete the temporary unpacked log file to avoid disk congestion.
@@ -61,7 +63,7 @@ def clean_log(filename, dir_unpacked_path):
 # For each filename and each malware_object associated sums up the instruction for each pid, checks if each pid
 # has been terminated and if each pid has called the sleep function.
 def final_output(dir_project_path, filenames, db_file_malware_dict, file_corrupted_processes_dict,
-                 file_terminate_dict, file_sleep_dict):
+                 file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict):
     res_file = open(dir_project_path + 'resfile.txt', 'w')
     for filename in filenames:
         filename = filename[:-9]
@@ -76,8 +78,14 @@ def final_output(dir_project_path, filenames, db_file_malware_dict, file_corrupt
                 total_instruction_accumulator = [sum(x) for x in zip(total_instruction_accumulator,
                                                                      entry.get_total_executed_instructions())]
         res_file.write('Final instruction count: \t' + str(total_instruction_accumulator))
-        res_file.write('\nTerminating all: \t' + (str(file_terminate_dict[filename]) if filename in file_terminate_dict else str(False)))
-        res_file.write('\tSleeping all: \t' + (str(file_sleep_dict[filename]) if filename in file_sleep_dict else str(False)))
+        res_file.write('\nTerminating all: \t' + (str(file_terminate_dict[filename])
+                                                  if filename in file_terminate_dict else str(False)))
+        res_file.write('\tSleeping all: \t' + (str(file_sleep_dict[filename])
+                                               if filename in file_sleep_dict else str(False)))
+        res_file.write('\tCrashing all: \t' + (str(file_crash_dict[filename])
+                                               if filename in file_crash_dict else str(False)))
+        res_file.write('\tRaising hard error all: \t' + (str(file_error_dict[filename])
+                                                         if filename in file_error_dict else str(False)))
         res_file.write('\n\n')
 
 

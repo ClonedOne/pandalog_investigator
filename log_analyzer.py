@@ -10,12 +10,15 @@ dir_malware_db = '/home/yogaub/projects/seminar/database'
 dir_pandalogs_path = '/home/yogaub/projects/seminar/pandalogs/'
 
 
-def update_results(results, db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict, file_sleep_dict):
+def update_results(results, db_file_malware_dict, file_corrupted_processes_dict,
+                   file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict):
     for sub_res in results:
         db_file_malware_dict.update(sub_res[0])
         file_corrupted_processes_dict.update(sub_res[1])
         file_terminate_dict.update(sub_res[2])
         file_sleep_dict.update(sub_res[3])
+        file_crash_dict.update(sub_res[4])
+        file_error_dict.update(sub_res[5])
 
 
 # Each file has to be unpacked using the PANDA tool
@@ -50,8 +53,12 @@ def main():
     file_corrupted_processes_dict = {}
     file_terminate_dict = {}
     file_sleep_dict = {}
-    update_results(results, db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict, file_sleep_dict)
-    utils.final_output(dir_project_path, filenames, db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict, file_sleep_dict)
+    file_crash_dict = {}
+    file_error_dict = {}
+    update_results(results, db_file_malware_dict, file_corrupted_processes_dict,
+                   file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict)
+    utils.final_output(dir_project_path, filenames, db_file_malware_dict, file_corrupted_processes_dict,
+                       file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict)
     t2 = time.time()
     print t2-t1
 

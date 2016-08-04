@@ -14,37 +14,44 @@ context_switch = u'new_pid,'
 instruction_termination = u'nt_terminate_process'
 instruction_process_creation = u'nt_create_user_process'
 instruction_write_memory = u'nt_write_virtual_memory'
+instruction_read_memory = u'nt_read_virtual_memory'
 instruction_sleep = u'(num=98)'
+instruction_raise_error = u'(num=272)'
+error_manager = u'WerFault.exe'
 
 file_corrupted_processes_dict = {}
 db_file_malware_dict = {}
 file_terminate_dict = {}
 file_sleep_dict = {}
+file_crash_dict = {}
+file_error_dict = {}
 active_malware = None
 
 
-# Checks if the malware_objects associated with the filename have called the sleep function on all their pids.
+# Checks if the malware_objects associated with the filename have called the sleep function on all their processes.
 def is_sleeping_all(filename):
     all_pids = set()
     all_sleep = set()
     if filename in db_file_malware_dict:
         malware = db_file_malware_dict[filename]
         pid_list = malware.get_pid_list()
+        malware_name = malware.get_name()
         for pid in pid_list:
-            all_pids.add((malware.get_name(), pid))
+            all_pids.add((malware_name, pid))
             sleep_count = malware.get_sleep(pid)
             if sleep_count:
-                all_sleep.add((malware.get_name(), pid))
+                all_sleep.add((malware_name, pid))
 
     if filename in file_corrupted_processes_dict:
         malwares = file_corrupted_processes_dict[filename]
         for malware in malwares:
+            malware_name = malware.get_name()
             pid_list = malware.get_pid_list()
             for pid in pid_list:
-                all_pids.add((malware.get_name(), pid))
+                all_pids.add((malware_name, pid))
                 sleep_count = malware.get_sleep(pid)
                 if sleep_count:
-                    all_sleep.add((malware.get_name(), pid))
+                    all_sleep.add((malware_name, pid))
 
     not_empty = len(all_pids) > 0
     if all_pids.issubset(all_sleep) and not_empty:
@@ -55,15 +62,16 @@ def is_sleeping_all(filename):
         return False
 
 
-# Checks if the malware_objects associated with the filename have terminated all their pids.
+# Checks if the malware_objects associated with the filename have terminated all their processes.
 def is_terminating_all(filename):
     all_pids = set()
     all_term = set()
     if filename in db_file_malware_dict:
         malware = db_file_malware_dict[filename]
+        malware_name = malware.get_name()
         pid_list = malware.get_pid_list()
         for pid in pid_list:
-            all_pids.add((malware.get_name(), pid))
+            all_pids.add((malware_name, pid))
             terms = malware.get_terminated_processes(pid)
             for term in terms:
                 all_term.add((term[1], term[0]))
@@ -71,9 +79,10 @@ def is_terminating_all(filename):
     if filename in file_corrupted_processes_dict:
         malwares = file_corrupted_processes_dict[filename]
         for malware in malwares:
+            malware_name = malware.get_name()
             pid_list = malware.get_pid_list()
             for pid in pid_list:
-                all_pids.add((malware.get_name(), pid))
+                all_pids.add((malware_name, pid))
                 terms = malware.get_terminated_processes(pid)
                 for term in terms:
                     all_term.add((term[1], term[0]))
@@ -84,6 +93,74 @@ def is_terminating_all(filename):
         return True
     else:
         file_terminate_dict[filename] = False
+        return False
+
+
+# Checks if the malware_objects associated with the filename have crashed all their processes.
+def is_crashing_all(filename):
+    all_pids = set()
+    all_crash = set()
+    if filename in db_file_malware_dict:
+        malware = db_file_malware_dict[filename]
+        malware_name = malware.get_name()
+        pid_list = malware.get_pid_list()
+        for pid in pid_list:
+            all_pids.add((malware_name, pid))
+            crash_count = malware.get_crash(pid)
+            if crash_count:
+                all_crash.add((malware_name, pid))
+
+    if filename in file_corrupted_processes_dict:
+        malwares = file_corrupted_processes_dict[filename]
+        for malware in malwares:
+            malware_name = malware.get_name()
+            pid_list = malware.get_pid_list()
+            for pid in pid_list:
+                all_pids.add((malware_name, pid))
+                crash_count = malware.get_crash(pid)
+                if crash_count:
+                    all_crash.add((malware_name, pid))
+
+    not_empty = len(all_pids) > 0
+    if all_pids.issubset(all_crash) and not_empty:
+        file_crash_dict[filename] = True
+        return True
+    else:
+        file_crash_dict[filename] = False
+        return False
+
+
+# Checks if the malware_objects associated with the filename have raised hard errors for all their processes.
+def is_raising_error_all(filename):
+    all_pids = set()
+    all_error = set()
+    if filename in db_file_malware_dict:
+        malware = db_file_malware_dict[filename]
+        malware_name = malware.get_name()
+        pid_list = malware.get_pid_list()
+        for pid in pid_list:
+            all_pids.add((malware_name, pid))
+            error_count = malware.get_error(pid)
+            if error_count:
+                all_error.add((malware_name, pid))
+
+    if filename in file_corrupted_processes_dict:
+        malwares = file_corrupted_processes_dict[filename]
+        for malware in malwares:
+            malware_name = malware.get_name()
+            pid_list = malware.get_pid_list()
+            for pid in pid_list:
+                all_pids.add((malware_name, pid))
+                error_count = malware.get_error(pid)
+                if error_count:
+                    all_error.add((malware_name, pid))
+
+    not_empty = len(all_pids) > 0
+    if all_pids.issubset(all_error) and not_empty:
+        file_error_dict[filename] = True
+        return True
+    else:
+        file_error_dict[filename] = False
         return False
 
 
@@ -181,8 +258,7 @@ def is_terminating(line, filename):
         malware = is_corrupted_process(terminating_name, filename)
     if malware and malware.is_valid_pid(terminating_pid) and malware.has_active_pid() \
             and malware.get_active_pid() == terminating_pid:
-        active_pid = malware.get_active_pid()
-        malware.add_terminated_process(active_pid, terminated_pid, terminated_name, current_instruction)
+        malware.add_terminated_process(terminating_pid, terminated_pid, terminated_name, current_instruction)
 
 
 # Handles NtDelayExecution system calls.
@@ -195,6 +271,33 @@ def is_calling_sleep():
         if malware:
             active_pid = malware.get_active_pid()
             malware.add_sleep(active_pid)
+
+
+# Handles NtRaiseHardError system calls.
+# It is used to understand if a malware process is raising an unrecoverable error due for instance to the missing of a
+# required dll.
+def is_raising_error():
+    global active_malware
+    if active_malware:
+        malware = active_malware
+        if malware:
+            active_pid = malware.get_active_pid()
+            malware.add_error(active_pid)
+
+
+# Checks if the error manager WerFault.exe is reading memory of one of the malware's processes.
+# If so it may mean the process has crashed.
+def is_crashing(line, filename):
+    commas = line.strip().split(',')
+    read_pid = int(commas[5].strip())
+    read_name = commas[6].split(')')[0].strip()
+    malware = is_db_malware(read_name, filename)
+    if not malware:
+        malware = is_corrupted_process(read_name, filename)
+
+    if malware and malware.is_valid_pid(read_pid):
+        if not malware.get_crash(read_pid):
+            malware.add_crash(read_pid)
 
 
 # Handles process creation system calls.
@@ -220,8 +323,7 @@ def is_creating_process(line, filename):
 
     if malware and malware.is_valid_pid(creating_pid) and malware.has_active_pid() \
             and malware.get_active_pid() == creating_pid:
-        active_pid = malware.get_active_pid()
-        malware.add_spawned_process(active_pid, created_pid, created_name, current_instruction, new_path)
+        malware.add_spawned_process(creating_pid, created_pid, created_name, current_instruction, new_path)
         target = is_db_malware(created_name, filename)
         if not target:
             target = is_corrupted_process(created_name, filename)
@@ -254,8 +356,7 @@ def is_writing_memory(line, filename):
 
     if malware and malware.is_valid_pid(writing_pid) and malware.has_active_pid() \
             and malware.get_active_pid() == writing_pid:
-        active_pid = malware.get_active_pid()
-        malware.add_written_memory(active_pid, written_pid, written_name, current_instruction)
+        malware.add_written_memory(writing_pid, written_pid, written_name, current_instruction)
         target = is_db_malware(written_name, filename)
         if not target:
             target = is_corrupted_process(written_name, filename)
@@ -304,42 +405,36 @@ def analyze_log(filename):
     process_dict = {}
     inverted_process_dict = {}
 
-    # with codecs.open(dir_unpacked_path + filename + '.txz.plog.txt', 'r', encoding='utf-8') as logfile:
     with open(dir_unpacked_path + filename + '.txz.plog.txt', 'r') as logfile:
-    # with io.open(dir_unpacked_path + filename + '.txz.plog.txt', encoding='utf-8', errors='replace') as logfile:
         for line in logfile:
             line = unicode(line, errors='ignore')
-            if context_switch in line:
-                try:
+            try:
+                if context_switch in line:
                     is_context_switch(filename, line, process_dict, inverted_process_dict)
-                except:
-                    traceback.print_exc()
-            elif instruction_process_creation in line:
-                try:
+                elif instruction_process_creation in line:
                     is_creating_process(line, filename)
-                except:
-                    traceback.print_exc()
-            elif instruction_write_memory in line:
-                try:
+                elif instruction_write_memory in line:
                     is_writing_memory(line, filename)
-                except:
-                    traceback.print_exc()
-            elif instruction_sleep in line and active_malware:
-                try:
+                elif instruction_sleep in line and active_malware:
                     is_calling_sleep()
-                except:
-                    traceback.print_exc()
-            elif instruction_termination in line:
-                try:
+                elif instruction_termination in line:
                     is_terminating(line, filename)
-                except:
-                    traceback.print_exc()
+                elif instruction_read_memory in line and error_manager in line:
+                    is_crashing(line, filename)
+                elif instruction_raise_error in line and active_malware:
+                    print filename
+                    is_raising_error()
+            except:
+                traceback.print_exc()
 
     terminating_all = is_terminating_all(filename)
     sleeping_all = is_sleeping_all(filename)
+    crashing_all = is_crashing_all(filename)
+    error_all = is_raising_error_all(filename)
     t1 = time.time()
     utils.output_on_file(filename, process_dict, inverted_process_dict, dir_analyzed_logs,
-                         db_file_malware_dict, file_corrupted_processes_dict, terminating_all, sleeping_all)
+                         db_file_malware_dict, file_corrupted_processes_dict,
+                         terminating_all, sleeping_all, crashing_all, error_all)
     return time.time() - t1
 
 
@@ -354,8 +449,6 @@ def work((worker_id, filenames, db_file_malware_name_map)):
     os.chdir(dir_panda_path)
     for filename in filenames:
         reduced_filename = filename[:-9]
-        # if filename == '14127b04-dd53-4295-9efc-6ed48eb3a79d.txz.plog.txt':
-        #     continue
         active_malware = None
         t1 = time.time()
         utils.unpack_log(filename, unpack_command, dir_pandalogs_path, dir_unpacked_path)
@@ -366,15 +459,16 @@ def work((worker_id, filenames, db_file_malware_name_map)):
         else:
             print worker_id, 'ERROR filename not in db'
         t1 = time.time()
-        utils.clean_log(filename, dir_unpacked_path)
+        # utils.clean_log(filename, dir_unpacked_path)
         clean_time += time.time() - t1
         j += 1
         print worker_id, ((j * 100) / total_files)
-        # if j == 100:
-        #     break
+        if j == 10:
+            break
     total_time = time.time() - t0
     print worker_id, 'Total unpack time', unpack_time
     print worker_id, 'Total clean time', clean_time
     print worker_id, 'Total outfile time', outfile_time
     print worker_id, 'Total time', total_time
-    return db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict, file_sleep_dict
+    return db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict,\
+        file_sleep_dict, file_crash_dict, file_error_dict

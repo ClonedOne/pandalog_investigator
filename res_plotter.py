@@ -14,6 +14,9 @@ created_dict = {}
 written_dict = {}
 terminating_dict = {}
 sleeping_dict = {}
+crashing_dict = {}
+error_dict = {}
+clean_dict = {}
 
 file_list = []
 next_file_name = True
@@ -50,8 +53,8 @@ def plot_data(chosen_dict, stats, color, shape, title, log=False):
 
     accumulation_list = numpy.array(accumulation_list)
     ranges = numpy.array(ranges)
-    print accumulation_list
-    print ranges
+    # print accumulation_list
+    # print ranges
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
@@ -92,6 +95,8 @@ def print_results(totals_dict, inverted_totals, stats, terms):
         accfile.write('Number of malwares below threshold: ' + str(terms[0]) + '\n')
         accfile.write('Number fo malwares below threshold terminating all processes: ' + str(terms[1]) + '\n')
         accfile.write('Number fo malwares below threshold sleeping all processes: ' + str(terms[2]) + '\n')
+        accfile.write('Number fo malwares below threshold crashing all processes: ' + str(terms[3]) + '\n')
+        accfile.write('Number fo malwares below threshold raising errors on all processes: ' + str(terms[4]) + '\n')
 
 
 def accumulate_data():
@@ -113,7 +118,7 @@ def accumulate_data():
             if next_values:
                 if line != empty_list:
                     values = line.split('\t')[1].replace('[', '').replace(']', '').replace(',', '').split()
-                    print values
+                    # print values
                     if int(values[0]) == 0:
                         print 'PANIC NO DB'
                     if int(values[3]) == 0:
@@ -129,10 +134,10 @@ def accumulate_data():
                 continue
             if next_term_sleep:
                 values = line.split('\t')
-                terminating_all = ast.literal_eval(values[1].strip())
-                sleeping_all = ast.literal_eval(values[3].strip())
-                terminating_dict[last_file_name] = terminating_all
-                sleeping_dict[last_file_name] = sleeping_all
+                terminating_dict[last_file_name] = ast.literal_eval(values[1].strip())
+                sleeping_dict[last_file_name] = ast.literal_eval(values[3].strip())
+                crashing_dict[last_file_name] = ast.literal_eval(values[5].strip())
+                error_dict[last_file_name] = ast.literal_eval(values[7].strip())
                 next_term_sleep = False
 
 
@@ -171,6 +176,8 @@ def compute_number_of_terminated(chosen_dict, threshold):
     below_threshold = 0
     self_terminated = 0
     self_sleeping = 0
+    self_crashing = 0
+    self_raising_error = 0
     for filename, value in chosen_dict.iteritems():
         if value < threshold:
             below_threshold += 1
@@ -178,27 +185,46 @@ def compute_number_of_terminated(chosen_dict, threshold):
                 self_terminated += 1
             if sleeping_dict[filename]:
                 self_sleeping += 1
-    return below_threshold, self_terminated, self_sleeping
+            if crashing_dict[filename]:
+                self_crashing += 1
+            if error_dict[filename]:
+                self_raising_error += 1
+    return below_threshold, self_terminated, self_sleeping, self_crashing, self_raising_error
+
+
+def prune_crashing_errors(chosen_dict):
+    for filename in chosen_dict:
+        if (filename in crashing_dict and crashing_dict[filename]) or (filename in error_dict and error_dict[filename]):
+            continue
+        else:
+            clean_dict[filename] = chosen_dict[filename]
+
 
 
 def main():
     accumulate_data()
 
+    prune_crashing_errors(totals_dict)
+    print len(totals_dict), len(clean_dict)
     do_stuff(totals_dict, 'b', 'H', 'Total', total=True)
-    prune_data(totals_dict, 100)
-    do_stuff(totals_dict, 'b', 'H', 'Total pruned')
+    # prune_data(totals_dict, 100)
+    # do_stuff(totals_dict, 'b', 'H', 'Total pruned')
 
     # do_stuff(from_db_dict, 'g', 'o', 'Malware from database')
     # prune_data(from_db_dict, 100)
     # do_stuff(from_db_dict, 'g', 'o', 'Malware from database pruned')
-    #
+
     # do_stuff(created_dict, 'r', 'o', 'Created processes')
     # prune_data(created_dict, 10)
     # do_stuff(created_dict, 'r', 'o', 'Created processes pruned')
-    #
+
     # do_stuff(written_dict, 'y', 'o', 'Memory written processes')
     # prune_data(written_dict, 10)
     # do_stuff(written_dict, 'y', 'o', 'Memory written processes pruned')
+
+    do_stuff(clean_dict, 'r', 'o', 'Clean')
+    # prune_data(clean_dict, 10)
+    # do_stuff(clean_dict, 'y', 'o', 'Clean processes pruned')
 
 
 if __name__ == '__main__':
