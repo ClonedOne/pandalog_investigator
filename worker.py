@@ -459,12 +459,12 @@ def work((worker_id, filenames, db_file_malware_name_map)):
         else:
             print worker_id, 'ERROR filename not in db'
         t1 = time.time()
-        # utils.clean_log(filename, dir_unpacked_path)
+        utils.clean_log(filename, dir_unpacked_path)
         clean_time += time.time() - t1
         j += 1
         print worker_id, ((j * 100) / total_files)
-        if j == 10:
-            break
+        # if j == 10:
+        #     break
     total_time = time.time() - t0
     print worker_id, 'Total unpack time', unpack_time
     print worker_id, 'Total clean time', clean_time
