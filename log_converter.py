@@ -11,10 +11,12 @@ dir_resfile_path = '/home/yogaub/Desktop/resfile.txt'
 dir_panda_path = '/home/yogaub/projects/seminar/panda/qemu/panda'
 dir_convert = '/home/yogaub/projects/seminar/converted/'
 dir_sys_call_table = '/home/yogaub/projects/seminar/'
+dir_analyzed_logs = '/home/yogaub/projects/seminar/analyzed_logs/'
 
 unpack_command = './pandalog_reader'
 empty_list = 'Final instruction count: 	[0, 0, 0, 0]'
-system_call_index = u'(num='
+system_call_id = u'(num='
+context_switch = u'new_pid,'
 
 
 def acquire_interesting(interesting_dict, threshold, size):
@@ -49,19 +51,30 @@ def acquire_interesting(interesting_dict, threshold, size):
                 continue
 
 
-def convert(filename, sys_call_dict):
+def convert(filename, sys_call_dict, filename_malware_dict):
+    malwares = filename_malware_dict[filename]
+    active_mal = None
     with open(dir_unpacked_path + filename + '.txz.plog.txt', 'r') as logfile:
         with codecs.open(dir_convert + filename + '_c.txt', 'w', 'utf-8') as conv_file:
             for line in logfile:
                 line = unicode(line, errors='ignore')
-                if system_call_index in line:
-                    pos = line.find(system_call_index)
+                if context_switch in line:
+                    commas = line.strip().split(',')
+                    pid = int(commas[2].strip())
+                    proc_name = commas[3].split(')')[0].strip()
+                    if (proc_name, pid) in malwares:
+                        active_mal = proc_name
+                        conv_file.write('\n' + line + '\n')
+                    else:
+                        active_mal = None
+                elif active_mal and system_call_id in line:
+                    pos = line.find(system_call_id)
                     sys_call_num = int(line[pos + 5:].split(')')[0])
                     if sys_call_num not in sys_call_dict:
                         continue
                     sys_call = sys_call_dict[sys_call_num]
                     conv_file.write(sys_call + '\n')
-                else:
+                elif active_mal:
                     conv_file.write('\n' + line + '\n')
 
 
@@ -73,20 +86,35 @@ def acquire_sys_calls(sys_call_dict):
                 sys_call_dict[int(line[2], 16)] = line[0]
 
 
+def acquire_filename_malware(interesting_dict, filename_malware_dict):
+    for filename in interesting_dict.keys():
+        filename_malware_dict[filename] = []
+        with open(dir_analyzed_logs + filename + '_a.txt') as a_file:
+            for line in a_file:
+                if 'Malware name:' in line:
+                    last_mal = line.split(':')[1].strip()
+                if 'Malware pid:' in line:
+                    pid = int(line.split()[2].strip())
+                    filename_malware_dict[filename].append((last_mal, pid))
+
+
 def main():
     interesting_dict = {}
     sys_call_dict = {}
+    filename_malware_dict = {}
     size = 10
     acquire_sys_calls(sys_call_dict)
     acquire_interesting(interesting_dict, 8000000, size)
+    acquire_filename_malware(interesting_dict, filename_malware_dict)
+    print filename_malware_dict
     os.chdir(dir_panda_path)
     j = 0.0
     for filename in interesting_dict.keys():
         print j / size * 100, '%'
         extended_filename = filename + '.txz.plog'
         utils.unpack_log(extended_filename, unpack_command, dir_pandalogs_path, dir_unpacked_path)
-        convert(filename, sys_call_dict)
-        utils.clean_log(extended_filename, dir_unpacked_path)
+        convert(filename, sys_call_dict, filename_malware_dict)
+        # utils.clean_log(extended_filename, dir_unpacked_path)
         j += 1
 
 
