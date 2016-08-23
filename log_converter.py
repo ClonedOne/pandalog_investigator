@@ -9,7 +9,7 @@ dir_malware_db = '/home/yogaub/projects/seminar/database'
 dir_pandalogs_path = '/home/yogaub/projects/seminar/pandalogs/'
 dir_resfile_path = '/home/yogaub/Desktop/resfile.txt'
 dir_panda_path = '/home/yogaub/projects/seminar/panda/qemu/panda'
-dir_convert = '/home/yogaub/projects/seminar/converted/'
+dir_convert_path = '/home/yogaub/projects/seminar/converted/'
 dir_sys_call_table = '/home/yogaub/projects/seminar/'
 dir_analyzed_logs = '/home/yogaub/projects/seminar/analyzed_logs/'
 
@@ -45,7 +45,7 @@ def acquire_interesting(interesting_dict, threshold, size):
                         sleeping = ast.literal_eval(values[3].strip())
                         crashing = ast.literal_eval(values[5].strip())
                         error = ast.literal_eval(values[7].strip())
-                        if not error and not crashing and len(interesting_dict) < size:
+                        if not error and not crashing and len(interesting_dict) < size and (terminating or sleeping):
                             interesting_dict[last_file_name] = instruction_executed
                 next_values = False
                 continue
@@ -55,7 +55,7 @@ def convert(filename, sys_call_dict, filename_malware_dict):
     malwares = filename_malware_dict[filename]
     active_mal = None
     with open(dir_unpacked_path + filename + '.txz.plog.txt', 'r') as logfile:
-        with codecs.open(dir_convert + filename + '_c.txt', 'w', 'utf-8') as conv_file:
+        with codecs.open(dir_convert_path + filename + '_c.txt', 'w', 'utf-8') as conv_file:
             for line in logfile:
                 line = unicode(line, errors='ignore')
                 if context_switch in line:
@@ -102,19 +102,20 @@ def main():
     interesting_dict = {}
     sys_call_dict = {}
     filename_malware_dict = {}
-    size = 10
+    size = 50000
     acquire_sys_calls(sys_call_dict)
-    acquire_interesting(interesting_dict, 8000000, size)
+    acquire_interesting(interesting_dict, 8000000000, size)
     acquire_filename_malware(interesting_dict, filename_malware_dict)
-    print filename_malware_dict
+    print len(filename_malware_dict)
     os.chdir(dir_panda_path)
+    items = len(interesting_dict)
     j = 0.0
     for filename in interesting_dict.keys():
-        print j / size * 100, '%'
+        print j / items * 100, '%'
         extended_filename = filename + '.txz.plog'
         utils.unpack_log(extended_filename, unpack_command, dir_pandalogs_path, dir_unpacked_path)
         convert(filename, sys_call_dict, filename_malware_dict)
-        # utils.clean_log(extended_filename, dir_unpacked_path)
+        utils.clean_log(extended_filename, dir_unpacked_path)
         j += 1
 
 
