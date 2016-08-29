@@ -19,7 +19,7 @@ system_call_id = u'(num='
 context_switch = u'new_pid,'
 
 
-def acquire_interesting(interesting_dict, threshold, size):
+def acquire_interesting(interesting_dict, threshold, size, conv_all=False):
     next_file_name = True
     next_values = False
     with open(dir_resfile_path, 'r') as resfile:
@@ -39,6 +39,8 @@ def acquire_interesting(interesting_dict, threshold, size):
                 if line != empty_list:
                     values = line.split('\t')[1].replace('[', '').replace(']', '').replace(',', '').split()
                     instruction_executed = int(values[3])
+                    if conv_all:
+                        interesting_dict[last_file_name] = instruction_executed
                     if instruction_executed < threshold:
                         values = next(resfile).split('\t')
                         terminating = ast.literal_eval(values[1].strip())
@@ -82,8 +84,8 @@ def acquire_sys_calls(sys_call_dict):
     with open(dir_sys_call_table + 'sys_tab.txt') as tabfile:
         for line in tabfile:
             line = line.split()
-            if len(line) == 3:
-                sys_call_dict[int(line[2], 16)] = line[0]
+            if len(line) > 1:
+                sys_call_dict[int(line[1], 16)] = line[0]
 
 
 def acquire_filename_malware(interesting_dict, filename_malware_dict):
@@ -102,10 +104,12 @@ def main():
     interesting_dict = {}
     sys_call_dict = {}
     filename_malware_dict = {}
-    size = 50000
+    size = 500
+    conv_all = True
     acquire_sys_calls(sys_call_dict)
-    acquire_interesting(interesting_dict, 8000000000, size)
+    acquire_interesting(interesting_dict, 8000000, size, conv_all=conv_all)
     acquire_filename_malware(interesting_dict, filename_malware_dict)
+    print len(sys_call_dict)
     print len(filename_malware_dict)
     os.chdir(dir_panda_path)
     items = len(interesting_dict)

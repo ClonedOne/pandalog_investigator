@@ -1,6 +1,17 @@
 import pprint
 import subprocess
 import os
+import numpy
+
+
+# Compute statistical information about the specified dectionary
+def compute_stats(chosen_dict):
+    print 'computing stats'
+    values = numpy.array(chosen_dict.values())
+    mean = values.mean()
+    standard_deviation = values.std()
+    variance = values.var()
+    return mean, standard_deviation, variance
 
 
 # Unpack the specified log file using the PANDA utility.
