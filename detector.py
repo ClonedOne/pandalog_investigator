@@ -46,9 +46,9 @@ def acquire_conditions(filenames, term_sleep_dict, instrction_dict):
                     terminating = ast.literal_eval(values[1].strip())
                     sleeping = ast.literal_eval(values[3].strip())
                     if sleeping:
-                        term_sleep_dict[last_file_name] = 'Sleep'
-                    elif terminating:
-                        term_sleep_dict[last_file_name] = 'Termination'
+                        term_sleep_dict[last_file_name] = term_sleep_dict.get(last_file_name, '') + 'Sleep '
+                    if terminating:
+                        term_sleep_dict[last_file_name] = term_sleep_dict.get(last_file_name, '') + 'Termination'
 
                 next_values = False
                 continue

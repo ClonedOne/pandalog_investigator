@@ -117,8 +117,8 @@ def main():
         else:
             file_names_3.append(filename)
         j += 1
-        if j == 40:
-            break
+        # if j == 40:
+        #     break
     t1 = time.time()
     pool = Pool(processes=4)
     results = pool.map(worker_syscall_counter.work, [(0, file_names_0, sys_call_dict, filename_malware_dict),

@@ -6,7 +6,6 @@ import numpy
 
 # Compute statistical information about the specified dectionary
 def compute_stats(chosen_dict):
-    print 'computing stats'
     values = numpy.array(chosen_dict.values())
     mean = values.mean()
     standard_deviation = values.std()
@@ -120,3 +119,19 @@ def update_dictionaries(pid, process_dict, proc_name, inverted_process_dict):
     else:
         inverted_process_dict[proc_name] = {}
         inverted_process_dict[proc_name][pid] = 1
+
+
+# Delete the highest and lowest values from a dictionary
+def prune_data(chosen_dict, threshold_number):
+    values = sorted(chosen_dict.values())
+    length = len(values)
+    eliminate_vals = []
+    eliminate_keys = []
+    for i in range(length):
+        if i < threshold_number or (length - 1) - i < threshold_number:
+            eliminate_vals.append(values[i])
+    for key, value in chosen_dict.iteritems():
+        if value in eliminate_vals:
+            eliminate_keys.append(key)
+    for key in eliminate_keys:
+        chosen_dict.pop(key)

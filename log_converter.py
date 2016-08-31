@@ -104,10 +104,10 @@ def main():
     interesting_dict = {}
     sys_call_dict = {}
     filename_malware_dict = {}
-    size = 500
-    conv_all = True
+    size = 3000
+    conv_all = False
     acquire_sys_calls(sys_call_dict)
-    acquire_interesting(interesting_dict, 8000000, size, conv_all=conv_all)
+    acquire_interesting(interesting_dict, 8000000000, size, conv_all=conv_all)
     acquire_filename_malware(interesting_dict, filename_malware_dict)
     print len(sys_call_dict)
     print len(filename_malware_dict)
