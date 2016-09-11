@@ -7,9 +7,6 @@ def main():
         app.config.parse_file('config.conf')
         app.run()
 
-        data = app.config.get('pandaloginvestigator', 'foo')
-
-        print 'good' if data == u'bar' else 'bad'
 
 if __name__ == '__main__':
     main()

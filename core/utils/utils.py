@@ -15,7 +15,8 @@ def compute_stats(chosen_dict):
 
 # Unpack the specified log file using the PANDA utility.
 # The content of the log will be saved in a temporary file with the same name.
-def unpack_log(filename, unpack_command, dir_pandalogs_path, dir_unpacked_path):
+def unpack_log(filename, dir_pandalogs_path, dir_unpacked_path):
+    unpack_command = './pandalog_reader'
     return_code = subprocess.call(unpack_command + " " + dir_pandalogs_path + filename + " > " +
                                   dir_unpacked_path + filename + ".txt", shell=True)
     if return_code != 0:

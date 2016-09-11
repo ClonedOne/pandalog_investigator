@@ -10,7 +10,6 @@ dir_analyzed_logs = '/home/yogaub/projects/seminar/analyzed_logs/'
 dir_panda_path = '/home/yogaub/projects/seminar/panda/qemu/panda'
 dir_pandalogs_path = '/home/yogaub/projects/seminar/pandalogs/'
 
-unpack_command = './pandalog_reader'
 context_switch = u'new_pid,'
 instruction_termination = u'nt_terminate_process'
 instruction_process_creation = u'nt_create_user_process'
@@ -452,7 +451,7 @@ def work((worker_id, filenames, db_file_malware_name_map)):
         reduced_filename = filename[:-9]
         active_malware = None
         t1 = time.time()
-        utils.unpack_log(filename, unpack_command, dir_pandalogs_path, dir_unpacked_path)
+        utils.unpack_log(filename, dir_pandalogs_path, dir_unpacked_path)
         unpack_time += time.time() - t1
         if reduced_filename in db_file_malware_name_map:
             initialize_malware_object(reduced_filename, db_file_malware_name_map[reduced_filename], from_db=True)

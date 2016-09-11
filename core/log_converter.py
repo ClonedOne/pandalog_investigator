@@ -118,7 +118,7 @@ def main():
     for filename in interesting_dict.keys():
         print j / items * 100, '%'
         extended_filename = filename + '.txz.plog'
-        utils.unpack_log(extended_filename, unpack_command, dir_pandalogs_path, dir_unpacked_path)
+        utils.unpack_log(extended_filename, dir_pandalogs_path, dir_unpacked_path)
         convert(filename, sys_call_dict, filename_malware_dict)
         utils.clean_log(extended_filename, dir_unpacked_path)
         j += 1

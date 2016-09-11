@@ -21,7 +21,7 @@ def work((worker_id, filenames, sys_call_dict, filename_malware_dict)):
         j += 1
         print worker_id, j / num_files
         extended_filename = filename + '.txz.plog'
-        utils.unpack_log(extended_filename, unpack_command, dir_pandalogs_path, dir_unpacked_path)
+        utils.unpack_log(extended_filename, dir_pandalogs_path, dir_unpacked_path)
         filename_syscall_dict[filename] = count_syscalls(filename, sys_call_dict, filename_malware_dict)
         utils.clean_log(extended_filename, dir_unpacked_path)
     return filename_syscall_dict
