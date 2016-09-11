@@ -1,10 +1,10 @@
 import os
 import time
-import utils
-import worker_syscall_counter
 from multiprocessing import Pool
 from pprint import pprint
 
+from core.utils import utils
+from core.workers import worker_syscall_counter
 
 dir_project_path = '/home/yogaub/projects/seminar/'
 dir_malware_db = '/home/yogaub/projects/seminar/database'

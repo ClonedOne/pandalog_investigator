@@ -1,9 +1,9 @@
 import os
-import db_manager
-import worker
-import utils
 import time
 from multiprocessing import Pool
+
+from core.utils import utils, db_manager
+from core.workers import worker_analyzer
 
 dir_project_path = '/home/yogaub/projects/seminar/'
 dir_malware_db = '/home/yogaub/projects/seminar/database'
@@ -44,10 +44,10 @@ def main():
         j += 1
     t1 = time.time()
     pool = Pool(processes=4)
-    results = pool.map(worker.work, [(0, file_names_0, db_file_malware_name_map),
-                                     (1, file_names_1, db_file_malware_name_map),
-                                     (2, file_names_2, db_file_malware_name_map),
-                                     (3, file_names_3, db_file_malware_name_map)])
+    results = pool.map(worker_analyzer.work, [(0, file_names_0, db_file_malware_name_map),
+                                              (1, file_names_1, db_file_malware_name_map),
+                                              (2, file_names_2, db_file_malware_name_map),
+                                              (3, file_names_3, db_file_malware_name_map)])
 
     db_file_malware_dict = {}
     file_corrupted_processes_dict = {}

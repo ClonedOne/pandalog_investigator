@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
-import numpy
-import utils
 
+import numpy
+
+from core.utils import utils
 
 dir_stats_count = '/home/yogaub/projects/seminar/results/'
 stats_file_name = 'syscall_stats.txt'
@@ -39,7 +40,6 @@ def plot_data(chosen_dict, stats, color, shape, title):
     plt.show()
 
 
-
 def gather_data(total=True):
     stats_dict = {}
     with open(dir_stats_count + stats_file_name) as stats_file:
@@ -69,7 +69,7 @@ def main():
     utils.prune_data(total_dict, 200)
     print len(total_dict)
     total_stats_pruned = utils.compute_stats(total_dict)
-    utils.prune_data(reduced_dict,2100)
+    utils.prune_data(reduced_dict, 2100)
     print len(reduced_dict)
     reduced_stats_pruned = utils.compute_stats(reduced_dict)
     plot_data(total_dict, total_stats_pruned, 'b', 'o', 'Total system calls pruned')

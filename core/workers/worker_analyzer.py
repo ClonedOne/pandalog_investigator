@@ -1,8 +1,9 @@
-import utils
 import os
-import traceback
 import time
-from malware_object import Malware
+import traceback
+
+from core.domain.malware_object import Malware
+from core.utils import utils
 
 dir_unpacked_path = '/home/yogaub/projects/seminar/unpacked_logs/'
 dir_analyzed_logs = '/home/yogaub/projects/seminar/analyzed_logs/'

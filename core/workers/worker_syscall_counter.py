@@ -1,6 +1,6 @@
 import os
-import utils
 
+from core.utils import utils
 
 dir_pandalogs_path = '/home/yogaub/projects/seminar/pandalogs/'
 dir_unpacked_path = '/home/yogaub/projects/seminar/unpacked_logs/'
