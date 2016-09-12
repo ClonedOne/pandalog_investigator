@@ -1,6 +1,5 @@
 {
     "pandaloginvestigator": {
-        "foo" : "bar",
         "dir_project_path" : "/home/yogaub/projects/seminar/",
         "dir_unpacked_path" : "/home/yogaub/projects/seminar/unpacked_logs/",
         "dir_malware_db" : "/home/yogaub/projects/seminar/database",

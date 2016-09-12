@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 
 import numpy
 
-from core.utils import utils
+from pandaloginvestigator.core.utils import utils
 
 dir_stats_count = '/home/yogaub/projects/seminar/results/'
 stats_file_name = 'syscall_stats.txt'

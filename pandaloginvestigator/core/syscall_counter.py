@@ -3,8 +3,9 @@ import time
 from multiprocessing import Pool
 from pprint import pprint
 
-from core.utils import utils
 from core.workers import worker_syscall_counter
+
+from pandaloginvestigator.core.utils import utils
 
 dir_project_path = '/home/yogaub/projects/seminar/'
 dir_malware_db = '/home/yogaub/projects/seminar/database'

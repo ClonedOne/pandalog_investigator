@@ -1,5 +1,6 @@
 import os
-from core.utils import utils
+
+from pandaloginvestigator.core.utils import utils
 
 
 def work((worker_id, filenames, dir_pandalogs_path, dir_unpacked_path, dir_panda_path)):

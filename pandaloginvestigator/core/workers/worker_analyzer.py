@@ -2,8 +2,9 @@ import os
 import time
 import traceback
 
-from core.domain.malware_object import Malware
 from core.utils import utils
+
+from pandaloginvestigator.core.domain import Malware
 
 dir_unpacked_path = '/home/yogaub/projects/seminar/unpacked_logs/'
 dir_analyzed_logs = '/home/yogaub/projects/seminar/analyzed_logs/'

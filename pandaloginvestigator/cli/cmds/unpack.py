@@ -1,4 +1,4 @@
-from core import log_unpacker
+from pandaloginvestigator.core import log_unpacker
 
 
 def unpack_command(app, max_num=None):

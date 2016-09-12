@@ -1,6 +1,7 @@
-import time
 import os
+import time
 from multiprocessing import Pool
+
 from workers import worker_unpacker
 
 

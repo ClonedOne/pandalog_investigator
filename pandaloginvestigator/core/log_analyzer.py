@@ -2,8 +2,10 @@ import os
 import time
 from multiprocessing import Pool
 
-from core.utils import utils, db_manager
+from core.utils import utils
 from core.workers import worker_analyzer
+
+from pandaloginvestigator.core.utils import db_manager
 
 dir_project_path = '/home/yogaub/projects/seminar/'
 dir_malware_db = '/home/yogaub/projects/seminar/database'
