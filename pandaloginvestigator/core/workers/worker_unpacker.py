@@ -6,6 +6,8 @@ from pandaloginvestigator.core.utils import utils
 logger = logging.getLogger(__name__)
 
 
+# For each file in the filenames list, uses the 'pandalog_reader' tool inside panda to unpack it and save it to a
+# separate folder.
 def work((worker_id, filenames, dir_pandalogs_path, dir_unpacked_path, dir_panda_path)):
     j = 0.0
     total_files = len(filenames)

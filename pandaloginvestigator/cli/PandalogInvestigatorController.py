@@ -11,18 +11,6 @@ class PandalogInvestigatorController(ArgparseController):
         label = 'base'
         description = 'This application analyzes logs resulting from Panda sandbox run of malicious programs.'
 
-    # def _pre_argument_parsing(self):
-    #     # Mutually exclusive groups
-    #     meg = self.parser.add_mutually_exclusive_group()
-    #     meg.add_argument('--g3', help='my g3 option')
-    #     meg.add_argument('--g4', help='my g4 option')
-
-    @expose(hide=True)
-    def default(self):
-        print('Welcome to Pandalog Investigator')
-        self.app.args.print_help()
-        return
-
     @expose(help='Unpacking command: process compressed pandalogs and output the results on file. '
                  'Please specify the number of log files upon which you want to operate, or all.',
             arguments=[

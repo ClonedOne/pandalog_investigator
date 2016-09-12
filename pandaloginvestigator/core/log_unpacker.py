@@ -7,6 +7,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# Iterate through all the log files in the folder specified in the configuration. Generate equal lists of files to
+# pass to worker_unpack workers. The number of logs to unpack is passed as argument, unpack all logs file if
+# max_num = None. Logs time spent unpacking.
 def unpack_logs(dir_pandalogs_path, dir_panda_path, dir_unpacked_path, max_num=None):
     logger.info('Starting unpacking operation with max_num = ' + str(max_num))
     t1 = time.time()
