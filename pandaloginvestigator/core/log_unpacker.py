@@ -1,12 +1,14 @@
 import os
 import time
 from multiprocessing import Pool
-
 from workers import worker_unpacker
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def unpack_logs(dir_pandalogs_path, dir_panda_path, dir_unpacked_path, max_num=None):
-    print max_num
+    logger.info('Starting unpacking operation with max_num = ' + str(max_num))
     t1 = time.time()
     filenames = sorted(os.listdir(dir_pandalogs_path))
     if not max_num:
@@ -34,4 +36,4 @@ def unpack_logs(dir_pandalogs_path, dir_panda_path, dir_unpacked_path, max_num=N
                                     (2, file_names_2, dir_pandalogs_path, dir_unpacked_path, dir_panda_path),
                                     (3, file_names_3, dir_pandalogs_path, dir_unpacked_path, dir_panda_path)])
     t2 = time.time()
-    print 'Total unpacking time: ' + str(t2 - t1)
+    logger.info('Total unpacking time: ' + str(t2 - t1))

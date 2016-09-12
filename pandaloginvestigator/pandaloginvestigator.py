@@ -1,7 +1,6 @@
 from cement.core.foundation import CementApp
 from core.utils import multi_logging
 from cli.PandalogInvestigatorController import PandalogInvestigatorController
-import os
 
 
 class PandalogInvestigatorApp(CementApp):
@@ -18,8 +17,6 @@ def main():
         app.setup()
         app.config.parse_file('config.json')
         app.run()
-
-
 
 
 if __name__ == '__main__':

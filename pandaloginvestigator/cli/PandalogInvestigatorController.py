@@ -1,5 +1,9 @@
 from cement.ext.ext_argparse import ArgparseController, expose
 from cmds.unpack import unpack_command
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class PandalogInvestigatorController(ArgparseController):
@@ -26,10 +30,11 @@ class PandalogInvestigatorController(ArgparseController):
             ])
     def upck(self):
         if self.app.pargs.num:
-            print 'Received num option with value %s' % self.app.pargs.num
+            logger.info('Unpacking logs. Received num option with value ' + str(self.app.pargs.num))
             unpack_command(self.app, int(self.app.pargs.num))
-        print 'Unpacking all logs'
-        unpack_command(self.app)
+        else:
+            logger.info('Unpacking all logs')
+            unpack_command(self.app)
 
     @expose(help='this is some help text about the cmd2')
     def cmd2(self):
