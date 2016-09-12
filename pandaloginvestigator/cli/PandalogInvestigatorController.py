@@ -25,11 +25,6 @@ class PandalogInvestigatorController(ArgparseController):
                 (['-n', '--num'], dict(help='Specify the number of logs to operate on', action='store')),
             ])
     def upck(self):
-        print('Unpacking pandalogs')
-        if not (self.app.pargs.num or self.app.pargs.all):
-            self.app.args.print_help()
-            return
-
         if self.app.pargs.num:
             print 'Received num option with value %s' % self.app.pargs.num
             unpack_command(self.app, int(self.app.pargs.num))

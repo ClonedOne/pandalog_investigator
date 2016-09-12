@@ -5,6 +5,7 @@ import multiprocessing
 import sys
 import threading
 import traceback
+import codecs
 from logging import Handler as LogHandler
 from logging.handlers import RotatingFileHandler
 
@@ -15,7 +16,7 @@ def loadcfg(default_path='logging.json',
     env = os.getenv(env_key, None)
     path = default_path if not env else env
     if os.path.exists(path):
-        with open(path, 'r', encoding='utf8') as f:
+        with codecs.open(path, 'r', encoding='utf8') as f:
             config = json.load(f)
         logging.config.dictConfig(config)
     else:

@@ -16,7 +16,7 @@
         },
 
         "debug_file_handler": {
-            "class": "lyricsifier.utils.logging.MultiProcessingFileHandler",
+            "class": "pandaloginvestigator.core.utils.multi_logging.MultiProcessingFileHandler",
             "level": "DEBUG",
             "formatter": "default",
             "filename": "debug.log",
@@ -26,7 +26,7 @@
         },
 
         "error_file_handler": {
-            "class": "lyricsifier.utils.logging.MultiProcessingFileHandler",
+            "class": "pandaloginvestigator.core.utils.multi_logging.MultiProcessingFileHandler",
             "level": "ERROR",
             "formatter": "default",
             "filename": "errors.log",
