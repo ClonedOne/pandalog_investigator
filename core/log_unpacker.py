@@ -4,9 +4,12 @@ from multiprocessing import Pool
 from workers import worker_unpacker
 
 
-def unpack_logs(dir_pandalogs_path, dir_panda_path, dir_unpacked_path, max_num, ):
+def unpack_logs(dir_pandalogs_path, dir_panda_path, dir_unpacked_path, max_num=None):
+    print max_num
     t1 = time.time()
     filenames = sorted(os.listdir(dir_pandalogs_path))
+    if not max_num:
+        max_num = len(filenames)
     j = 0
     file_names_0 = []
     file_names_1 = []
