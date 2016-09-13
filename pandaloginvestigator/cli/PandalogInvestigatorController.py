@@ -1,5 +1,6 @@
 from cement.ext.ext_argparse import ArgparseController, expose
 from cmds.unpack import unpack_command
+from cmds.translate import translate_command
 import logging
 
 
@@ -16,7 +17,7 @@ class PandalogInvestigatorController(ArgparseController):
             arguments=[
                 (['-n', '--num'], dict(help='Specify the number of logs to operate on', action='store')),
             ])
-    def upck(self):
+    def unpack(self):
         if self.app.pargs.num:
             logger.info('Unpacking logs. Received num option with value ' + str(self.app.pargs.num))
             unpack_command(self.app, int(self.app.pargs.num))
@@ -24,6 +25,16 @@ class PandalogInvestigatorController(ArgparseController):
             logger.info('Unpacking all logs')
             unpack_command(self.app)
 
-    @expose(help='this is some help text about the cmd2')
-    def cmd2(self):
-        print('Inside BaseController.cmd2()')
+    @expose(help='Translation command: explicit system call names from unpacked pandalogs and output the results '
+                 'on file. Please specify the number of log files upon which you want to operate, or all.',
+            arguments=[
+                (['-n', '--num'], dict(help='Specify the number of logs to operate on', action='store')),
+            ])
+    def translate(self):
+        if self.app.pargs.num:
+            logger.info('Translating logs. Received num option with value ' + str(self.app.pargs.num))
+            translate_command(self.app, int(self.app.pargs.num))
+        else:
+            logger.info('Translating all logs')
+            translate_command(self.app)
+

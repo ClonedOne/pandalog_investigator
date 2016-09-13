@@ -7,7 +7,7 @@ setup(
     version='0.1',
     description='Pandalogs analysis tool',
     url='https://ClonedOne@bitbucket.org/ClonedOne/seminar.git',
-    install_requires=['numpy', 'cement', 'volatility'],
+    install_requires=['numpy', 'cement'],
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
@@ -16,6 +16,6 @@ setup(
         'Development Status :: Beta',
         'Framework :: Cement',
         'Operating System :: Unix',
-        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
         'Topic :: Security :: Malware analysis']
 )

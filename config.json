@@ -1,12 +1,13 @@
 {
     "pandaloginvestigator": {
         "dir_project_path" : "/home/yogaub/projects/seminar/",
-        "dir_unpacked_path" : "/home/yogaub/projects/seminar/unpacked_logs/",
+        "dir_unpacked_path" : "/home/yogaub/projects/seminar/unpacked_logs",
         "dir_malware_db" : "/home/yogaub/projects/seminar/database",
-        "dir_pandalogs_path" : "/home/yogaub/projects/seminar/pandalogs/",
+        "dir_pandalogs_path" : "/home/yogaub/projects/seminar/pandalogs",
         "dir_resfile_path" : "/home/yogaub/Desktop/resfile.txt",
         "dir_panda_path" : "/home/yogaub/projects/seminar/panda/qemu/panda",
         "dir_convert_path" : "/home/yogaub/projects/seminar/converted/",
-        "dir_analyzed_logs" : "/home/yogaub/projects/seminar/analyzed_logs/"
+        "dir_analyzed_path" : "/home/yogaub/projects/seminar/analyzed_logs/",
+        "dir_translated_path" : "/home/yogaub/projects/seminar/translated"
     }
 }
