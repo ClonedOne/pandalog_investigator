@@ -7,7 +7,6 @@
         "dir_resfile_path" : "/home/yogaub/Desktop/resfile.txt",
         "dir_panda_path" : "/home/yogaub/projects/seminar/panda/qemu/panda",
         "dir_convert_path" : "/home/yogaub/projects/seminar/converted/",
-        "dir_sys_call_table" : "/home/yogaub/projects/seminar/",
         "dir_analyzed_logs" : "/home/yogaub/projects/seminar/analyzed_logs/"
     }
 }
