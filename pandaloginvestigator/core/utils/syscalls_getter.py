@@ -9,5 +9,3 @@ def get_syscalls():
             line = line.split('\t')
             syscall_dict[int(line[0])] = line[1]
     return syscall_dict
-
-

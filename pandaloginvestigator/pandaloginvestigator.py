@@ -1,6 +1,6 @@
 from cement.core.foundation import CementApp
-from core.utils import multi_logging
-from cli.PandalogInvestigatorController import PandalogInvestigatorController
+from .core.utils import multi_logging
+from .cli.PandalogInvestigatorController import PandalogInvestigatorController
 
 
 class PandalogInvestigatorApp(CementApp):

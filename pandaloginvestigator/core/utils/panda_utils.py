@@ -9,4 +9,4 @@ def unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path):
     return_code = subprocess.call(dir_panda_path + unpack_command + " " + dir_pandalogs_path + '/' + filename + " > " +
                                   dir_unpacked_path + '/' + reduced_filename, shell=True)
     if return_code != 0:
-        print 'return code: ' + str(return_code)
+        print ('return code: ' + str(return_code))

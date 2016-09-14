@@ -2,7 +2,7 @@ import os
 import time
 import logging
 from multiprocessing import Pool
-from workers import worker_translator
+from .workers import worker_translator
 
 
 logger = logging.getLogger(__name__)

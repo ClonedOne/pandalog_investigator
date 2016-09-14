@@ -1,6 +1,6 @@
 from cement.ext.ext_argparse import ArgparseController, expose
-from cmds.unpack import unpack_command
-from cmds.translate import translate_command
+from .cmds.unpack import unpack_command
+from .cmds.translate import translate_command
 import logging
 
 
@@ -11,6 +11,10 @@ class PandalogInvestigatorController(ArgparseController):
     class Meta:
         label = 'base'
         description = 'This application analyzes logs resulting from Panda sandbox run of malicious programs.'
+
+    @expose(hide=True)
+    def default(self):
+        self.app.args.print_help()
 
     @expose(help='Unpacking command: process compressed pandalogs and output the results on file. '
                  'Please specify the number of log files upon which you want to operate, or all.',
