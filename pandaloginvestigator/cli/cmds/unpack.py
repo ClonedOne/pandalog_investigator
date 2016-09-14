@@ -18,8 +18,13 @@ def unpack_command(app, max_num=None):
     except:
         logger.error('dir_panda_path not set in configuration file')
         return
+    try:
+        core_num = app.config.get('pandaloginvestigator', 'core_num')
+    except:
+        logger.error('core_num not set in configuration file')
+        return
     if not os.path.exists(pi_strings.dir_unpacked_path):
         os.makedirs(pi_strings.dir_unpacked_path)
     logger.debug('Unpack command with parameters: {}, {}, {}, {}'.format(
         dir_pandalogs_path, dir_panda_path, pi_strings.dir_unpacked_path, str(max_num)))
-    log_unpacker.unpack_logs(dir_pandalogs_path, dir_panda_path, pi_strings.dir_unpacked_path, max_num)
+    log_unpacker.unpack_logs(dir_pandalogs_path, dir_panda_path, pi_strings.dir_unpacked_path, core_num, max_num)

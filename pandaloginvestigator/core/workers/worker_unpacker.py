@@ -14,7 +14,7 @@ def work(params_pack):
     dir_unpacked_path = params_pack[3]
     dir_panda_path = params_pack[4]
     j = 0.0
-    total_files = len(filenames)
+    total_files = len(filenames) if len(filenames) > 0 else -1
     logger.info('WorkerId = ' + str(worker_id) + ' unpacking ' + str(total_files) + ' log files')
     for filename in filenames:
         j += 1

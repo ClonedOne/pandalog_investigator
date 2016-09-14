@@ -16,7 +16,7 @@ def work(data_pack):
     dir_translated_path = data_pack[3]
     syscall_dict = data_pack[4]
     j = 0.0
-    total_files = len(filenames)
+    total_files = len(filenames) if len(filenames) > 0 else -1
     logger.info('WorkerId = ' + str(worker_id) + ' translating ' + str(total_files) + ' log files')
     for filename in filenames:
         j += 1

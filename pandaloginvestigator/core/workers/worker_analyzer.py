@@ -420,7 +420,6 @@ def analyze_log(filename):
                 elif instruction_read_memory in line and error_manager in line:
                     is_crashing(line, filename)
                 elif instruction_raise_error in line and active_malware:
-                    print(filename)
                     is_raising_error()
             except:
                 traceback.print_exc()
@@ -444,7 +443,8 @@ def work(data_pack):
     dir_analyzed_logs = dir_analyzed_logs_p
     j = 0.0
     t0 = time.time()
-    total_files = float(len(filenames))
+    total_files = len(filenames) if len(filenames) > 0 else -1
+    logger.info('WorkerId = ' + str(worker_id) + ' analyzing ' + str(total_files) + ' log files')
     for filename in filenames:
         active_malware = None
         if filename in db_file_malware_name_map:
@@ -453,7 +453,7 @@ def work(data_pack):
         else:
             print (worker_id, 'ERROR filename not in db')
         j += 1
-        logger.info(str(worker_id) + ' ' + str((j * 100 / total_files)) + '%')
+        logger.info('Analyzer' + str(worker_id) + ' ' + str((j * 100 / total_files)) + '%')
     total_time = time.time() - t0
     logger.info(str(worker_id) + ' Total time: ' + str(total_time))
     return db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict,\

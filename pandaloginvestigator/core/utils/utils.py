@@ -1,20 +1,7 @@
+from collections import defaultdict
 import pprint
 import os
 import numpy
-
-
-# ## DICTIONARY UTILITY METHODS ##
-
-# Given the results form the workers updates a list of dictionaries with
-# the corresponding partial dictionaries contained in each of
-# the worker sub result.
-def update_results(results, dict_list):
-    if len(results[0]) != len(dict_list):
-        return -1
-    for sub_res in results:
-        for i in range(len(sub_res)):
-            dict_list[i].update(sub_res[i])
-    return 1
 
 
 # ## STATISTICAL UTILITY METHODS ##
@@ -112,3 +99,39 @@ def final_output(dir_result_path, filenames, db_file_malware_dict, file_corrupte
 # Delete the temporary unpacked log file to avoid disk congestion.
 def clean_log(filename, dir_unpacked_path):
     os.remove(dir_unpacked_path + '/' + filename)
+
+
+# Given the results form the workers updates a list of dictionaries with
+# the corresponding partial dictionaries contained in each of
+# the worker sub result.
+def update_results(results, dict_list):
+    if len(results[0]) != len(dict_list):
+        return -1
+    for sub_res in results:
+        for i in range(len(sub_res)):
+            dict_list[i].update(sub_res[i])
+    return 1
+
+
+# Given a list of items and the number of processing cores available compute
+# a list of items lists of equal dimension, one for each core.
+# 'max_num' is a parameter bounding the maximum number of items to divide.
+def divide_workload(item_list, core_num, max_num):
+    j = 0
+    c = 0
+    item_sublists = defaultdict(list)
+    for item in item_list:
+        item_sublists[j].append(item)
+        j = (j + 1) % core_num
+        c += 1
+        if c == max_num:
+            break
+    return item_sublists
+
+
+# Generate a list of tuples containing the parameters to pass to worker subprocesses.
+def format_worker_input(core_num, item_sublists, fixed_params_list):
+    formatted_input = []
+    for i in range(core_num):
+        formatted_input.append((i, item_sublists[i]) + tuple(fixed_params_list))
+    return formatted_input
