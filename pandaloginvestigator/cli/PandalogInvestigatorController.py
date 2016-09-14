@@ -52,7 +52,7 @@ class PandalogInvestigatorController(ArgparseController):
                 (['-u', '--unpack'], dict(help='Unpack log files before operation', action='store_true'))
             ])
     def analyze(self):
-        logger.info('Translating logs. Received num option with value ' + str(self.app.pargs.num))
+        logger.info('Analyzing logs. Received num option with value ' + str(self.app.pargs.num))
         if self.app.pargs.unpack:
             self.unpack()
         if self.app.pargs.num:

@@ -1,10 +1,10 @@
+from pandaloginvestigator.core.utils import utils
+# from pandaloginvestigator.core.domain.malware_object import Malware
 import os
 import time
 import traceback
 
-from core.utils import utils
 
-from pandaloginvestigator.core.domain import Malware
 
 dir_unpacked_path = '/home/yogaub/projects/seminar/unpacked_logs/'
 dir_analyzed_logs = '/home/yogaub/projects/seminar/analyzed_logs/'
@@ -423,7 +423,7 @@ def analyze_log(filename):
                 elif instruction_read_memory in line and error_manager in line:
                     is_crashing(line, filename)
                 elif instruction_raise_error in line and active_malware:
-                    print filename
+                    print(filename)
                     is_raising_error()
             except:
                 traceback.print_exc()
@@ -439,7 +439,8 @@ def analyze_log(filename):
     return time.time() - t1
 
 
-def work((worker_id, filenames, db_file_malware_name_map)):
+def work(worker_id, filenames, db_file_malware_name_map):
+    return
     global active_malware
     j = 0.0
     t0 = time.time()
@@ -458,18 +459,18 @@ def work((worker_id, filenames, db_file_malware_name_map)):
             initialize_malware_object(reduced_filename, db_file_malware_name_map[reduced_filename], from_db=True)
             outfile_time += analyze_log(reduced_filename)
         else:
-            print worker_id, 'ERROR filename not in db'
+            print (worker_id, 'ERROR filename not in db')
         t1 = time.time()
         utils.clean_log(filename, dir_unpacked_path)
         clean_time += time.time() - t1
         j += 1
-        print worker_id, ((j * 100) / total_files)
+        # print worker_id, ((j * 100) / total_files)
         # if j == 10:
         #     break
     total_time = time.time() - t0
-    print worker_id, 'Total unpack time', unpack_time
-    print worker_id, 'Total clean time', clean_time
-    print worker_id, 'Total outfile time', outfile_time
-    print worker_id, 'Total time', total_time
+    # print worker_id, 'Total unpack time', unpack_time
+    # print worker_id, 'Total clean time', clean_time
+    # print worker_id, 'Total outfile time', outfile_time
+    # print worker_id, 'Total time', total_time
     return db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict,\
         file_sleep_dict, file_crash_dict, file_error_dict

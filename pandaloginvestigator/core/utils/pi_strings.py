@@ -1,3 +1,7 @@
+# This module contains fixed string parameters used by different modules
+# inside the application.
+
+
 dir_unpacked_path = 'dir_unpacked_path'
 dir_translated_path = 'dir_translated_path'
 dir_results_path = 'dir_results_path'

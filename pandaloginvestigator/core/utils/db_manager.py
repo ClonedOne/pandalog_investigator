@@ -1,17 +1,19 @@
 import sqlite3
 
-# malware process names are the first 14 characters of the md5
-# the file name is actually the uuid
 
-dir_malware_db = '/home/yogaub/projects/seminar/database/'
+# This module is used to obtain the name of the starting malware tested in each log file.
+# Malware process names are the first 14 characters of the md5, the file name is actually the uuid.
+
+
 db_name = 'panda.db'
 table_name = 'samples'
 column1 = 'uuid'
 column2 = 'filename'
 column3 = 'md5'
 
-def acquire_malware_file_dict():
-    conn = sqlite3.connect(dir_malware_db + db_name)
+
+def acquire_malware_file_dict(dir_database_path):
+    conn = sqlite3.connect(dir_database_path + '/' + db_name)
     c = conn.cursor()
     big_file_malware_dict = {}
 
@@ -22,4 +24,3 @@ def acquire_malware_file_dict():
 
     conn.close()
     return big_file_malware_dict
-

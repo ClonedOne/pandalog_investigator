@@ -1,4 +1,8 @@
 import subprocess
+import os
+
+
+# This module handles utility methods which are inherently related to Panda or the panda logs structure.
 
 
 # Unpack the specified log file using the PANDA 'pandalog_reader' utility.
@@ -10,3 +14,40 @@ def unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path):
                                   dir_unpacked_path + '/' + reduced_filename, shell=True)
     if return_code != 0:
         print ('return code: ' + str(return_code))
+
+
+# Handles the acquisition of the path string from the log file.
+# It is used to handle linux problems with windows style path strings.
+def get_new_path(path_input):
+    words = path_input.split()
+    line = ''
+    fixed_substring = 'name=['
+    for word in words:
+        line += word + ' '
+    index = line.find(fixed_substring)
+    line = line[index:]
+    return os.path.normpath(line.split('[')[1].replace(']', ''))
+
+
+# Updates the process id <-> process name dictionaries (direct and inverted).
+# At each context switch the new couple (pid, process_name) is
+# either added or its frequency is updated inside the dictionaries.
+def update_dictionaries(pid, process_dict, proc_name, inverted_process_dict):
+    if pid in process_dict:
+        if proc_name in process_dict[pid]:
+            process_dict[pid][proc_name] += 1
+        else:
+            process_dict[pid][proc_name] = 1
+    else:
+        process_dict[pid] = {}
+        process_dict[pid][proc_name] = 1
+
+    # the same values will also be added to the inverted dictionary
+    if proc_name in inverted_process_dict:
+        if pid in inverted_process_dict[proc_name]:
+            inverted_process_dict[proc_name][pid] += 1
+        else:
+            inverted_process_dict[proc_name][pid] = 1
+    else:
+        inverted_process_dict[proc_name] = {}
+        inverted_process_dict[proc_name][pid] = 1

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 # Convert system call numbers into explicit system call names.
 # Iterate through all the log files in the folder specified in the configuration. Generate equal lists of files to
 # pass to worker_translator workers. The number of logs to translate is passed as argument, translate all logs file if
-# max_num = None. Logs time spent translating.
+# max_num = None. Logs time spent in the process.
 def translate_logs(dir_unpacked_path, syscall_dict, dir_translated_path, max_num=None):
     logger.info('Starting translating operation with max_num = ' + str(max_num))
     t1 = time.time()

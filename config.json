@@ -1,6 +1,6 @@
 {
     "pandaloginvestigator": {
-        "dir_malware_db" : "/home/yogaub/projects/panda_db",
+        "dir_database_path" : "/home/yogaub/projects/panda_db",
         "dir_pandalogs_path" : "/home/yogaub/projects/panda_logs",
         "dir_panda_path" : "/home/yogaub/projects/panda/qemu/panda"
     }
