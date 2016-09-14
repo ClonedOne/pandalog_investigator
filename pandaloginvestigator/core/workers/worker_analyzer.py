@@ -1,15 +1,13 @@
 from pandaloginvestigator.core.utils import utils
-# from pandaloginvestigator.core.domain.malware_object import Malware
-import os
+from pandaloginvestigator.core.utils import panda_utils
+from pandaloginvestigator.core.domain.malware_object import Malware
+import logging
 import time
 import traceback
 
 
-
-dir_unpacked_path = '/home/yogaub/projects/seminar/unpacked_logs/'
-dir_analyzed_logs = '/home/yogaub/projects/seminar/analyzed_logs/'
-dir_panda_path = '/home/yogaub/projects/seminar/panda/qemu/panda'
-dir_pandalogs_path = '/home/yogaub/projects/seminar/pandalogs/'
+dir_unpacked_path = None
+dir_analyzed_logs = None
 
 context_switch = u'new_pid,'
 instruction_termination = u'nt_terminate_process'
@@ -27,6 +25,7 @@ file_sleep_dict = {}
 file_crash_dict = {}
 file_error_dict = {}
 active_malware = None
+logger = logging.getLogger(__name__)
 
 
 # Checks if the malware_objects associated with the filename have called the sleep function on all their processes.
@@ -206,7 +205,7 @@ def is_context_switch(filename, line, process_dict, inverted_process_dict):
     proc_name = commas[3].split(')')[0].strip()
     current_instruction = int((commas[0].split()[0].split('='))[1])
     not_malware = False
-    utils.update_dictionaries(pid, process_dict, proc_name, inverted_process_dict)
+    panda_utils.update_dictionaries(pid, process_dict, proc_name, inverted_process_dict)
 
     malware = is_db_malware(proc_name, filename)
     if not malware:
@@ -312,7 +311,7 @@ def is_crashing(line, filename):
 def is_creating_process(line, filename):
     commas = line.strip().split(',')
     current_instruction = int((commas[0].split()[0].split('='))[1])
-    new_path = utils.get_new_path(line)
+    new_path = panda_utils.get_new_path(line)
     creating_pid = int(commas[2].strip())
     creating_name = commas[3].split(')')[0].strip()
     created_pid = int(commas[5].strip())
@@ -405,10 +404,8 @@ def initialize_malware_object(filename, malware_name, from_db=False):
 def analyze_log(filename):
     process_dict = {}
     inverted_process_dict = {}
-
-    with open(dir_unpacked_path + filename + '.txz.plog.txt', 'r') as logfile:
+    with open(dir_unpacked_path + '/' + filename, 'r', encoding='utf-8', errors='replace') as logfile:
         for line in logfile:
-            line = unicode(line, errors='ignore')
             try:
                 if context_switch in line:
                     is_context_switch(filename, line, process_dict, inverted_process_dict)
@@ -427,50 +424,37 @@ def analyze_log(filename):
                     is_raising_error()
             except:
                 traceback.print_exc()
-
     terminating_all = is_terminating_all(filename)
     sleeping_all = is_sleeping_all(filename)
     crashing_all = is_crashing_all(filename)
     error_all = is_raising_error_all(filename)
-    t1 = time.time()
     utils.output_on_file(filename, process_dict, inverted_process_dict, dir_analyzed_logs,
                          db_file_malware_dict, file_corrupted_processes_dict,
                          terminating_all, sleeping_all, crashing_all, error_all)
-    return time.time() - t1
 
 
-def work(worker_id, filenames, db_file_malware_name_map):
-    return
-    global active_malware
+def work(data_pack):
+    worker_id = data_pack[0]
+    filenames = data_pack[1]
+    db_file_malware_name_map = data_pack[2]
+    dir_unpacked_path_p = data_pack[3]
+    dir_analyzed_logs_p = data_pack[4]
+    global active_malware, dir_unpacked_path, dir_analyzed_logs
+    dir_unpacked_path = dir_unpacked_path_p
+    dir_analyzed_logs = dir_analyzed_logs_p
     j = 0.0
     t0 = time.time()
-    unpack_time = 0.0
-    clean_time = 0.0
-    outfile_time = 0.0
     total_files = float(len(filenames))
-    os.chdir(dir_panda_path)
     for filename in filenames:
-        reduced_filename = filename[:-9]
         active_malware = None
-        t1 = time.time()
-        utils.unpack_log(filename, dir_pandalogs_path, dir_unpacked_path)
-        unpack_time += time.time() - t1
-        if reduced_filename in db_file_malware_name_map:
-            initialize_malware_object(reduced_filename, db_file_malware_name_map[reduced_filename], from_db=True)
-            outfile_time += analyze_log(reduced_filename)
+        if filename in db_file_malware_name_map:
+            initialize_malware_object(filename, db_file_malware_name_map[filename], from_db=True)
+            analyze_log(filename)
         else:
             print (worker_id, 'ERROR filename not in db')
-        t1 = time.time()
-        utils.clean_log(filename, dir_unpacked_path)
-        clean_time += time.time() - t1
         j += 1
-        # print worker_id, ((j * 100) / total_files)
-        # if j == 10:
-        #     break
+        logger.info(str(worker_id) + ' ' + str((j * 100 / total_files)) + '%')
     total_time = time.time() - t0
-    # print worker_id, 'Total unpack time', unpack_time
-    # print worker_id, 'Total clean time', clean_time
-    # print worker_id, 'Total outfile time', outfile_time
-    # print worker_id, 'Total time', total_time
+    logger.info(str(worker_id) + ' Total time: ' + str(total_time))
     return db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict,\
         file_sleep_dict, file_crash_dict, file_error_dict

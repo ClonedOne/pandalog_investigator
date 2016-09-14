@@ -46,11 +46,13 @@ class MultiProcessingFileHandler(LogHandler):
                 self._handler.emit(record)
                 # print('received on pid {}'.format(os.getpid()))
             except (KeyboardInterrupt, SystemExit):
-                raise
+                # raise
+                pass
             except EOFError:
                 break
             except:
-                traceback.print_exc(file=sys.stderr)
+                pass
+                # traceback.print_exc(file=sys.stderr)
 
     def send(self, s):
         self.queue.put_nowait(s)
@@ -73,9 +75,11 @@ class MultiProcessingFileHandler(LogHandler):
             s = self._format_record(record)
             self.send(s)
         except (KeyboardInterrupt, SystemExit):
-            raise
+            # raise
+            pass
         except:
-            self.handleError(record)
+            # self.handleError(record)
+            pass
 
     def close(self):
         self._handler.close()

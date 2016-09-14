@@ -37,10 +37,10 @@ def analyze_logs(dir_unpacked_path, dir_analyzed_path, dir_results_path, dir_dat
         if j == max_num:
             break
     pool = Pool(processes=4)
-    results = pool.map(worker_analyzer.work, [(0, file_names_0, db_file_malware_name_map),
-                                              (1, file_names_1, db_file_malware_name_map),
-                                              (2, file_names_2, db_file_malware_name_map),
-                                              (3, file_names_3, db_file_malware_name_map)])
+    results = pool.map(worker_analyzer.work, [(0, file_names_0, db_file_malware_name_map, dir_unpacked_path, dir_analyzed_path),
+                                              (1, file_names_1, db_file_malware_name_map, dir_unpacked_path, dir_analyzed_path),
+                                              (2, file_names_2, db_file_malware_name_map, dir_unpacked_path, dir_analyzed_path),
+                                              (3, file_names_3, db_file_malware_name_map, dir_unpacked_path, dir_analyzed_path)])
     db_file_malware_dict = {}
     file_corrupted_processes_dict = {}
     file_terminate_dict = {}

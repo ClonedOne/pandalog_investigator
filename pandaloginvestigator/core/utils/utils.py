@@ -39,7 +39,7 @@ def prune_data(chosen_dict, threshold_number):
     for i in range(length):
         if i < threshold_number or (length - 1) - i < threshold_number:
             eliminate_vals.append(values[i])
-    for key, value in chosen_dict.iteritems():
+    for key, value in chosen_dict.items():
         if value in eliminate_vals:
             eliminate_keys.append(key)
     for key in eliminate_keys:
@@ -56,25 +56,25 @@ def prune_data(chosen_dict, threshold_number):
 def output_on_file(filename, process_dict, inverted_process_dict, dir_analyzed_logs,
                    db_file_malware_dict, file_corrupted_processes_dict,
                    terminating_all, sleeping_all, crashing_all, error_all):
-    outfile = open(dir_analyzed_logs + filename + '_a.txt', 'w')
-    total_instruction_accumulator = [0, 0, 0, 0]
-    pprint.pprint(process_dict, outfile)
-    outfile.write('\n')
-    pprint.pprint(inverted_process_dict, outfile)
-    outfile.write('\n')
-    if filename in db_file_malware_dict:
-        malware = db_file_malware_dict[filename]
-        total_instruction_accumulator = [sum(x) for x in zip(total_instruction_accumulator,
-                                                             malware.get_total_executed_instructions())]
-        outfile.write(str(malware) + '\n\n')
-    if filename in file_corrupted_processes_dict:
-        for malware in file_corrupted_processes_dict[filename]:
+    with open(dir_analyzed_logs + '/' + filename, 'w', encoding='utf-8', errors='replace') as outfile:
+        total_instruction_accumulator = [0, 0, 0, 0]
+        pprint.pprint(process_dict, outfile)
+        outfile.write('\n')
+        pprint.pprint(inverted_process_dict, outfile)
+        outfile.write('\n')
+        if filename in db_file_malware_dict:
+            malware = db_file_malware_dict[filename]
             total_instruction_accumulator = [sum(x) for x in zip(total_instruction_accumulator,
                                                                  malware.get_total_executed_instructions())]
             outfile.write(str(malware) + '\n\n')
-    outfile.write('\nFinal instruction count: \n' + str(total_instruction_accumulator))
-    outfile.write('\nTerminating all: \t' + str(terminating_all) + '\tSleeping all: \t' + str(sleeping_all) +
-                  '\t Crashing all: \t' + str(crashing_all) + '\t Raising hard error all: \t' + str(error_all))
+        if filename in file_corrupted_processes_dict:
+            for malware in file_corrupted_processes_dict[filename]:
+                total_instruction_accumulator = [sum(x) for x in zip(total_instruction_accumulator,
+                                                                     malware.get_total_executed_instructions())]
+                outfile.write(str(malware) + '\n\n')
+        outfile.write('\nFinal instruction count: \n' + str(total_instruction_accumulator))
+        outfile.write('\nTerminating all: \t' + str(terminating_all) + '\tSleeping all: \t' + str(sleeping_all) +
+                      '\t Crashing all: \t' + str(crashing_all) + '\t Raising hard error all: \t' + str(error_all))
 
 
 # Prints the final output on file. The final output contains aggregate data regarding the totality of the analyzed logs.
