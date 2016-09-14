@@ -27,7 +27,7 @@ def work(data_pack):
                     if system_call_tag in line:
                         system_call_num = int(line.split('=')[3].split(')')[0])
                         system_call = syscall_dict.get(system_call_num, system_call_num)
-                        new_line = line.split(':')[0] + ': ' + str(system_call) + '\n'
+                        new_line = line.split(':')[0] + ': ' + str(system_call)
                         translated_file.write(new_line)
                     else:
                         translated_file.write(line)

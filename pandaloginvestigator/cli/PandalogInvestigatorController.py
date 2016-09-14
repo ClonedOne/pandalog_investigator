@@ -1,6 +1,7 @@
 from cement.ext.ext_argparse import ArgparseController, expose
-from .cmds.unpack import unpack_command
-from .cmds.translate import translate_command
+from pandaloginvestigator.cli.cmds.unpack import unpack_command
+from pandaloginvestigator.cli.cmds.translate import translate_command
+from pandaloginvestigator.cli.cmds.analyze import analyze_command
 import logging
 
 
@@ -22,23 +23,39 @@ class PandalogInvestigatorController(ArgparseController):
                 (['-n', '--num'], dict(help='Specify the number of logs to operate on', action='store')),
             ])
     def unpack(self):
+        logger.info('Unpacking logs. Received num option with value ' + str(self.app.pargs.num))
         if self.app.pargs.num:
-            logger.info('Unpacking logs. Received num option with value ' + str(self.app.pargs.num))
             unpack_command(self.app, int(self.app.pargs.num))
         else:
-            logger.info('Unpacking all logs')
             unpack_command(self.app)
 
     @expose(help='Translation command: explicit system call names from unpacked pandalogs and output the results '
                  'on file. Please specify the number of log files upon which you want to operate, or all.',
             arguments=[
                 (['-n', '--num'], dict(help='Specify the number of logs to operate on', action='store')),
+                (['-u', '--unpack'], dict(help='Unpack log files before operation', action='store_true'))
             ])
     def translate(self):
+        logger.info('Translating logs. Received num option with value ' + str(self.app.pargs.num))
+        if self.app.pargs.unpack:
+            self.unpack()
         if self.app.pargs.num:
-            logger.info('Translating logs. Received num option with value ' + str(self.app.pargs.num))
             translate_command(self.app, int(self.app.pargs.num))
         else:
-            logger.info('Translating all logs')
             translate_command(self.app)
 
+    @expose(help='Analysis command: identify malwares and corrupted processes and counts the instruction executed. '
+                 'Then outputs the results on file, generating also a final report file.'
+                 'Please specify the number of log files upon which you want to operate, or all.',
+            arguments=[
+                (['-n', '--num'], dict(help='Specify the number of logs to operate on', action='store')),
+                (['-u', '--unpack'], dict(help='Unpack log files before operation', action='store_true'))
+            ])
+    def analyze(self):
+        logger.info('Translating logs. Received num option with value ' + str(self.app.pargs.num))
+        if self.app.pargs.unpack:
+            self.unpack()
+        if self.app.pargs.num:
+            analyze_command(self.app, int(self.app.pargs.num))
+        else:
+            analyze_command(self.app)

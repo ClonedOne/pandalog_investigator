@@ -1,15 +1,17 @@
+from multiprocessing import Pool
+from pandaloginvestigator.core.utils import utils
+from pandaloginvestigator.core.workers import worker_analyzer
+from pandaloginvestigator.core.utils import db_manager
 import os
 import time
-from multiprocessing import Pool
+import logging
 
-from core.utils import utils
-from core.workers import worker_analyzer
-
-from pandaloginvestigator.core.utils import db_manager
 
 dir_project_path = '/home/yogaub/projects/seminar/'
 dir_malware_db = '/home/yogaub/projects/seminar/database'
 dir_pandalogs_path = '/home/yogaub/projects/seminar/pandalogs/'
+
+logger = logging.getLogger(__name__)
 
 
 def update_results(results, db_file_malware_dict, file_corrupted_processes_dict,
@@ -62,7 +64,7 @@ def main():
     utils.final_output(dir_project_path, filenames, db_file_malware_dict, file_corrupted_processes_dict,
                        file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict)
     t2 = time.time()
-    print t2-t1
+    logger.info(str(t2 - t1))
 
 
 if __name__ == '__main__':
