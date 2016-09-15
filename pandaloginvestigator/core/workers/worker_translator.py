@@ -1,8 +1,9 @@
+from pandaloginvestigator.core.utils import pi_strings
 import logging
 import codecs
 
 
-system_call_tag = u'nt_any_syscall (num='
+system_call_tag = pi_strings.system_call_tag
 
 logger = logging.getLogger(__name__)
 

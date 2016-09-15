@@ -1,4 +1,4 @@
-from pandaloginvestigator.core.utils import utils
+from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import pi_strings
 from pandaloginvestigator.core.domain.malware_object import Malware
 import logging
@@ -12,10 +12,7 @@ context_switch = pi_strings.context_switch
 instruction_termination = pi_strings.instruction_termination
 instruction_process_creation = pi_strings.instruction_process_creation
 instruction_write_memory = pi_strings.instruction_write_memory
-instruction_read_memory = pi_strings.instruction_read_memory
-instruction_sleep = pi_strings.instruction_sleep
-instruction_raise_error = pi_strings.instruction_raise_error
-error_manager = pi_strings.error_manager
+system_call_tag = pi_strings.system_call_tag
 
 file_corrupted_processes_dict = {}
 db_file_malware_dict = {}
@@ -24,6 +21,9 @@ logger = logging.getLogger(__name__)
 
 
 def work(data_pack):
+    t0 = time.time()
+    j = 0.0
+    filename_syscall_dict = {}
     worker_id = data_pack[0]
     filenames = data_pack[1]
     dir_unpacked_path_p = data_pack[2]
@@ -31,36 +31,19 @@ def work(data_pack):
     db_file_malware_name_map = data_pack[4]
     global active_malware, dir_unpacked_path, dir_analyzed_logs
     dir_unpacked_path = dir_unpacked_path_p
-    j = 0.0
-    t0 = time.time()
     total_files = len(filenames) if len(filenames) > 0 else -1
     logger.info('WorkerId = ' + str(worker_id) + ' counting system calls on ' + str(total_files) + ' log files')
     for filename in filenames:
         active_malware = None
         if filename in db_file_malware_name_map:
-            initialize_malware_object(filename, db_file_malware_name_map[filename], from_db=True)
-            syscall_count(filename)
+            domain_utils.initialize_malware_object(filename, db_file_malware_name_map[filename], from_db=True)
+            filename_syscall_dict[filename] = syscall_count(filename)
         else:
             print (worker_id, 'ERROR filename not in db')
         j += 1
         logger.info('System call counter' + str(worker_id) + ' ' + str((j * 100 / total_files)) + '%')
     total_time = time.time() - t0
     logger.info(str(worker_id) + ' Total time: ' + str(total_time))
-
-
-# Utility method to initialize a new malware object given the relative process name and file name.
-# Checks whether the new process would be the db_malware or a corrupted process.
-def initialize_malware_object(filename, malware_name, from_db=False):
-    malware = Malware(malware_name)
-    if from_db:
-        db_file_malware_dict[filename] = malware
-        return malware
-    if filename in file_corrupted_processes_dict:
-        file_corrupted_processes_dict[filename].append(malware)
-    else:
-        file_corrupted_processes_dict[filename] = []
-        file_corrupted_processes_dict[filename].append(malware)
-    return malware
 
 
 # Analyze the log file line by line.
@@ -75,14 +58,8 @@ def syscall_count(filename):
                     is_creating_process(line, filename)
                 elif instruction_write_memory in line:
                     is_writing_memory(line, filename)
-                elif instruction_sleep in line and active_malware:
-                    is_calling_sleep()
-                elif instruction_termination in line:
-                    is_terminating(line, filename)
-                elif instruction_read_memory in line and error_manager in line:
-                    is_crashing(line, filename)
-                elif instruction_raise_error in line and active_malware:
-                    is_raising_error()
+                elif system_call_tag in line and active_malware:
+
             except:
                 traceback.print_exc()
 
@@ -94,7 +71,6 @@ def is_context_switch(filename, line):
     commas = line.strip().split(',')
     pid = int(commas[2].strip())
     proc_name = commas[3].split(')')[0].strip()
-    current_instruction = int((commas[0].split()[0].split('='))[1])
     not_malware = False
     malware = is_db_malware(proc_name, filename)
     if not malware:
@@ -106,9 +82,9 @@ def is_context_switch(filename, line):
         deactivate_malware()
     elif malware and active_malware:
         deactivate_malware()
-        is_malware(malware, pid, current_instruction)
+        is_malware(malware, pid)
     elif malware:
-        is_malware(malware, pid, current_instruction)
+        is_malware(malware, pid)
 
 
 # It is called only if the active_malware is not None.
@@ -132,10 +108,72 @@ def deactivate_malware():
 # If it isn't, it means it is the first instruction of the db_malware.
 # Therefore it adds the new pid value to the malware's list.
 # Then set active_malware to specified malware.
-def is_malware(malware, pid, current_instruction):
+def is_malware(malware, pid):
     global active_malware
     pid_list = malware.get_pid_list()
     if pid not in pid_list:
         malware.add_pid(pid, Malware.FROM_DB)
     malware.set_active_pid(pid)
     active_malware = malware
+
+
+# Handles the write on virtual memory system calls.
+# Analyze the log to find out process name and id of the writing and written processes.
+# Checks if the writing process is a malware.
+# If the writing process is a malicious one, the written process will also be considered as corrupted.
+# If the new malware is already known adds the written pid to that object after having checked
+# that the written pid is not already a valid pid for that malicious process.
+# Else create a new malware object and initialize it with the written pid.
+def is_writing_memory(line, filename):
+    commas = line.strip().split(',')
+    writing_pid = int(commas[2].strip())
+    writing_name = commas[3].split(')')[0].strip()
+    written_pid = int(commas[5].strip())
+    written_name = commas[6].split(')')[0].strip()
+
+    malware = is_db_malware(writing_name, filename)
+    if not malware:
+        malware = is_corrupted_process(writing_name, filename)
+
+    if malware and malware.is_valid_pid(writing_pid) and malware.has_active_pid() \
+            and malware.get_active_pid() == writing_pid:
+        target = is_db_malware(written_name, filename)
+        if not target:
+            target = is_corrupted_process(written_name, filename)
+        if target:
+            if not target.is_valid_pid(written_pid):
+                target.add_pid(written_pid, Malware.WRITTEN)
+            return
+        new_malware = domain_utils.initialize_malware_object(filename, written_name, db_file_malware_dict, file_corrupted_processes_dict)
+        new_malware.add_pid(written_pid, Malware.WRITTEN)
+
+
+# Handles process creation system calls.
+# Analyze the log to find out process name and id of the creating and created processes.
+# Checks if the creating process is a malware.
+# If the creating process is a malicious one, the created process will also be considered as corrupted.
+# If the new malware is already known adds the created pid to that object after having checked
+# that the created pid is not already a valid pid for that malicious process.
+# Else create a new malware object and initialize it with the created pid.
+def is_creating_process(line, filename):
+    commas = line.strip().split(',')
+    creating_pid = int(commas[2].strip())
+    creating_name = commas[3].split(')')[0].strip()
+    created_pid = int(commas[5].strip())
+    created_name = commas[6].split(')')[0].strip()
+
+    malware = is_db_malware(creating_name, filename)
+    if not malware:
+        malware = is_corrupted_process(creating_name, filename)
+
+    if malware and malware.is_valid_pid(creating_pid) and malware.has_active_pid() \
+            and malware.get_active_pid() == creating_pid:
+        target = is_db_malware(created_name, filename)
+        if not target:
+            target = is_corrupted_process(created_name, filename)
+        if target:
+            if not target.is_valid_pid(created_pid):
+                target.add_pid(created_pid, Malware.CREATED)
+            return
+        new_malware = domain_utils.initialize_malware_object(filename, created_name, db_file_malware_dict, file_corrupted_processes_dict)
+        new_malware.add_pid(created_pid, Malware.CREATED)
