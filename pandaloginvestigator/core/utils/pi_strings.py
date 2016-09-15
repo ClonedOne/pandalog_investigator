@@ -20,3 +20,6 @@ instruction_sleep = u'(num=98)'
 instruction_raise_error = u'(num=272)'
 error_manager = u'WerFault.exe'
 system_call_tag = u'nt_any_syscall (num='
+
+# Strings related to output files.
+no_instructions = 'Final instruction count:  [0, 0, 0, 0]'

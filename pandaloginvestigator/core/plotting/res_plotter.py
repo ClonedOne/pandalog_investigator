@@ -1,11 +1,11 @@
+from pandaloginvestigator.core.utils import pi_strings
+from pandaloginvestigator.core.utils import utils
 import matplotlib.pyplot as plt
 import numpy
 import ast
 
 
-dir_resfile_path = '/home/yogaub/Desktop/resfile.txt'
-dir_accumulationfile_path = '/home/yogaub/Desktop/stats.txt'
-empty_list = 'Final instruction count: 	[0, 0, 0, 0]'
+no_instructions = pi_strings.no_instructions
 
 totals_dict = {}
 from_db_dict = {}
@@ -17,44 +17,26 @@ crashing_dict = {}
 error_dict = {}
 
 
-def compute_stats(chosen_dict):
-    print 'computing stats'
-    values = numpy.array(chosen_dict.values())
-    mean = values.mean()
-    standard_deviation = values.std()
-    variance = values.var()
-    return mean, standard_deviation, variance
-
-
-def plot_data(chosen_dict, stats, color, shape, title, log=False):
-    print 'plotting data'
+def plot_data(chosen_dict, stats, color, shape, title):
     accumulation_list = []
     ranges = []
     standard_deviation = stats[1]
     std_multiplier = 0.0
     i = 0
     values = numpy.array(sorted(chosen_dict.values()))
-    # ranges_length = values.max()
-    # print ranges_length / (standard_deviation*0.1)
     for value in values:
         while value >= standard_deviation * std_multiplier:
             accumulation_list.append(0)
             std_multiplier += 0.1
             ranges.append(standard_deviation * std_multiplier)
             i += 1
-        accumulation_list[i-1] += 1
+        accumulation_list[i - 1] += 1
 
     accumulation_list = numpy.array(accumulation_list)
     ranges = numpy.array(ranges)
-    # print accumulation_list
-    # print ranges
-
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
-    if log:
-        # ax.set_xscale('log')
-        ax.set_yscale('log')
-    ax.plot(ranges, accumulation_list, color+shape, markersize=8)
+    ax.plot(ranges, accumulation_list, color + shape, markersize=8)
     ax.plot(ranges, accumulation_list, color, linewidth=2)
     plt.title(title)
     plt.xlabel("Value range")
@@ -73,41 +55,40 @@ def invert_dictionary(chosen_dict):
     return inverted_dict
 
 
-def print_results(inverted_totals, total_stats, terms, clean_stats, clean_totals_dict):
-    print 'printing data on file'
-    with open(dir_accumulationfile_path, 'w') as accfile:
-        accfile.write('Filename - Total instruction count mapping:\n\n')
+def print_results(dir_results_path, inverted_totals, total_stats, terms, clean_stats, clean_totals_dict):
+    with open(dir_results_path + '/stats.txt', 'w', codecs='utf-8', errors='replace') as stats_file:
+        stats_file.write('Filename <-> Total instruction count:\n\n')
         for entry in totals_dict:
-            accfile.write(str(entry) + '\t' + str(totals_dict[entry]) + '\n')
-        accfile.write('\n')
-        accfile.write('Total instruction count - Filename mapping:\n\n')
+            stats_file.write(str(entry) + '\t' + str(totals_dict[entry]) + '\n')
+        stats_file.write('\n')
+        stats_file.write('Total instruction count <-> Filename:\n\n')
         for key in sorted(inverted_totals.keys()):
-            accfile.write(str(key) + '\t' + str(inverted_totals[key]) + '\n')
-        accfile.write('\n')
-        accfile.write('Number of log files with non-null instruction count: \t' + str(len(totals_dict)) + '\n')
-        accfile.write('Mean: \t' + str(total_stats[0]) + '\n')
-        accfile.write('Standard Deviation: \t' + str(total_stats[1]) + '\n')
-        accfile.write('Variance: \t' + str(total_stats[2]) + '\n\n')
-        accfile.write('Number of log files without crashes/errors: \t' + str(len(clean_totals_dict)) + '\n')
-        accfile.write('Mean without crashes/errors: \t' + str(clean_stats[0]) + '\n')
-        accfile.write('Standard Deviation without crashes/errors: \t' + str(clean_stats[1]) + '\n')
-        accfile.write('Variance without crashes/errors: \t' + str(clean_stats[2]) + '\n\n')
-        accfile.write('Instruction count threshold: \t' + str(total_stats[0] * 0.1) + '\n')
-        accfile.write('Number of malwares below threshold: \t' + str(terms[0]) + '\n')
-        accfile.write('Number of malwares below threshold terminating all processes: \t' + str(terms[1]) + '\n')
-        accfile.write('Number of malwares below threshold sleeping all processes: \t' + str(terms[2]) + '\n')
-        accfile.write('Number of malwares below threshold crashing all processes: \t' + str(terms[3]) + '\n')
-        accfile.write('Number of malwares below threshold raising errors on all processes: \t' + str(terms[4]) + '\n')
-        accfile.write('Number of malwares below threshold sleeping or terminating: \t' + str(terms[5]) + '\n')
-        accfile.write('Number of malwares below threshold crashing or raising errors: \t' + str(terms[6]) + '\n\n')
+            stats_file.write(str(key) + '\t' + str(inverted_totals[key]) + '\n')
+        stats_file.write('\n')
+        stats_file.write('Number of log files with non-null instruction count: \t' + str(len(totals_dict)) + '\n')
+        stats_file.write('Mean: \t' + str(total_stats[0]) + '\n')
+        stats_file.write('Standard Deviation: \t' + str(total_stats[1]) + '\n')
+        stats_file.write('Variance: \t' + str(total_stats[2]) + '\n\n')
+        stats_file.write('Number of log files without crashes/errors: \t' + str(len(clean_totals_dict)) + '\n')
+        stats_file.write('Mean without crashes/errors: \t' + str(clean_stats[0]) + '\n')
+        stats_file.write('Standard Deviation without crashes/errors: \t' + str(clean_stats[1]) + '\n')
+        stats_file.write('Variance without crashes/errors: \t' + str(clean_stats[2]) + '\n\n')
+        stats_file.write('Instruction count threshold: \t' + str(total_stats[0] * 0.1) + '\n')
+        stats_file.write('Number of malwares below threshold: \t' + str(terms[0]) + '\n')
+        stats_file.write('Number of malwares below threshold terminating all processes: \t' + str(terms[1]) + '\n')
+        stats_file.write('Number of malwares below threshold sleeping all processes: \t' + str(terms[2]) + '\n')
+        stats_file.write('Number of malwares below threshold crashing all processes: \t' + str(terms[3]) + '\n')
+        stats_file.write('Number of malwares below threshold raising errors on all processes: \t' + str(terms[4]) + '\n')
+        stats_file.write('Number of malwares below threshold sleeping or terminating: \t' + str(terms[5]) + '\n')
+        stats_file.write('Number of malwares below threshold crashing or raising errors: \t' + str(terms[6]) + '\n\n')
 
 
-def accumulate_data():
+def accumulate_data(dir_results_path):
     next_file_name = True
     next_values = False
     next_term_sleep = False
 
-    with open(dir_resfile_path, 'r') as resfile:
+    with open(dir_results_path + '', 'r', codecs='utf-8', errors='replace') as resfile:
         last_file_name = ''
         for line in resfile:
             if not line.strip():
@@ -121,7 +102,7 @@ def accumulate_data():
                 next_values = True
                 continue
             if next_values:
-                if line != empty_list:
+                if line != no_instructions:
                     values = line.split('\t')[1].replace('[', '').replace(']', '').replace(',', '').split()
                     from_db_dict[last_file_name] = int(values[0])
                     if int(values[1]) > 0:
@@ -157,9 +138,7 @@ def prune_data(chosen_dict, threshold_number):
 
 
 def do_stuff(chosen_dict, color, shape, title, log=False):
-    print len(chosen_dict)
-    stats = compute_stats(chosen_dict)
-    print stats
+    stats = utils.compute_stats(chosen_dict)
     plot_data(chosen_dict, stats, color, shape, title, log)
 
 
@@ -204,7 +183,7 @@ def prune_crashing_errors(dict_list):
     return clean_dicts
 
 
-def main():
+def plot_results():
     accumulate_data()
     inverted_totals = invert_dictionary(totals_dict)
     clean_dicts = prune_crashing_errors([totals_dict, from_db_dict, created_dict, written_dict])
@@ -213,8 +192,8 @@ def main():
     clean_created_dict = clean_dicts[2]
     clean_written_dict = clean_dicts[3]
 
-    total_stats = compute_stats(totals_dict)
-    clean_total_stats = compute_stats(clean_totals_dict)
+    total_stats = utils.compute_stats(totals_dict)
+    clean_total_stats = utils.compute_stats(clean_totals_dict)
     total_terms = compute_number_of_terminated(totals_dict, total_stats[0] * 0.1)
     print_results(inverted_totals, total_stats, total_terms, clean_total_stats, clean_totals_dict)
 
@@ -250,11 +229,3 @@ def main():
     do_stuff(clean_written_dict, 'y', 'o', 'Memory written processes without crashes/errors')
     prune_data(clean_written_dict, 10)
     do_stuff(clean_written_dict, 'y', 'o', 'Memory written processes pruned without crashes/errors')
-
-
-if __name__ == '__main__':
-    main()
-
-
-
-
