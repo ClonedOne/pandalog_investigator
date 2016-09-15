@@ -16,21 +16,21 @@ system_call_tag = pi_strings.system_call_tag
 
 file_corrupted_processes_dict = {}
 db_file_malware_dict = {}
+syscall_dict = {}
 active_malware = None
 logger = logging.getLogger(__name__)
 
 
 def work(data_pack):
+    global active_malware, dir_unpacked_path, syscall_dict
     t0 = time.time()
     j = 0.0
     filename_syscall_dict = {}
     worker_id = data_pack[0]
     filenames = data_pack[1]
-    dir_unpacked_path_p = data_pack[2]
+    dir_unpacked_path = data_pack[2]
     syscall_dict = data_pack[3]
     db_file_malware_name_map = data_pack[4]
-    global active_malware, dir_unpacked_path, dir_analyzed_logs
-    dir_unpacked_path = dir_unpacked_path_p
     total_files = len(filenames) if len(filenames) > 0 else -1
     logger.info('WorkerId = ' + str(worker_id) + ' counting system calls on ' + str(total_files) + ' log files')
     for filename in filenames:
@@ -44,11 +44,13 @@ def work(data_pack):
         logger.info('System call counter' + str(worker_id) + ' ' + str((j * 100 / total_files)) + '%')
     total_time = time.time() - t0
     logger.info(str(worker_id) + ' Total time: ' + str(total_time))
+    return filename_syscall_dict
 
 
 # Analyze the log file line by line.
 # Checks if each line contains a the tag of a systems call. If so update frequency of that system call.
 def syscall_count(filename):
+    malware_syscall_dict = {}
     with open(dir_unpacked_path + '/' + filename, 'r', encoding='utf-8', errors='replace') as logfile:
         for line in logfile:
             try:
@@ -59,7 +61,9 @@ def syscall_count(filename):
                 elif instruction_write_memory in line:
                     is_writing_memory(line, filename)
                 elif system_call_tag in line and active_malware:
-
+                    system_call_num = int(line.split('=')[3].split(')')[0])
+                    system_call = syscall_dict.get(system_call_num, system_call_num)
+                    malware_syscall_dict[system_call] = malware_syscall_dict.get(system_call, 0) + 1
             except:
                 traceback.print_exc()
 
@@ -177,3 +181,31 @@ def is_creating_process(line, filename):
             return
         new_malware = domain_utils.initialize_malware_object(filename, created_name, db_file_malware_dict, file_corrupted_processes_dict)
         new_malware.add_pid(created_pid, Malware.CREATED)
+
+
+# Checks if the process name is inside the db_file_malware_dict.
+# This would mean that the current process is the original malware installed
+# in the system. If found returns the malware.
+def is_db_malware(proc_name, filename):
+    if filename not in db_file_malware_dict:
+        return None
+    malware = db_file_malware_dict[filename]
+    if malware.get_name() == proc_name:
+        return malware
+    else:
+        return None
+
+
+# Checks if the process name is inside the file_corrupted_processes_dict.
+# If positive also checks if the current pid corresponds to a valid pid for that malware
+# That is because spawned or memory written processes may have the same name of
+# correct processes in the system. Therefore the method looks only for valid couples name/pid.
+# If found returns the malware.
+def is_corrupted_process(proc_name, filename):
+    if filename not in file_corrupted_processes_dict:
+        return None
+    malwares = file_corrupted_processes_dict[filename]
+    for malware in malwares:
+        if malware.get_name() == proc_name:
+            return malware
+    return None
