@@ -21,8 +21,8 @@ def work(data_pack):
     for filename in filenames:
         j += 1
         logger.info('Translator ' + str(worker_id) + ' ' + str(j / total_files * 100) + '%')
-        with codecs.open(dir_unpacked_path + '/' + filename, 'r', 'utf-8', errors='ignore') as log_file:
-            with codecs.open(dir_translated_path + '/' + filename, 'w', 'utf-8', errors='ignore') as translated_file:
+        with codecs.open(dir_unpacked_path + '/' + filename, 'r', 'utf-8', errors='replace') as log_file:
+            with codecs.open(dir_translated_path + '/' + filename, 'w', 'utf-8', errors='replace') as translated_file:
                 for line in log_file:
                     if system_call_tag in line:
                         system_call_num = int(line.split('=')[3].split(')')[0])

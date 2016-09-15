@@ -1,5 +1,7 @@
 from pandaloginvestigator.core.utils import utils
 from pandaloginvestigator.core.utils import panda_utils
+from pandaloginvestigator.core.utils import pi_strings
+from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.domain.malware_object import Malware
 import logging
 import time
@@ -9,14 +11,14 @@ import traceback
 dir_unpacked_path = None
 dir_analyzed_logs = None
 
-context_switch = u'new_pid,'
-instruction_termination = u'nt_terminate_process'
-instruction_process_creation = u'nt_create_user_process'
-instruction_write_memory = u'nt_write_virtual_memory'
-instruction_read_memory = u'nt_read_virtual_memory'
-instruction_sleep = u'(num=98)'
-instruction_raise_error = u'(num=272)'
-error_manager = u'WerFault.exe'
+context_switch = pi_strings.context_switch
+instruction_termination = pi_strings.instruction_termination
+instruction_process_creation = pi_strings.instruction_process_creation
+instruction_write_memory = pi_strings.instruction_write_memory
+instruction_read_memory = pi_strings.instruction_read_memory
+instruction_sleep = pi_strings.instruction_sleep
+instruction_raise_error = pi_strings.instruction_raise_error
+error_manager = pi_strings.error_manager
 
 file_corrupted_processes_dict = {}
 db_file_malware_dict = {}
@@ -331,7 +333,7 @@ def is_creating_process(line, filename):
             if not target.is_valid_pid(created_pid):
                 target.add_pid(created_pid, Malware.CREATED)
             return
-        new_malware = initialize_malware_object(filename, created_name)
+        new_malware = domain_utils.initialize_malware_object(filename, created_name, db_file_malware_dict, file_corrupted_processes_dict)
         new_malware.add_pid(created_pid, Malware.CREATED)
 
 
@@ -364,7 +366,7 @@ def is_writing_memory(line, filename):
             if not target.is_valid_pid(written_pid):
                 target.add_pid(written_pid, Malware.WRITTEN)
             return
-        new_malware = initialize_malware_object(filename, written_name)
+        new_malware = domain_utils.initialize_malware_object(filename, written_name, db_file_malware_dict, file_corrupted_processes_dict)
         new_malware.add_pid(written_pid, Malware.WRITTEN)
 
 
@@ -382,20 +384,6 @@ def is_malware(malware, pid, current_instruction):
     malware.set_active_pid(pid)
     active_malware = malware
 
-
-# Utility method to initialize a new malware object given the relative process name and file name.
-# Checks whether the new process would be the db_malware or a corrupted process.
-def initialize_malware_object(filename, malware_name, from_db=False):
-    malware = Malware(malware_name)
-    if from_db:
-        db_file_malware_dict[filename] = malware
-        return malware
-    if filename in file_corrupted_processes_dict:
-        file_corrupted_processes_dict[filename].append(malware)
-    else:
-        file_corrupted_processes_dict[filename] = []
-        file_corrupted_processes_dict[filename].append(malware)
-    return malware
 
 
 # Analyze the log file line by line.
@@ -433,22 +421,24 @@ def analyze_log(filename):
 
 
 def work(data_pack):
+    t0 = time.time()
+    global active_malware, dir_unpacked_path, dir_analyzed_logs
+    j = 0.0
     worker_id = data_pack[0]
     filenames = data_pack[1]
     db_file_malware_name_map = data_pack[2]
-    dir_unpacked_path_p = data_pack[3]
-    dir_analyzed_logs_p = data_pack[4]
-    global active_malware, dir_unpacked_path, dir_analyzed_logs
-    dir_unpacked_path = dir_unpacked_path_p
-    dir_analyzed_logs = dir_analyzed_logs_p
-    j = 0.0
-    t0 = time.time()
+    dir_unpacked_path = data_pack[3]
+    dir_analyzed_logs = data_pack[4]
     total_files = len(filenames) if len(filenames) > 0 else -1
     logger.info('WorkerId = ' + str(worker_id) + ' analyzing ' + str(total_files) + ' log files')
     for filename in filenames:
         active_malware = None
         if filename in db_file_malware_name_map:
-            initialize_malware_object(filename, db_file_malware_name_map[filename], from_db=True)
+            domain_utils.initialize_malware_object(filename,
+                                                   db_file_malware_name_map[filename],
+                                                   db_file_malware_dict,
+                                                   file_corrupted_processes_dict,
+                                                   from_db=True)
             analyze_log(filename)
         else:
             print (worker_id, 'ERROR filename not in db')

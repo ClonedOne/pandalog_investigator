@@ -25,6 +25,7 @@ def analyze_logs(dir_unpacked_path, dir_analyzed_path, dir_results_path, dir_dat
     formatted_input = utils.format_worker_input(core_num, file_names_sublists, (db_file_malware_name_map, dir_unpacked_path, dir_analyzed_path))
     pool = Pool(processes=core_num)
     results = pool.map(worker_analyzer.work, formatted_input)
+    pool.close()
     db_file_malware_dict = {}
     file_corrupted_processes_dict = {}
     file_terminate_dict = {}
