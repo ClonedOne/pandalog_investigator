@@ -7,11 +7,13 @@ setup(
     version='0.1',
     description='Pandalogs analysis tool',
     url='https://ClonedOne@bitbucket.org/ClonedOne/seminar.git',
-    install_requires=['numpy', 'cement'],
+    install_requires=['numpy', 'cement', 'scipy', 'matplotlib'],
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    entry_points={'console_scripts': ['pandaloginvestigator=pandaloginvestigator.pandaloginvestigator:main']},
+    entry_points={'console_scripts': [
+        'pandaloginvestigator=pandaloginvestigator.pandaloginvestigator:main']
+    },
     classifiers=[
         'Development Status :: Beta',
         'Framework :: Cement',
