@@ -14,8 +14,11 @@ logger = logging.getLogger(__name__)
 # Iterate through all the log files in the folder specified in the configuration. Generate equal lists of files to
 # pass to worker_syscall_counter workers. The number of logs to analyze is passed as argument, analyze all logs file if
 # max_num = None. Logs time spent in the process.
-def count_syscalls(dir_unpacked_path, dir_database_path, dir_results_path, core_num, max_num):
+def count_syscalls(dir_unpacked_path, dir_database_path, dir_results_path, dir_syscall_path, core_num, max_num):
     logger.info('Starting system calls counting operation with max_num = ' + str(max_num))
+    filename_syscall_dict = {}
+    dict_list = []
+    dict_list.append(filename_syscall_dict)
     t1 = time.time()
     sys_call_dict = syscalls_getter.get_syscalls()
     db_file_malware_name_map = db_manager.acquire_malware_file_dict(dir_database_path)
@@ -23,8 +26,15 @@ def count_syscalls(dir_unpacked_path, dir_database_path, dir_results_path, core_
     file_names_sublists = utils.divide_workload(filenames, core_num, max_num)
     if len(file_names_sublists) != core_num:
         logger.error('ERROR: size of split workload different from number of cores')
-    formatted_input = utils.format_worker_input(core_num, file_names_sublists, (dir_unpacked_path, sys_call_dict, db_file_malware_name_map))
+    formatted_input = utils.format_worker_input(core_num, file_names_sublists,
+                                                (dir_unpacked_path, dir_syscall_path, sys_call_dict, db_file_malware_name_map))
     pool = Pool(processes=core_num)
-    pool.map(worker_syscall_counter.work, formatted_input)
+    results = pool.map(worker_syscall_counter.work, formatted_input)
+    pool.close()
+    res = utils.update_results(results, dict_list)
+    if res < 0:
+        logger.error('ERROR: analyze_logs failed update_results()')
+        return
+    utils.final_output_syscall(dir_results_path, filenames, filename_syscall_dict)
     t2 = time.time()
     logger.info('Total counting time: ' + str(t2 - t1))

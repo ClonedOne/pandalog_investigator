@@ -7,5 +7,5 @@ def get_syscalls():
     with open('syscalls.tsv') as syscall_file:
         for line in syscall_file:
             line = line.split('\t')
-            syscall_dict[int(line[0])] = line[1]
+            syscall_dict[int(line[0])] = line[1].strip()
     return syscall_dict

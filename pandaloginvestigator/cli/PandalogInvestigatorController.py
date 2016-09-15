@@ -2,6 +2,7 @@ from cement.ext.ext_argparse import ArgparseController, expose
 from pandaloginvestigator.cli.cmds.unpack import unpack_command
 from pandaloginvestigator.cli.cmds.translate import translate_command
 from pandaloginvestigator.cli.cmds.analyze import analyze_command
+from pandaloginvestigator.cli.cmds.syscalls import syscall_command
 import logging
 
 
@@ -12,6 +13,10 @@ class PandalogInvestigatorController(ArgparseController):
     class Meta:
         label = 'base'
         description = 'This application analyzes logs resulting from Panda sandbox run of malicious programs.'
+        arguments = [
+            (['-n', '--num'], dict(help='Specify the number of logs to operate on', action='store')),
+            (['-u', '--unpack'], dict(help='Unpack log files before operation', action='store_true'))
+        ]
 
     @expose(hide=True)
     def default(self):
@@ -21,6 +26,7 @@ class PandalogInvestigatorController(ArgparseController):
                  'Please specify the number of log files upon which you want to operate, or all.',
             arguments=[
                 (['-n', '--num'], dict(help='Specify the number of logs to operate on', action='store')),
+                (['-u', '--unpack'], dict(help='Unpack log files before operation', action='store_true'))
             ])
     def unpack(self):
         logger.info('Unpacking logs. Received num option with value ' + str(self.app.pargs.num))
@@ -45,7 +51,7 @@ class PandalogInvestigatorController(ArgparseController):
             translate_command(self.app)
 
     @expose(help='Analysis command: identify malwares and corrupted processes and counts the instruction executed. '
-                 'Then outputs the results on file, generating also a final report file.'
+                 'Then outputs the results on file, generating also a final report file. '
                  'Please specify the number of log files upon which you want to operate, or all.',
             arguments=[
                 (['-n', '--num'], dict(help='Specify the number of logs to operate on', action='store')),
@@ -59,3 +65,19 @@ class PandalogInvestigatorController(ArgparseController):
             analyze_command(self.app, int(self.app.pargs.num))
         else:
             analyze_command(self.app)
+
+    @expose(help='System calls counting command: count system calls executed by malicious programs. '
+                 'Then outputs the results on file, generating also a final report file. '
+                 'Please specify the number of log files upon which you want to operate, or all.',
+            arguments=[
+                (['-n', '--num'], dict(help='Specify the number of logs to operate on', action='store')),
+                (['-u', '--unpack'], dict(help='Unpack log files before operation', action='store_true'))
+            ])
+    def syscalls(self):
+        logger.info('Counting system calls. Received num option with value ' + str(self.app.pargs.num))
+        if self.app.pargs.unpack:
+            self.unpack()
+        if self.app.pargs.num:
+            syscall_command(self.app, int(self.app.pargs.num))
+        else:
+            syscall_command(self.app)

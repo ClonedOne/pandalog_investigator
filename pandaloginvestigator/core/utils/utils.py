@@ -64,12 +64,24 @@ def output_on_file(filename, process_dict, inverted_process_dict, dir_analyzed_l
                       '\t Crashing all: \t' + str(crashing_all) + '\t Raising hard error all: \t' + str(error_all))
 
 
+# Similar to the previous but modified to output system call counting results.
+def output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, syscall_dict):
+    with open(dir_syscall_path + '/' + filename, 'w', encoding='utf-8', errors='replace') as outfile:
+        total_syscall_accumulator = 0
+        for system_call_num in sorted(list(syscall_dict)):
+            system_call = syscall_dict[system_call_num]
+            if system_call in malware_syscall_dict:
+                total_syscall_accumulator += malware_syscall_dict[system_call]
+                outfile.write(system_call + ':\t' + str(malware_syscall_dict[system_call]) + '\n')
+        outfile.write('\nFinal system call count: \t' + str(total_syscall_accumulator))
+
+
 # Prints the final output on file. The final output contains aggregate data regarding the totality of the analyzed logs.
 # For each filename and each malware_object associated sums up the instruction for each pid, checks if each pid
 # has been terminated and if each pid has called the sleep function.
-def final_output(dir_result_path, filenames, db_file_malware_dict, file_corrupted_processes_dict,
+def final_output(dir_results_path, filenames, db_file_malware_dict, file_corrupted_processes_dict,
                  file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict):
-    with open(dir_result_path + '/' + 'analysis.txt', 'w', encoding='utf-8') as res_file:
+    with open(dir_results_path + '/' + 'analysis.txt', 'w', encoding='utf-8', errors='replace') as res_file:
         for filename in filenames:
             total_instruction_accumulator = [0, 0, 0, 0]
             res_file.write('File name: ' + filename + '\n')
@@ -91,6 +103,21 @@ def final_output(dir_result_path, filenames, db_file_malware_dict, file_corrupte
                            (str(file_crash_dict[filename]) if filename in file_crash_dict else str(False)))
             res_file.write('\tRaising hard error all: \t' +
                            (str(file_error_dict[filename]) if filename in file_error_dict else str(False)))
+            res_file.write('\n\n')
+
+
+# Prints the final output on file. Modified for system call counting output.
+def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
+    with open(dir_results_path + '/' + 'syscalls.txt', 'w', encoding='utf-8', errors='replace') as res_file:
+        for filename in filenames:
+            total_syscall_accumulator = 0
+            res_file.write('File name: ' + filename + '\n')
+            if filename in filename_syscall_dict:
+                entry = filename_syscall_dict[filename]
+                total_syscall_accumulator = sum(entry.values())
+
+            res_file.write('Final instruction count: \t' +
+                           str(total_syscall_accumulator))
             res_file.write('\n\n')
 
 

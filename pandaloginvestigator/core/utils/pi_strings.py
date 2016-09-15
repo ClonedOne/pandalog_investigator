@@ -7,6 +7,7 @@ dir_unpacked_path = 'created_dirs/dir_unpacked_path'
 dir_translated_path = 'created_dirs/dir_translated_path'
 dir_results_path = 'created_dirs/dir_results_path'
 dir_analyzed_path = 'created_dirs/dir_analyzed_path'
+dir_syscall_path = 'created_dirs/dir_syscall_path'
 
 
 # Strings used to identify section of interest in log files.

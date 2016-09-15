@@ -385,7 +385,6 @@ def is_malware(malware, pid, current_instruction):
     active_malware = malware
 
 
-
 # Analyze the log file line by line.
 # Checks if each line contains a context switch, a process creation, a memory write or a process termination.
 # At the end print a summary of the analyzed mawlares on a file.
@@ -441,7 +440,7 @@ def work(data_pack):
                                                    from_db=True)
             analyze_log(filename)
         else:
-            print (worker_id, 'ERROR filename not in db')
+            logger.error(str(worker_id) + ' ERROR filename not in db')
         j += 1
         logger.info('Analyzer' + str(worker_id) + ' ' + str((j * 100 / total_files)) + '%')
     total_time = time.time() - t0

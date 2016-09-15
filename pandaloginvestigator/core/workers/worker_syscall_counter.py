@@ -1,5 +1,6 @@
 from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import pi_strings
+from pandaloginvestigator.core.utils import utils
 from pandaloginvestigator.core.domain.malware_object import Malware
 import logging
 import time
@@ -7,6 +8,7 @@ import traceback
 
 
 dir_unpacked_path = None
+dir_syscall_path = None
 
 context_switch = pi_strings.context_switch
 instruction_termination = pi_strings.instruction_termination
@@ -22,29 +24,31 @@ logger = logging.getLogger(__name__)
 
 
 def work(data_pack):
-    global active_malware, dir_unpacked_path, syscall_dict
+    global active_malware, dir_unpacked_path, dir_syscall_path, syscall_dict
     t0 = time.time()
     j = 0.0
     filename_syscall_dict = {}
     worker_id = data_pack[0]
     filenames = data_pack[1]
     dir_unpacked_path = data_pack[2]
-    syscall_dict = data_pack[3]
-    db_file_malware_name_map = data_pack[4]
+    dir_syscall_path = data_pack[3]
+    syscall_dict = data_pack[4]
+    db_file_malware_name_map = data_pack[5]
     total_files = len(filenames) if len(filenames) > 0 else -1
     logger.info('WorkerId = ' + str(worker_id) + ' counting system calls on ' + str(total_files) + ' log files')
     for filename in filenames:
         active_malware = None
         if filename in db_file_malware_name_map:
-            domain_utils.initialize_malware_object(filename, db_file_malware_name_map[filename], from_db=True)
+            domain_utils.initialize_malware_object(filename, db_file_malware_name_map[filename],
+                                                   db_file_malware_dict, file_corrupted_processes_dict, from_db=True)
             filename_syscall_dict[filename] = syscall_count(filename)
         else:
-            print (worker_id, 'ERROR filename not in db')
+            logger.error(str(worker_id) + ' ERROR filename not in db')
         j += 1
         logger.info('System call counter' + str(worker_id) + ' ' + str((j * 100 / total_files)) + '%')
     total_time = time.time() - t0
     logger.info(str(worker_id) + ' Total time: ' + str(total_time))
-    return filename_syscall_dict
+    return (filename_syscall_dict, )
 
 
 # Analyze the log file line by line.
@@ -55,7 +59,7 @@ def syscall_count(filename):
         for line in logfile:
             try:
                 if context_switch in line:
-                    is_context_switch(filename, line, process_dict, inverted_process_dict)
+                    is_context_switch(filename, line)
                 elif instruction_process_creation in line:
                     is_creating_process(line, filename)
                 elif instruction_write_memory in line:
@@ -66,6 +70,8 @@ def syscall_count(filename):
                     malware_syscall_dict[system_call] = malware_syscall_dict.get(system_call, 0) + 1
             except:
                 traceback.print_exc()
+    utils.output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, syscall_dict)
+    return malware_syscall_dict
 
 
 # If a context switch happens this method is used to gather the information on which process is going in CPU.
