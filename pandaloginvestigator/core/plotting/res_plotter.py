@@ -3,10 +3,13 @@ from pandaloginvestigator.core.utils import utils
 import matplotlib.pyplot as plt
 import numpy
 import ast
+import logging
 
 
+logger = logging.getLogger(__name__)
+
+# Global variables declarations
 no_instructions = pi_strings.no_instructions
-
 totals_dict = {}
 from_db_dict = {}
 created_dict = {}
@@ -17,6 +20,7 @@ crashing_dict = {}
 error_dict = {}
 
 
+# Plot the data contained in the specified dictionary.
 def plot_data(chosen_dict, stats, color, shape, title):
     accumulation_list = []
     ranges = []
@@ -42,17 +46,6 @@ def plot_data(chosen_dict, stats, color, shape, title):
     plt.xlabel("Value range")
     plt.ylabel("Frequency")
     plt.show()
-
-
-def invert_dictionary(chosen_dict):
-    inverted_dict = {}
-    for malware_name, count in chosen_dict.iteritems():
-        if count in inverted_dict:
-            inverted_dict[count].append(malware_name)
-        else:
-            inverted_dict[count] = []
-            inverted_dict[count].append(malware_name)
-    return inverted_dict
 
 
 def print_results(dir_results_path, inverted_totals, total_stats, terms, clean_stats, clean_totals_dict):
@@ -88,7 +81,7 @@ def accumulate_data(dir_results_path):
     next_values = False
     next_term_sleep = False
 
-    with open(dir_results_path + '', 'r', codecs='utf-8', errors='replace') as resfile:
+    with open(dir_results_path + '/analysis.txt', 'r', codecs='utf-8', errors='replace') as resfile:
         last_file_name = ''
         for line in resfile:
             if not line.strip():
@@ -130,7 +123,7 @@ def prune_data(chosen_dict, threshold_number):
     for i in range(length):
         if i < threshold_number or (length - 1) - i < threshold_number:
             eliminate_vals.append(values[i])
-    for key, value in chosen_dict.iteritems():
+    for key, value in chosen_dict.items():
         if value in eliminate_vals:
             eliminate_keys.append(key)
     for key in eliminate_keys:
@@ -150,7 +143,7 @@ def compute_number_of_terminated(chosen_dict, threshold):
     self_raising_error = 0
     crash_or_error = 0
     sleep_or_terminate = 0
-    for filename, value in chosen_dict.iteritems():
+    for filename, value in chosen_dict.items():
         if value < threshold:
             below_threshold += 1
             if terminating_dict[filename]:
@@ -170,7 +163,7 @@ def compute_number_of_terminated(chosen_dict, threshold):
         sleep_or_terminate, crash_or_error
 
 
-def prune_crashing_errors(dict_list):
+def prune_crashing_errors(dict_list, crashing_dict, error_dict):
     clean_dicts = []
     i = 0
     for cur_dict in dict_list:
@@ -183,9 +176,16 @@ def prune_crashing_errors(dict_list):
     return clean_dicts
 
 
-def plot_results():
-    accumulate_data()
-    inverted_totals = invert_dictionary(totals_dict)
+def plot_results(dir_results_path, target):
+    accumulate_data(totals_dict,
+                    from_db_dict,
+                    created_dict,
+                    written_dict,
+                    terminating_dict,
+                    sleeping_dict,
+                    crashing_dict,
+                    error_dict)
+    inverted_totals = utils.invert_dictionary(totals_dict)
     clean_dicts = prune_crashing_errors([totals_dict, from_db_dict, created_dict, written_dict])
     clean_totals_dict = clean_dicts[0]
     clean_from_db_dict = clean_dicts[1]

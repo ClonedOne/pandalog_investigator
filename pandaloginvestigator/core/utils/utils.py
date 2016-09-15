@@ -162,3 +162,16 @@ def format_worker_input(core_num, item_sublists, fixed_params_list):
     for i in range(core_num):
         formatted_input.append((i, item_sublists[i]) + tuple(fixed_params_list))
     return formatted_input
+
+
+# Given a dictionary returns the inverted dictionary, where each value is considered
+# as a the new key.
+def invert_dictionary(chosen_dict):
+    inverted_dict = {}
+    for malware_name, count in chosen_dict.iteritems():
+        if count in inverted_dict:
+            inverted_dict[count].append(malware_name)
+        else:
+            inverted_dict[count] = []
+            inverted_dict[count].append(malware_name)
+    return inverted_dict

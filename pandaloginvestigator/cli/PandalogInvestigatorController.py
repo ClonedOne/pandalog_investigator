@@ -81,3 +81,20 @@ class PandalogInvestigatorController(ArgparseController):
             syscall_command(self.app, int(self.app.pargs.num))
         else:
             syscall_command(self.app)
+
+    @expose(help='Analysis result plotting command: generate result graphs and statistics. '
+                 'Generates also a final statistics file. '
+                 'Please specify the result you wish to visualize: instructions or system calls analysis.',
+            arguments=[
+                (['-i', '--instr'], dict(help='Plot the result of the instruction analysis', action='store_true')),
+                (['-s', '--syscall'], dict(help='Plot the result of the system call analysis', action='store_true'))
+            ])
+    def plot(self):
+        logger.info('Plotting analysis results. Received option: ' + ('syscalls' if self.app.pargs.syscall else 'instructions'))
+        if self.app.pargs.num:
+            syscall_command(self.app, int(self.app.pargs.num))
+        elif self.app.pargs.syscall:
+            syscall_command(self.app)
+        else:
+            logger.info('Must specify a parameter')
+            self.app.args.print_help()
