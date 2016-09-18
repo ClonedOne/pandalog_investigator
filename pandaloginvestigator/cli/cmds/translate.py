@@ -1,5 +1,6 @@
 from pandaloginvestigator.core import log_translator
-from pandaloginvestigator.core.utils import syscalls_getter, string_utils
+from pandaloginvestigator.core.utils import domain_utils
+from pandaloginvestigator.core.utils import string_utils
 import logging
 import os
 
@@ -19,5 +20,5 @@ def translate_command(app, max_num=None):
         os.makedirs(string_utils.dir_translated_path)
     logger.debug('Translate command with parameters: {}, {}, {}'.format(
         string_utils.dir_unpacked_path, string_utils.dir_translated_path, str(max_num)))
-    syscall_dict = syscalls_getter.get_syscalls()
+    syscall_dict = domain_utils.get_syscalls()
     log_translator.translate_logs(string_utils.dir_unpacked_path, syscall_dict, string_utils.dir_translated_path, core_num, max_num)

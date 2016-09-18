@@ -18,8 +18,8 @@ def fill_dicts(filenames, filename_scsi_dict, filename_bios_dict):
                     filename_scsi_dict[filename] += 1
                 elif bios_id in line:
                     filename_bios_dict[filename] += 1
-    print len(filename_scsi_dict)
-    print len(filename_bios_dict)
+    print(len(filename_scsi_dict))
+    print(len(filename_bios_dict))
 
 
 def acquire_conditions(filenames, term_sleep_dict, instrction_dict):
@@ -72,8 +72,8 @@ def main():
         if scsi_count or bios_count:
             avg_inst += instructions
             number += 1
-            print filename, scsi_count, bios_count, condition, instructions
+            print(filename, scsi_count, bios_count, condition, instructions)
     avg_inst = avg_inst / number
-    print 'Average number of instructions: ', avg_inst
+    print('Average number of instructions: ', avg_inst)
 if __name__ == '__main__':
     main()

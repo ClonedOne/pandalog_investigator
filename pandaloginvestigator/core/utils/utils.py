@@ -8,7 +8,7 @@ import numpy
 # Compute statistical information about the specified dictionary.
 # Returns mean, standard deviation and variance of the values contained.
 def compute_stats(chosen_dict):
-    values = numpy.array(chosen_dict.values())
+    values = numpy.array(list(chosen_dict.values()))
     mean = values.mean()
     standard_deviation = values.std()
     variance = values.var()
@@ -18,18 +18,27 @@ def compute_stats(chosen_dict):
 # Delete the highest and lowest (key, value) pairs from a dictionary,
 # ordered by value.
 def prune_data(chosen_dict, threshold_number):
+    pruned_dict = {}
     values = sorted(chosen_dict.values())
-    length = len(values)
-    eliminate_vals = []
-    eliminate_keys = []
-    for i in range(length):
-        if i < threshold_number or (length - 1) - i < threshold_number:
-            eliminate_vals.append(values[i])
-    for key, value in chosen_dict.items():
-        if value in eliminate_vals:
-            eliminate_keys.append(key)
-    for key in eliminate_keys:
-        chosen_dict.pop(key)
+    values = values[threshold_number : -threshold_number]
+    for filename, value in chosen_dict.items():
+        if value in values:
+            pruned_dict[filename] = value
+    return pruned_dict
+
+
+# Delete values from a dictionary if their keys are contained in the specified dictionaries.
+def prune_crashing_errors(dict_list, crashing_dict, error_dict):
+    clean_dicts = []
+    i = 0
+    for cur_dict in dict_list:
+        new_clean_dict = {}
+        for filename in cur_dict:
+            if filename not in crashing_dict and filename not in error_dict:
+                new_clean_dict[filename] = cur_dict[filename]
+        clean_dicts.append(new_clean_dict)
+        i += 1
+    return clean_dicts
 
 
 # ## OTHER UTILITY METHODS ##

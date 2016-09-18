@@ -11,11 +11,8 @@ import ast
 # 4 separated parts: from_db, created, memory_written and total. Each of these
 # counters consider only the instructions executed by pids whose origin
 # corresponds to the specified one.
-def output_on_file_instructions(filename, process_dict, inverted_process_dict, dir_analyzed_logs, db_file_malware_dict,                    file_corrupted_processes_dict, terminating_all, sleeping_all, crashing_all, error_all):
-
-    with open(dir_analyzed_logs + '/' + filename, 'w', encoding='utf-8',
-              errors='replace') as outfile:
-
+def output_on_file_instructions(filename, process_dict, inverted_process_dict, dir_analyzed_logs, db_file_malware_dict, file_corrupted_processes_dict, terminating_all, sleeping_all, crashing_all, error_all):
+    with open(dir_analyzed_logs + '/' + filename, 'w', encoding='utf-8', errors='replace') as outfile:
         total_instructions = [0, 0, 0, 0]
         pprint.pprint(process_dict, outfile)
         outfile.write('\n')
@@ -79,16 +76,12 @@ def final_output_instructions(dir_results_path, filenames, db_file_malware_dict,
             if filename in db_file_malware_dict:
                 entry = db_file_malware_dict[filename]
 
-                total_instructions = [sum(x) for x in
-                zip(total_instructions,
-                entry.get_total_executed_instructions())]
+                total_instructions = [sum(x) for x in zip(total_instructions, entry.get_total_executed_instructions())]
 
             if filename in file_corrupted_processes_dict:
                 for entry in file_corrupted_processes_dict[filename]:
 
-                    total_instructions = [sum(x) for x in
-                        zip(total_instructions,
-                        entry.get_total_executed_instructions())]
+                    total_instructions = [sum(x) for x in zip(total_instructions, entry.get_total_executed_instructions())]
 
             res_file.write(string_utils.instruction_final +
                            str(total_instructions) + '\n')
@@ -100,7 +93,7 @@ def final_output_instructions(dir_results_path, filenames, db_file_malware_dict,
                            (str(file_sleep_dict[filename]) if
                             filename in file_sleep_dict else str(False)) +
                            '\t')
-            res_file.write(string_utils.crashing_all +
+            res_file.write(string_utils.instruction_crashing +
                            (str(file_crash_dict[filename]) if
                             filename in file_crash_dict else str(False)) +
                            '\t')
