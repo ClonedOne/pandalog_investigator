@@ -1,4 +1,4 @@
-from pandaloginvestigator.core.utils import pi_strings
+from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core import log_analyzer
 import logging
 import os
@@ -18,17 +18,17 @@ def analyze_command(app, max_num=None):
     except:
         logger.error('core_num not set in configuration file')
         return
-    if not os.path.exists(pi_strings.dir_unpacked_path):
-        os.makedirs(pi_strings.dir_unpacked_path)
-    if not os.path.exists(pi_strings.dir_analyzed_path):
-        os.makedirs(pi_strings.dir_analyzed_path)
-    if not os.path.exists(pi_strings.dir_results_path):
-        os.makedirs(pi_strings.dir_results_path)
+    if not os.path.exists(string_utils.dir_unpacked_path):
+        os.makedirs(string_utils.dir_unpacked_path)
+    if not os.path.exists(string_utils.dir_analyzed_path):
+        os.makedirs(string_utils.dir_analyzed_path)
+    if not os.path.exists(string_utils.dir_results_path):
+        os.makedirs(string_utils.dir_results_path)
     logger.debug('Analysis command with parameters: {}, {}, {}'.format(
-        pi_strings.dir_unpacked_path, pi_strings.dir_analyzed_path, str(max_num)))
-    log_analyzer.analyze_logs(pi_strings.dir_unpacked_path,
-                              pi_strings.dir_analyzed_path,
-                              pi_strings.dir_results_path,
+        string_utils.dir_unpacked_path, string_utils.dir_analyzed_path, str(max_num)))
+    log_analyzer.analyze_logs(string_utils.dir_unpacked_path,
+                              string_utils.dir_analyzed_path,
+                              string_utils.dir_results_path,
                               dir_database_path,
                               core_num,
                               max_num)

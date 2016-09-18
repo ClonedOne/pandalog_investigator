@@ -1,6 +1,7 @@
 from pandaloginvestigator.core.utils import domain_utils
-from pandaloginvestigator.core.utils import pi_strings
+from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import utils
+from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.domain.malware_object import Malware
 import logging
 import time
@@ -10,11 +11,11 @@ import traceback
 dir_unpacked_path = None
 dir_syscall_path = None
 
-context_switch = pi_strings.context_switch
-instruction_termination = pi_strings.instruction_termination
-instruction_process_creation = pi_strings.instruction_process_creation
-instruction_write_memory = pi_strings.instruction_write_memory
-system_call_tag = pi_strings.system_call_tag
+tag_context_switch = string_utils.tag_context_switch
+tag_termination = string_utils.tag_termination
+tag_process_creation = string_utils.tag_process_creation
+tag_write_memory = string_utils.tag_write_memory
+tag_system_call = string_utils.tag_system_call
 
 file_corrupted_processes_dict = {}
 db_file_malware_dict = {}
@@ -51,33 +52,34 @@ def work(data_pack):
     return (filename_syscall_dict, )
 
 
-# Analyze the log file line by line.
-# Checks if each line contains a the tag of a systems call. If so update frequency of that system call.
+# Analyze the log file line by line. Checks if each line contains a the tag of
+# a systems call. If so update frequency of that system call.
 def syscall_count(filename):
     malware_syscall_dict = {}
     with open(dir_unpacked_path + '/' + filename, 'r', encoding='utf-8', errors='replace') as logfile:
         for line in logfile:
             try:
-                if context_switch in line:
-                    is_context_switch(filename, line)
-                elif instruction_process_creation in line:
+                if tag_context_switch in line:
+                    is_tag_context_switch(filename, line)
+                elif tag_process_creation in line:
                     is_creating_process(line, filename)
-                elif instruction_write_memory in line:
+                elif tag_write_memory in line:
                     is_writing_memory(line, filename)
-                elif system_call_tag in line and active_malware:
+                elif tag_system_call in line and active_malware:
                     system_call_num = int(line.split('=')[3].split(')')[0])
                     system_call = syscall_dict.get(system_call_num, system_call_num)
                     malware_syscall_dict[system_call] = malware_syscall_dict.get(system_call, 0) + 1
             except:
                 traceback.print_exc()
-    utils.output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, syscall_dict)
+    file_utils.output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, syscall_dict)
     return malware_syscall_dict
 
 
-# If a context switch happens this method is used to gather the information on which process is going in CPU.
-# It gathers the process id and process name of the new process and the current value of the instruction counter.
-# Then it tries to understand if the new process is a malware or a corrupted process.
-def is_context_switch(filename, line):
+# If a context switch happens this method is used to gather the information on
+# which process is going in CPU. It gathers the process id and process name of
+# the new process and the current value of the instruction counter. Then it
+# tries to understand if the new process is a malware or a corrupted process.
+def is_tag_context_switch(filename, line):
     commas = line.strip().split(',')
     pid = int(commas[2].strip())
     proc_name = commas[3].split(')')[0].strip()
@@ -113,11 +115,11 @@ def deactivate_malware():
     return 1
 
 
-# This method is called if the process being context switched inside CPU is a malicious one.
-# Checks if the current pid is not already in the pid list of the malware.
-# If it isn't, it means it is the first instruction of the db_malware.
-# Therefore it adds the new pid value to the malware's list.
-# Then set active_malware to specified malware.
+# This method is called if the process being context switched inside CPU is a
+# malicious one. Checks if the current pid is not already in the pid list of
+# the malware. If it isn't, it means it is the first instruction of the
+# db_malware. Therefore it adds the new pid value to the malware's list. Then
+# set active_malware to specified malware.
 def is_malware(malware, pid):
     global active_malware
     pid_list = malware.get_pid_list()
@@ -127,13 +129,13 @@ def is_malware(malware, pid):
     active_malware = malware
 
 
-# Handles the write on virtual memory system calls.
-# Analyze the log to find out process name and id of the writing and written processes.
-# Checks if the writing process is a malware.
-# If the writing process is a malicious one, the written process will also be considered as corrupted.
-# If the new malware is already known adds the written pid to that object after having checked
-# that the written pid is not already a valid pid for that malicious process.
-# Else create a new malware object and initialize it with the written pid.
+# Handles the write on virtual memory system calls. Analyze the log to find
+# out process name and id of the writing and written processes. Checks if the
+# writing process is a malware. If the writing process is a malicious one, the
+# written process will also be considered as corrupted. If the new malware is
+# already known adds the written pid to that object after having checked that
+# the written pid is not already a valid pid for that malicious process. Else
+# create a new malware object and initialize it with the written pid.
 def is_writing_memory(line, filename):
     commas = line.strip().split(',')
     writing_pid = int(commas[2].strip())
@@ -158,13 +160,13 @@ def is_writing_memory(line, filename):
         new_malware.add_pid(written_pid, Malware.WRITTEN)
 
 
-# Handles process creation system calls.
-# Analyze the log to find out process name and id of the creating and created processes.
-# Checks if the creating process is a malware.
-# If the creating process is a malicious one, the created process will also be considered as corrupted.
-# If the new malware is already known adds the created pid to that object after having checked
-# that the created pid is not already a valid pid for that malicious process.
-# Else create a new malware object and initialize it with the created pid.
+# Handles process creation system calls. Analyze the log to find out process
+# name and id of the creating and created processes. Checks if the creating
+# process is a malware. If the creating process is a malicious one, the
+# created process will also be considered as corrupted. If the new malware is
+# already known adds the created pid to that object after having checked that
+# the created pid is not already a valid pid for that malicious process. Else
+# create a new malware object and initialize it with the created pid.
 def is_creating_process(line, filename):
     commas = line.strip().split(',')
     creating_pid = int(commas[2].strip())
@@ -176,8 +178,7 @@ def is_creating_process(line, filename):
     if not malware:
         malware = is_corrupted_process(creating_name, filename)
 
-    if malware and malware.is_valid_pid(creating_pid) and malware.has_active_pid() \
-            and malware.get_active_pid() == creating_pid:
+    if malware and malware.is_valid_pid(creating_pid) and malware.has_active_pid() and malware.get_active_pid() == creating_pid:
         target = is_db_malware(created_name, filename)
         if not target:
             target = is_corrupted_process(created_name, filename)
@@ -202,11 +203,11 @@ def is_db_malware(proc_name, filename):
         return None
 
 
-# Checks if the process name is inside the file_corrupted_processes_dict.
-# If positive also checks if the current pid corresponds to a valid pid for that malware
-# That is because spawned or memory written processes may have the same name of
-# correct processes in the system. Therefore the method looks only for valid couples name/pid.
-# If found returns the malware.
+# Checks if the process name is inside the file_corrupted_processes_dict. If
+# positive also checks if the current pid corresponds to a valid pid for that
+# malware That is because spawned or memory written processes may have the
+# same name of correct processes in the system. Therefore the method looks
+# only for valid couples name/pid. If found returns the malware.
 def is_corrupted_process(proc_name, filename):
     if filename not in file_corrupted_processes_dict:
         return None

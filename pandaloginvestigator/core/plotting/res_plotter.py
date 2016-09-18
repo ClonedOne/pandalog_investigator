@@ -1,23 +1,26 @@
-from pandaloginvestigator.core.utils import pi_strings
+from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import utils
+from pandaloginvestigator.core.utils import file_utils
 import matplotlib.pyplot as plt
 import numpy
-import ast
 import logging
 
 
 logger = logging.getLogger(__name__)
 
 # Global variables declarations
-no_instructions = pi_strings.no_instructions
-totals_dict = {}
-from_db_dict = {}
+instr_totals_dict = {}
+instr_from_db_dict = {}
 created_dict = {}
 written_dict = {}
 terminating_dict = {}
 sleeping_dict = {}
 crashing_dict = {}
 error_dict = {}
+syscalls_totals_dict = {}
+
+target_i = 'instructions'
+target_s = 'syscalls'
 
 
 # Plot the data contained in the specified dictionary.
@@ -48,101 +51,47 @@ def plot_data(chosen_dict, stats, color, shape, title):
     plt.show()
 
 
-def print_results(dir_results_path, inverted_totals,
-                  total_stats, terms, clean_stats, clean_totals_dict):
-    with open(dir_results_path + '/stats.txt', 'w', encoding='utf-8',
-              errors='replace') as stats_file:
-        stats_file.write('Filename <-> Total instruction count:\n\n')
-        for key in totals_dict:
-            stats_file.write(str(key) + '\t' + str(totals_dict[key]) + '\n')
-        stats_file.write('\n')
-        stats_file.write('Total instruction count <-> Filename:\n\n')
-        for key in sorted(inverted_totals.keys()):
-            stats_file.write(str(key) + '\t' +
-                             str(inverted_totals[key]) + '\n')
-        stats_file.write('\n')
-        stats_file.write(
-            'Number of log files with non-null instruction count: \t' +
-            str(len(totals_dict)) + '\n')
-        stats_file.write('Mean: \t' + str(total_stats[0]) + '\n')
-        stats_file.write('Standard Deviation: \t' + str(total_stats[1]) + '\n')
-        stats_file.write('Variance: \t' + str(total_stats[2]) + '\n\n')
-        stats_file.write('Number of log files without crashes/errors: \t' +
-                         str(len(clean_totals_dict)) + '\n')
-        stats_file.write('Mean without crashes/errors: \t' +
-                         str(clean_stats[0]) + '\n')
-        stats_file.write(
-            'Standard Deviation without crashes/errors: \t' +
-            str(clean_stats[1]) + '\n')
-        stats_file.write('Variance without crashes/errors: \t' +
-                         str(clean_stats[2]) + '\n\n')
-        stats_file.write('Instruction count threshold: \t' +
-                         str(total_stats[0] * 0.1) + '\n')
-        stats_file.write(
-            'Malwares below threshold: \t' + str(terms[0]) + '\n')
-        stats_file.write(
-            'Malwares below threshold terminating all processes:\t' +
-            str(terms[1]) + '\n')
-        stats_file.write(
-            'Malwares below threshold sleeping all processes:\t' +
-            str(terms[2]) + '\n')
-        stats_file.write(
-            'Malwares below threshold crashing all processes:\t' +
-            str(terms[3]) + '\n')
-        stats_file.write(
-            'Malwares below threshold raising errors on all processes:\t' +
-            str(terms[4]) + '\n')
-        stats_file.write(
-            'Malwares below threshold sleeping or terminating: \t' +
-            str(terms[5]) + '\n')
-        stats_file.write(
-            'Malwares below threshold crashing or raising errors:\t' +
-            str(terms[6]) + '\n\n')
-
-
-def accumulate_data(dir_results_path):
-    next_file_name = True
-    next_values = False
-    next_term_sleep = False
-
-    with open(dir_results_path + '/analysis.txt', 'r', encoding='utf-8',
-              errors='replace') as resfile:
+# Read the instruction counting analysis result file in order to generate a
+# dictionary containing the values from the file. This data will then be used
+# in the statistics generation and plotting phase.
+def read_result_instr(dir_results_path):
+    file_path = dir_results_path + '/analysis.txt'
+    with open(file_path, 'r', encoding='utf-8', errors='replace') as resfile:
         last_file_name = ''
         for line in resfile:
-            if not line.strip():
-                next_file_name = True
-                continue
-            line = line.strip()
-            if next_file_name:
-                filename = line.split()[2]
-                last_file_name = filename
-                next_file_name = False
-                next_values = True
-                continue
-            if next_values:
-                if line != no_instructions:
-                    values = line.split('\t')[1].replace(
-                        '[', '').replace(']', '').replace(',', '').split()
-                    from_db_dict[last_file_name] = int(values[0])
+            if string_utils.filename in line:
+                last_file_name = file_utils.filename_from_analysis(line)
+            elif string_utils.instruction_final in line:
+                if line != string_utils.no_instructions:
+                    values = file_utils.values_from_analysis(line)
+                    instr_from_db_dict[last_file_name] = int(values[0])
                     if int(values[1]) > 0:
                         created_dict[last_file_name] = int(values[1])
                     if int(values[2]) > 0:
                         written_dict[last_file_name] = int(values[2])
-                    totals_dict[last_file_name] = int(values[3])
-                next_values = False
-                next_term_sleep = True
-                continue
-            if next_term_sleep:
-                values = line.split('\t')
-                terminating_dict[last_file_name] = ast.literal_eval(values[
-                                                                    1].strip())
-                sleeping_dict[last_file_name] = ast.literal_eval(values[
-                                                                 3].strip())
-                crashing_dict[last_file_name] = ast.literal_eval(values[
-                                                                 5].strip())
-                error_dict[last_file_name] = ast.literal_eval(
-                    values[7].strip())
-                next_term_sleep = False
+                    instr_totals_dict[last_file_name] = int(values[3])
+            elif string_utils.instruction_terminating in line:
+                status = file_utils.status_from_analysis(line)
+                terminating_dict[last_file_name] = status[0]
+                sleeping_dict[last_file_name] = status[1]
+                crashing_dict[last_file_name] = status[2]
+                error_dict[last_file_name] = status[3]
+
+
+# Read the system call counting result file in order to generate a dictionary
+# containing the values from the file. This data will then be used in the
+# statistics generation and plotting phase.
+def read_result_syscall(dir_results_path):
+    file_path = dir_results_path + '/syscalls.txt'
+    with open(file_path, 'r', encoding='utf-8', errors='replace') as resfile:
+        last_file_name = ''
+        for line in resfile:
+            if string_utils.filename in line:
+                last_file_name = file_utils.filename_from_analysis(line)
+            elif string_utils.syscall_final in line:
+                if line != string_utils.no_syscalls:
+                    value = file_utils.values_from_syscalls(line)
+                    syscalls_totals_dict[last_file_name] = value
 
 
 def prune_data(chosen_dict, threshold_number):
@@ -206,65 +155,28 @@ def prune_crashing_errors(dict_list, crashing_dict, error_dict):
     return clean_dicts
 
 
-def plot_results_instructions(dir_results_path):
-    accumulate_data(dir_results_path)
-    inverted_totals = utils.invert_dictionary(totals_dict)
-    clean_dicts = prune_crashing_errors(from_db_dict,
-                                        created_dict, written_dict)
-    clean_totals_dict = clean_dicts[0]
-    clean_from_db_dict = clean_dicts[1]
-    clean_created_dict = clean_dicts[2]
-    clean_written_dict = clean_dicts[3]
-
-    total_stats = utils.compute_stats(totals_dict)
-    clean_total_stats = utils.compute_stats(clean_totals_dict)
-    total_terms = compute_number_of_terminated(totals_dict,
-                                               total_stats[0] * 0.1)
-    print_results(inverted_totals, total_stats,
-                  total_terms, clean_total_stats, clean_totals_dict)
-
-    do_stuff(totals_dict, 'b', 'H', 'Total')
-    prune_data(totals_dict, 100)
-    do_stuff(totals_dict, 'b', 'H', 'Total pruned')
-
-    do_stuff(from_db_dict, 'g', 'o', 'Malware from database')
-    prune_data(from_db_dict, 100)
-    do_stuff(from_db_dict, 'g', 'o', 'Malware from database pruned')
-
-    do_stuff(created_dict, 'r', 'o', 'Created processes')
-    prune_data(created_dict, 10)
-    do_stuff(created_dict, 'r', 'o', 'Created processes pruned')
-
-    do_stuff(written_dict, 'y', 'o', 'Memory written processes')
-    prune_data(written_dict, 10)
-    do_stuff(written_dict, 'y', 'o', 'Memory written processes pruned')
-
-    # Clean dictionaries
-    do_stuff(clean_totals_dict, 'm', 'o', 'Total without crashes/errors')
-    prune_data(clean_totals_dict, 100)
-    do_stuff(clean_totals_dict, 'm', 'o',
-             'Total pruned without crashes/errors')
-
-    do_stuff(clean_from_db_dict, 'g', 'o',
-             'Malware from database without crashes/errors')
-    prune_data(clean_from_db_dict, 100)
-    do_stuff(clean_from_db_dict, 'g', 'o',
-             'Malware from database pruned without crashes/errors')
-
-    do_stuff(clean_created_dict, 'r', 'o',
-             'Created processes without crashes/errors')
-    prune_data(clean_created_dict, 10)
-    do_stuff(clean_created_dict, 'r', 'o',
-             'Created processes pruned without crashes/errors')
-
-    do_stuff(clean_written_dict, 'y', 'o',
-             'Memory written processes without crashes/errors')
-    prune_data(clean_written_dict, 10)
-    do_stuff(clean_written_dict, 'y', 'o',
-             'Memory written processes pruned without crashes/errors')
+def plot_results(dir_results_path, target):
+    read_data(dir_results_path, target)
+    if target == target_i:
+        inverted_totals = utils.invert_dictionary(instr_totals_dict)
+        clean_dicts = prune_crashing_errors(instr_from_db_dict,
+                                            created_dict, written_dict)
+        total_stats = utils.compute_stats(instr_totals_dict)
+        clean_total_stats = utils.compute_stats(clean_dicts[0])
+        total_terms = compute_number_of_terminated(instr_totals_dict,
+                                                   total_stats[0] * 0.1)
+        file_utils.output_instr_stats(
+            inverted_totals,
+            total_stats,
+            total_terms,
+            clean_total_stats,
+            clean_dicts[0]
+        )
+        plot_instruction_results(clean_dicts)
 
 
-def plot_results_syscalls(dir_results_path):
+# Plot the graphs related to system calls analysis.
+def plot_syscalls_results(dir_results_path):
     # total_dict = gather_data()
     # total_stats = utils.compute_stats(total_dict)
     # reduced_dict = gather_data(False)
@@ -284,10 +196,57 @@ def plot_results_syscalls(dir_results_path):
     return
 
 
-# Wrapper used to distinguish between plotting the results of instruction or
-# system call analysis
-def plot_results(dir_results_path, target):
-    if target == 'instructions':
-        plot_results_instructions(dir_results_path)
-    elif target == 'syscalls':
-        plot_results_syscalls(dir_results_path)
+# Wrapper used to provide the correct data to both plotter methods.
+def read_data(dir_results_path, target):
+    if target == target_i:
+        read_result_instr(dir_results_path)
+    elif target == target_s:
+        read_result_syscall(dir_results_path)
+
+
+# Plot the graphs related to instruction analysis.
+def plot_instruction_results(clean_dicts):
+    clean_instr_totals_dict = clean_dicts[0]
+    clean_instr_from_db_dict = clean_dicts[1]
+    clean_created_dict = clean_dicts[2]
+    clean_written_dict = clean_dicts[3]
+
+    do_stuff(instr_totals_dict, 'b', 'H', 'Total')
+    prune_data(instr_totals_dict, 100)
+    do_stuff(instr_totals_dict, 'b', 'H', 'Total pruned')
+
+    do_stuff(instr_from_db_dict, 'g', 'o', 'Malware from database')
+    prune_data(instr_from_db_dict, 100)
+    do_stuff(instr_from_db_dict, 'g', 'o', 'Malware from database pruned')
+
+    do_stuff(created_dict, 'r', 'o', 'Created processes')
+    prune_data(created_dict, 10)
+    do_stuff(created_dict, 'r', 'o', 'Created processes pruned')
+
+    do_stuff(written_dict, 'y', 'o', 'Memory written processes')
+    prune_data(written_dict, 10)
+    do_stuff(written_dict, 'y', 'o', 'Memory written processes pruned')
+
+    # Clean dictionaries
+    do_stuff(clean_instr_totals_dict, 'm', 'o', 'Total without crashes/errors')
+    prune_data(clean_instr_totals_dict, 100)
+    do_stuff(clean_instr_totals_dict, 'm', 'o',
+             'Total pruned without crashes/errors')
+
+    do_stuff(clean_instr_from_db_dict, 'g', 'o',
+             'Malware from database without crashes/errors')
+    prune_data(clean_instr_from_db_dict, 100)
+    do_stuff(clean_instr_from_db_dict, 'g', 'o',
+             'Malware from database pruned without crashes/errors')
+
+    do_stuff(clean_created_dict, 'r', 'o',
+             'Created processes without crashes/errors')
+    prune_data(clean_created_dict, 10)
+    do_stuff(clean_created_dict, 'r', 'o',
+             'Created processes pruned without crashes/errors')
+
+    do_stuff(clean_written_dict, 'y', 'o',
+             'Memory written processes without crashes/errors')
+    prune_data(clean_written_dict, 10)
+    do_stuff(clean_written_dict, 'y', 'o',
+             'Memory written processes pruned without crashes/errors')

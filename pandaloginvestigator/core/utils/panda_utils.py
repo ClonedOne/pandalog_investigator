@@ -2,7 +2,8 @@ import subprocess
 import os
 
 
-# This module handles utility methods which are inherently related to Panda or the panda logs structure.
+# This module handles utility methods which are inherently related to Panda or
+# the panda logs structure.
 
 
 # Unpack the specified log file using the PANDA 'pandalog_reader' utility.

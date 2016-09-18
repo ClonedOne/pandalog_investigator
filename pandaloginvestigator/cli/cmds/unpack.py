@@ -1,5 +1,5 @@
 from pandaloginvestigator.core import log_unpacker
-from pandaloginvestigator.core.utils import pi_strings
+from pandaloginvestigator.core.utils import string_utils
 import logging
 import os
 
@@ -25,15 +25,15 @@ def unpack_command(app, max_num=None):
     except:
         logger.error('core_num not set in configuration file')
         return
-    if not os.path.exists(pi_strings.dir_unpacked_path):
-        os.makedirs(pi_strings.dir_unpacked_path)
+    if not os.path.exists(string_utils.dir_unpacked_path):
+        os.makedirs(string_utils.dir_unpacked_path)
     logger.debug('Unpack command with parameters: {}, {}, {}, {}'.format(
                  dir_pandalogs_path,
                  dir_panda_path,
-                 pi_strings.dir_unpacked_path,
+                 string_utils.dir_unpacked_path,
                  str(max_num)))
     log_unpacker.unpack_logs(dir_pandalogs_path,
                              dir_panda_path,
-                             pi_strings.dir_unpacked_path,
+                             string_utils.dir_unpacked_path,
                              core_num,
                              max_num)

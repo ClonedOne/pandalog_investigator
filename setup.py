@@ -5,9 +5,10 @@ from setuptools import setup, find_packages
 setup(
     name='pandaloginvestigator',
     version='0.1',
+    author='Giorgio Severi',
     description='Pandalogs analysis tool',
     url='https://ClonedOne@bitbucket.org/ClonedOne/seminar.git',
-    install_requires=['numpy', 'cement', 'scipy', 'matplotlib'],
+    install_requires=['numpy', 'scipy', 'cement', 'matplotlib'],
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,

@@ -1,5 +1,6 @@
 from multiprocessing import Pool
 from pandaloginvestigator.core.utils import utils
+from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.workers import worker_analyzer
 from pandaloginvestigator.core.utils import db_manager
 import os
@@ -42,13 +43,15 @@ def analyze_logs(dir_unpacked_path, dir_analyzed_path, dir_results_path, dir_dat
     if res < 0:
         logger.error('ERROR: analyze_logs failed update_results()')
         return
-    utils.final_output(dir_results_path,
-                       filenames,
-                       db_file_malware_dict,
-                       file_corrupted_processes_dict,
-                       file_terminate_dict,
-                       file_sleep_dict,
-                       file_crash_dict,
-                       file_error_dict)
+    file_utils.final_output_instructions(
+        dir_results_path,
+        filenames,
+        db_file_malware_dict,
+        file_corrupted_processes_dict,
+        file_terminate_dict,
+        file_sleep_dict,
+        file_crash_dict,
+        file_error_dict
+    )
     t2 = time.time()
     logger.info('Total analysis time: ' + str(t2 - t1))
