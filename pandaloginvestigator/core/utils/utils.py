@@ -29,12 +29,14 @@ def prune_data(chosen_dict, threshold_number):
 
 # Delete values from a dictionary if their keys are contained in the specified dictionaries.
 def prune_crashing_errors(dict_list, crashing_dict, error_dict):
+    print(crashing_dict)
+    print(error_dict)
     clean_dicts = []
     i = 0
     for cur_dict in dict_list:
         new_clean_dict = {}
         for filename in cur_dict:
-            if filename not in crashing_dict and filename not in error_dict:
+            if not (crashing_dict.get(filename, False)) and not(error_dict.get(filename, False)):
                 new_clean_dict[filename] = cur_dict[filename]
         clean_dicts.append(new_clean_dict)
         i += 1
