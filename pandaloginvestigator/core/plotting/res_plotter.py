@@ -18,6 +18,7 @@ def plot_results(dir_results_path, target):
         clean_dicts = utils.prune_crashing_errors(to_clean, dict_list[6], dict_list[7])
         plot_instruction_results(dict_list, clean_dicts)
     elif target == string_utils.target_s:
+        plot_syscall_results(dict_list)
         return
 
 
@@ -52,6 +53,10 @@ def plot_instruction_results(dict_list, clean_dicts):
     do_stuff(clean_dicts[1], 'g', 'o', 'Malware from database without crashes/errors', 100, True)
     do_stuff(clean_dicts[2], 'r', 'o', 'Created processes without crashes/errors', 10, True)
     do_stuff(clean_dicts[3], 'y', 'o', 'Memory written processes without crashes/errors', 10, True)
+
+
+def plot_syscall_results(dict_list):
+    do_stuff(dict_list[0], 'b', 'H', 'Total system calls', 100, True)
 
 
 # Auxiliary method for generating statistics, pruning values and plotting.

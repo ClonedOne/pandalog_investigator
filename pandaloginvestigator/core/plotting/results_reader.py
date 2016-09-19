@@ -70,4 +70,4 @@ def read_result_syscall(dir_results_path):
                 if line != string_utils.no_syscalls:
                     value = file_utils.values_from_syscalls(line)
                     syscalls_totals_dict[last_file_name] = value
-    return syscalls_totals_dict
+    return [syscalls_totals_dict, ]
