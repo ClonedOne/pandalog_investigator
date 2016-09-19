@@ -1,10 +1,10 @@
-from pandaloginvestigator.core.plotting import results_reader
-from pandaloginvestigator.core.utils import string_utils
-from pandaloginvestigator.core.utils import utils
-import matplotlib.pyplot as plt
-import numpy
 import logging
 
+import matplotlib.pyplot as plt
+import numpy
+from pandaloginvestigator.core.utils import results_reader
+from pandaloginvestigator.core.utils import string_utils
+from pandaloginvestigator.core.utils import utils
 
 logger = logging.getLogger(__name__)
 
@@ -14,33 +14,11 @@ def plot_results(dir_results_path, target):
     if target == string_utils.target_i:
         inverted_totals = utils.invert_dictionary(dict_list[0])
         to_clean = [dict_list[i] for i in range(4)]
-        print(to_clean)
         clean_dicts = utils.prune_crashing_errors(to_clean, dict_list[6], dict_list[7])
         plot_instruction_results(dict_list, clean_dicts)
     elif target == string_utils.target_s:
         plot_syscall_results(dict_list)
         return
-
-
-# Plot the graphs related to system calls analysis.
-def plot_syscalls_results(dir_results_path):
-    # total_dict = gather_data()
-    # total_stats = utils.compute_stats(total_dict)
-    # reduced_dict = gather_data(False)
-    # reduced_stats = utils.compute_stats(reduced_dict)
-    # plot_data(total_dict, total_stats, 'b', 'o', 'Total system calls')
-    # plot_data(reduced_dict, reduced_stats, 'g',
-    #           'o', 'System calls excluding waiting')
-
-    # utils.prune_data(total_dict, 200)
-    # total_stats_pruned = utils.compute_stats(total_dict)
-    # utils.prune_data(reduced_dict, 2100)
-    # reduced_stats_pruned = utils.compute_stats(reduced_dict)
-    # plot_data(total_dict, total_stats_pruned, 'b',
-    #           'o', 'Total system calls pruned')
-    # plot_data(reduced_dict, reduced_stats_pruned, 'g',
-    #           'o', 'System calls excluding waiting pruned')
-    return
 
 
 # Plot the graphs related to instruction analysis.

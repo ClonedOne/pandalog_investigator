@@ -37,3 +37,10 @@ syscall_final = 'Final system call count: \t'
 # Strings used in plotting modules.
 target_i = 'instructions'
 target_s = 'syscalls'
+
+
+# String used by detection modules
+tags_reg_key = {
+    'tag_scsi0_key': 'HARDWARE\\DEVICEMAP\\Scsi\\Scsi Port 0\\Scsi Bus 0\\Target Id 0\\Logical Unit Id 0',
+    'tag_system_bios': 'HARDWARE\\Description\\System'
+}

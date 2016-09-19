@@ -1,22 +1,22 @@
+from collections import defaultdict
+from pandaloginvestigator.core.utils import string_utils
 import os
 import ast
-from collections import defaultdict
+import logging
 
-dir_convert_path = '/home/yogaub/projects/seminar/converted/'
 
-scsi_id = "HARDWARE\\DEVICEMAP\\Scsi\\Scsi Port 0\\Scsi Bus 0\\Target Id 0\\Logical Unit Id 0"
-bios_id = "HARDWARE\\Description\\System"
-empty_list = 'Final instruction count: 	[0, 0, 0, 0]'
-dir_resfile_path = '/home/yogaub/Desktop/resfile.txt'
+logger = logging.getLogger(__name__)
+tags_reg_key = string_utils.tags_reg_key
+empty_list = string_utils.no_instructions
 
 
 def fill_dicts(filenames, filename_scsi_dict, filename_bios_dict):
     for filename in filenames:
         with open(dir_convert_path + filename) as c_file:
             for line in c_file:
-                if scsi_id in line:
+                if tag_scsi0_key in line:
                     filename_scsi_dict[filename] += 1
-                elif bios_id in line:
+                elif tag_system_bios in line:
                     filename_bios_dict[filename] += 1
     print(len(filename_scsi_dict))
     print(len(filename_bios_dict))
@@ -54,7 +54,7 @@ def acquire_conditions(filenames, term_sleep_dict, instrction_dict):
                 continue
 
 
-def main():
+def detect_reg_key():
     filename_scsi_dict = defaultdict(int)
     filename_bios_dict = defaultdict(int)
     term_sleep_dict = {}
@@ -75,5 +75,4 @@ def main():
             print(filename, scsi_count, bios_count, condition, instructions)
     avg_inst = avg_inst / number
     print('Average number of instructions: ', avg_inst)
-if __name__ == '__main__':
-    main()
+
