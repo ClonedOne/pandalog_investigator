@@ -1,4 +1,3 @@
-from pandaloginvestigator.core.utils import utils
 from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.utils import panda_utils
 from pandaloginvestigator.core.utils import string_utils
@@ -9,8 +8,10 @@ import time
 import traceback
 
 
+logger = logging.getLogger(__name__)
 dir_unpacked_path = None
 dir_analyzed_logs = None
+active_malware = None
 
 tag_context_switch = string_utils.tag_context_switch
 tag_termination = string_utils.tag_termination
@@ -27,8 +28,36 @@ file_terminate_dict = {}
 file_sleep_dict = {}
 file_crash_dict = {}
 file_error_dict = {}
-active_malware = None
-logger = logging.getLogger(__name__)
+
+
+def work(data_pack):
+    t0 = time.time()
+    global active_malware, dir_unpacked_path, dir_analyzed_logs
+    j = 0.0
+    worker_id = data_pack[0]
+    filenames = data_pack[1]
+    db_file_malware_name_map = data_pack[2]
+    dir_unpacked_path = data_pack[3]
+    dir_analyzed_logs = data_pack[4]
+    total_files = len(filenames) if len(filenames) > 0 else -1
+    logger.info('WorkerId ' + str(worker_id) + ' analyzing ' + str(total_files) + ' log files')
+    for filename in filenames:
+        active_malware = None
+        if filename in db_file_malware_name_map:
+            domain_utils.initialize_malware_object(
+                filename,
+                db_file_malware_name_map[filename],
+                db_file_malware_dict,
+                file_corrupted_processes_dict,
+                from_db=True)
+            analyze_log(filename)
+        else:
+            logger.error(str(worker_id) + ' ERROR filename not in db')
+        j += 1
+        logger.info('WorkerId ' + str(worker_id) + ' ' + str((j * 100 / total_files)) + '%')
+    total_time = time.time() - t0
+    logger.info('WorkerId ' + str(worker_id) + ' Total time: ' + str(total_time))
+    return db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict
 
 
 # Checks if the malware_objects associated with the filename have called the
@@ -446,33 +475,3 @@ def analyze_log(filename):
         sleeping_all,
         crashing_all,
         error_all)
-
-
-def work(data_pack):
-    t0 = time.time()
-    global active_malware, dir_unpacked_path, dir_analyzed_logs
-    j = 0.0
-    worker_id = data_pack[0]
-    filenames = data_pack[1]
-    db_file_malware_name_map = data_pack[2]
-    dir_unpacked_path = data_pack[3]
-    dir_analyzed_logs = data_pack[4]
-    total_files = len(filenames) if len(filenames) > 0 else -1
-    logger.info('WorkerId ' + str(worker_id) + ' analyzing ' + str(total_files) + ' log files')
-    for filename in filenames:
-        active_malware = None
-        if filename in db_file_malware_name_map:
-            domain_utils.initialize_malware_object(
-                filename,
-                db_file_malware_name_map[filename],
-                db_file_malware_dict,
-                file_corrupted_processes_dict,
-                from_db=True)
-            analyze_log(filename)
-        else:
-            logger.error(str(worker_id) + ' ERROR filename not in db')
-        j += 1
-        logger.info('WorkerId ' + str(worker_id) + ' ' + str((j * 100 / total_files)) + '%')
-    total_time = time.time() - t0
-    logger.info('WorkerId ' + str(worker_id) + ' Total time: ' + str(total_time))
-    return db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict

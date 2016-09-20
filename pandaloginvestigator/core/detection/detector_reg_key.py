@@ -1,7 +1,8 @@
-from collections import defaultdict
 from pandaloginvestigator.core.utils import string_utils
+from pandaloginvestigator.core.utils import utils
+from pandaloginvestigator.core.workers import worker_detect_regkey
+from multiprocessing import Pool
 import os
-import ast
 import logging
 
 
@@ -10,58 +11,21 @@ tags_reg_key = string_utils.tags_reg_key
 empty_list = string_utils.no_instructions
 
 
-def fill_dicts(filenames, filename_scsi_dict, filename_bios_dict):
-    for filename in filenames:
-        with open(dir_convert_path + filename) as c_file:
-            for line in c_file:
-                if tag_scsi0_key in line:
-                    filename_scsi_dict[filename] += 1
-                elif tag_system_bios in line:
-                    filename_bios_dict[filename] += 1
-    print(len(filename_scsi_dict))
-    print(len(filename_bios_dict))
-
-
-def acquire_conditions(filenames, term_sleep_dict, instrction_dict):
-    next_file_name = True
-    next_values = False
-    with open(dir_resfile_path, 'r') as resfile:
-        last_file_name = ''
-        for line in resfile:
-            line = line.strip()
-            if not line:
-                next_file_name = True
-                continue
-            if next_file_name:
-                filename = line.split()[2]
-                last_file_name = filename + '_c.txt'
-                next_file_name = False
-                next_values = True
-                continue
-            if next_values:
-                if line != empty_list and last_file_name in filenames:
-                    values = line.split('\t')[1].replace('[', '').replace(']', '').replace(',', '').split()
-                    instrction_dict[last_file_name] = int(values[3])
-                    values = next(resfile).split('\t')
-                    terminating = ast.literal_eval(values[1].strip())
-                    sleeping = ast.literal_eval(values[3].strip())
-                    if sleeping:
-                        term_sleep_dict[last_file_name] = term_sleep_dict.get(last_file_name, '') + 'Sleep '
-                    if terminating:
-                        term_sleep_dict[last_file_name] = term_sleep_dict.get(last_file_name, '') + 'Termination'
-
-                next_values = False
-                continue
-
-
-def detect_reg_key():
-    filename_scsi_dict = defaultdict(int)
-    filename_bios_dict = defaultdict(int)
+# Checks the log files for malwares trying to access well known registry
+# keys used to determine if the code is being executed with Qemu emulator.
+def detect_reg_key(dir_unpacked_path, dir_results_path, core_num):
     term_sleep_dict = {}
     instruction_dict = {}
-    filenames = sorted(os.listdir(dir_convert_path))
-    fill_dicts(filenames, filename_scsi_dict, filename_bios_dict)
-    acquire_conditions(filenames, term_sleep_dict, instruction_dict)
+    filenames = sorted(os.listdir(dir_unpacked_path))
+    file_names_sublists = utils.divide_workload(filenames, core_num)
+    if len(file_names_sublists) != core_num:
+        logger.error('ERROR: size of split workload different from number of cores')
+    formatted_input = utils.format_worker_input(core_num, file_names_sublists, dir_unpacked_path)
+    pool = Pool(processes=core_num)
+    results = pool.map(worker_detect_regkey.work, formatted_input)
+    pool.close()
+
+
     avg_inst = 0.0
     number = 0.0
     for filename in filenames:

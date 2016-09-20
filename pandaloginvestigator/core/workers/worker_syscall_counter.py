@@ -1,6 +1,5 @@
 from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import string_utils
-from pandaloginvestigator.core.utils import utils
 from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.domain.malware_object import Malware
 import logging
@@ -8,8 +7,10 @@ import time
 import traceback
 
 
+logger = logging.getLogger(__name__)
 dir_unpacked_path = None
 dir_syscall_path = None
+active_malware = None
 
 tag_context_switch = string_utils.tag_context_switch
 tag_termination = string_utils.tag_termination
@@ -20,8 +21,6 @@ tag_system_call = string_utils.tag_system_call
 file_corrupted_processes_dict = {}
 db_file_malware_dict = {}
 syscall_dict = {}
-active_malware = None
-logger = logging.getLogger(__name__)
 
 
 def work(data_pack):

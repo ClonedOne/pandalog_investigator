@@ -65,7 +65,7 @@ def update_results(results, dict_list):
 # Given a list of items and the number of processing cores available compute
 # a list of items lists of equal dimension, one for each core.
 # 'max_num' is a parameter bounding the maximum number of items to divide.
-def divide_workload(item_list, core_num, max_num):
+def divide_workload(item_list, core_num, max_num=None):
     j = 0
     c = 0
     item_sublists = defaultdict(list)
