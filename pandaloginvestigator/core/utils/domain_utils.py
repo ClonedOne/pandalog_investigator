@@ -37,6 +37,6 @@ def repr_suspect(suspect):
     result = 'Filename: ' + suspect.file_name + '\n'
     for tag in suspect.reg_dict:
         result += '\t' + tag + ':\n'
-        for instr_num in suspect.reg_dict[tag]:
-            result += '\t\t' + instr_num + '\n'
+        for details in suspect.reg_dict[tag]:
+            result += '\t\t' + details[0] + '\t' + details[1] + '\t' + details[2] + '\n'
     return result

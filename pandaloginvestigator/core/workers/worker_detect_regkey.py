@@ -22,9 +22,10 @@ def work(data_pack):
                 for value in tags_reg_value:
                     if value in line:
                         tag = tags_reg_value[value]
-                        instr_num = line.strip()
-                        # instr_num = line.split('=')[1].split()[0]
-                        suspect_dict[filename].add_tag_occ(tag, instr_num)
+                        instr_num = line.split('=')[1].split()[0]
+                        process_id = line.split(',')[2].strip()
+                        process_name = line.split(',')[3].split(')')[0].strip()
+                        suspect_dict[filename].add_tag_occ(tag, (instr_num, process_id, process_name))
         j += 1
         logger.info('WorkerId ' + str(worker_id) + ' ' + str((j * 100 / total_files)) + '%')
     return (suspect_dict, )

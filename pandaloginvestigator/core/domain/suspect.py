@@ -14,8 +14,8 @@ class Suspect:
         for tag in tags_reg_key:
             self.reg_dict[tag] = []
 
-    def add_tag_occ(self, tag, instr_num):
+    def add_tag_occ(self, tag, details):
         if tag in self.reg_dict:
-            self.reg_dict[tag].append(instr_num)
+            self.reg_dict[tag].append(details)
             return 1
         return -1
