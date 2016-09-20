@@ -13,11 +13,16 @@ logger = logging.getLogger(__name__)
 # specified in the configuration. Generate equal lists of files to pass to
 # worker_unpack workers. The number of logs to unpack is passed as argument,
 # unpack all logs file if max_num = None. Logs time spent unpacking.
-def unpack_logs(dir_pandalogs_path, dir_panda_path, dir_unpacked_path,
-                core_num, max_num=None):
+def unpack_logs(dir_pandalogs_path, dir_panda_path, dir_unpacked_path, core_num, file_list=None, max_num=None):
     logger.info('Starting unpacking operation with max_num = ' + str(max_num))
     t1 = time.time()
-    filenames = sorted(os.listdir(dir_pandalogs_path))
+    if file_list:
+        filenames = []
+        with open(file_list, 'r', encoding='utf-8', errors='replace') as list_file:
+            for line in list_file:
+                filenames.append(line.strip())
+    else:
+        filenames = sorted(os.listdir(dir_pandalogs_path))
     file_names_sublists = utils.divide_workload(filenames, core_num, max_num)
     if len(file_names_sublists) != core_num:
         logger.error(

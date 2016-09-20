@@ -1,4 +1,5 @@
 from pandaloginvestigator.core.utils import string_utils
+from pandaloginvestigator.core.utils import domain_utils
 import pprint
 import ast
 
@@ -170,6 +171,13 @@ def output_instr_stats(dir_results_path, instr_totals_dict, inverted_totals, tot
         stats_file.write(
             'Malwares below threshold crashing or raising errors:\t' +
             str(terms[6]) + '\n\n')
+
+
+# Print the list of suspect log files with the suspect elements to a file.
+def output_suspects(dir_results_path, suspect_dict):
+    with open(dir_results_path + '/suspects.txt', 'w', encoding='utf-8', errors='replace') as suspect_file:
+        for filename, suspect in suspect_dict.items():
+            suspect_file.write(domain_utils.repr_suspect(suspect))
 
 
 # ## INPUT UTILITY METHODS ##

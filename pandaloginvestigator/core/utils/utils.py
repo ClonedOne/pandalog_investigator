@@ -55,6 +55,7 @@ def clean_log(filename, dir_unpacked_path):
 # the worker sub result.
 def update_results(results, dict_list):
     if len(results[0]) != len(dict_list):
+        print('paaniiiic')
         return -1
     for sub_res in results:
         for i in range(len(sub_res)):

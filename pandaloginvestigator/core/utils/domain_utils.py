@@ -1,4 +1,5 @@
 from pandaloginvestigator.core.domain.malware_object import Malware
+from pandaloginvestigator.core.domain.suspect import Suspect
 
 
 # This module handles utility methods which are inherently related to the
@@ -29,3 +30,13 @@ def get_syscalls():
             line = line.split('\t')
             syscall_dict[int(line[0])] = line[1].strip()
     return syscall_dict
+
+
+# Provide a string representation of the suspect object.
+def repr_suspect(suspect):
+    result = 'Filename: ' + suspect.file_name + '\n'
+    for tag in suspect.reg_dict:
+        result += '\t' + tag + ':\n'
+        for instr_num in suspect.reg_dict[tag]:
+            result += '\t\t' + instr_num + '\n'
+    return result
