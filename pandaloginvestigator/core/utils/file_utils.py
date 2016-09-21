@@ -3,6 +3,7 @@ from pandaloginvestigator.core.utils import domain_utils
 import pprint
 import ast
 
+
 # ## OUTPUT UTILITY METHODS ##
 
 
@@ -19,48 +20,47 @@ def output_on_file_instructions(filename, process_dict, inverted_process_dict, d
         outfile.write('\n')
         pprint.pprint(inverted_process_dict, outfile)
         outfile.write('\n')
+
         if filename in db_file_malware_dict:
             malware = db_file_malware_dict[filename]
+            total_instructions = [sum(x) for x in zip(total_instructions, malware.get_total_executed_instructions())]
+            outfile.write(domain_utils.repr_malware(malware) + '\n\n')
 
-            total_instructions = [sum(x) for x in
-            zip(total_instructions,
-            malware.get_total_executed_instructions())]
-
-            outfile.write(str(malware) + '\n\n')
         if filename in file_corrupted_processes_dict:
             for malware in file_corrupted_processes_dict[filename]:
+                total_instructions = [sum(x) for x in zip(total_instructions, malware.get_total_executed_instructions())]
+                outfile.write(domain_utils.repr_malware(malware) + '\n\n')
 
-                total_instructions = [sum(x) for x in
-                zip(total_instructions,
-                malware.get_total_executed_instructions())]
+        outfile.write(
+            string_utils.instruction_final +
+            str(total_instructions) + '\n'
+        )
 
-                outfile.write(str(malware) + '\n\n')
-        outfile.write(string_utils.instruction_final +
-                      str(total_instructions) + '\n')
-
-        outfile.write(string_utils.instruction_terminating +
-                      str(terminating_all) + '\t' +
-                      string_utils.instruction_sleeping +
-                      str(sleeping_all) + '\t' +
-                      string_utils.instruction_crashing +
-                      str(crashing_all) + '\t' +
-                      string_utils.instruction_raising_error +
-                      str(error_all) + '\n')
+        outfile.write(
+            string_utils.instruction_terminating +
+            str(terminating_all) + '\t' +
+            string_utils.instruction_sleeping +
+            str(sleeping_all) + '\t' +
+            string_utils.instruction_crashing +
+            str(crashing_all) + '\t' +
+            string_utils.instruction_raising_error +
+            str(error_all) + '\n'
+        )
 
 
 # Similar to the previous but modified to output system call counting results.
 def output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, syscall_dict):
-
     with open(dir_syscall_path + '/' + filename, 'w', encoding='utf-8', errors='replace') as outfile:
         total_syscall = 0
+
         for system_call_num in sorted(list(syscall_dict)):
             system_call = syscall_dict[system_call_num]
             if system_call in malware_syscall_dict:
                 total_syscall += malware_syscall_dict[system_call]
                 outfile.write(system_call + ':\t' +
                               str(malware_syscall_dict[system_call]) + '\n')
-        outfile.write('\n' + string_utils.syscall_final +
-                      str(total_syscall))
+
+        outfile.write('\n' + string_utils.syscall_final + str(total_syscall))
 
 
 # Prints the final output on file. The final output contains aggregate data
@@ -68,40 +68,49 @@ def output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, sys
 # malware_object associated sums up the instruction for each pid, checks if
 # each pid has been terminated and if each pid has called the sleep function.
 def final_output_instructions(dir_results_path, filenames, db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict,file_sleep_dict, file_crash_dict, file_error_dict):
+    with open(dir_results_path + '/' + 'corrupted_processes.txt', 'w', encoding='utf-8', errors='replace') as cp_file:
+        with open(dir_results_path + '/' + 'analysis.txt', 'w', encoding='utf-8', errors='replace') as res_file:
+            for filename in filenames:
+                total_instructions = [0, 0, 0, 0]
 
-    with open(dir_results_path + '/' + 'analysis.txt', 'w', encoding='utf-8',
-              errors='replace') as res_file:
-        for filename in filenames:
-            total_instructions = [0, 0, 0, 0]
-            res_file.write(string_utils.filename + filename + '\n')
-            if filename in db_file_malware_dict:
-                entry = db_file_malware_dict[filename]
+                res_file.write(string_utils.filename + filename + '\n')
+                cp_file.write(string_utils.filename + filename + '\n')
 
-                total_instructions = [sum(x) for x in zip(total_instructions, entry.get_total_executed_instructions())]
-
-            if filename in file_corrupted_processes_dict:
-                for entry in file_corrupted_processes_dict[filename]:
-
+                if filename in db_file_malware_dict:
+                    entry = db_file_malware_dict[filename]
                     total_instructions = [sum(x) for x in zip(total_instructions, entry.get_total_executed_instructions())]
+                    cp_file.write(domain_utils.repr_malware_processes(entry))
 
-            res_file.write(string_utils.instruction_final +
-                           str(total_instructions) + '\n')
-            res_file.write(string_utils.instruction_terminating +
-                           (str(file_terminate_dict[filename]) if
-                            filename in file_terminate_dict else str(False)) +
-                           '\t')
-            res_file.write(string_utils.instruction_sleeping +
-                           (str(file_sleep_dict[filename]) if
-                            filename in file_sleep_dict else str(False)) +
-                           '\t')
-            res_file.write(string_utils.instruction_crashing +
-                           (str(file_crash_dict[filename]) if
-                            filename in file_crash_dict else str(False)) +
-                           '\t')
-            res_file.write(string_utils.instruction_raising_error +
-                           (str(file_error_dict[filename]) if
-                            filename in file_error_dict else str(False)) +
-                           '\n\n')
+                if filename in file_corrupted_processes_dict:
+                    for entry in file_corrupted_processes_dict[filename]:
+                        total_instructions = [sum(x) for x in zip(total_instructions, entry.get_total_executed_instructions())]
+                        cp_file.write(domain_utils.repr_malware_processes(entry))
+
+                res_file.write(
+                    string_utils.instruction_final +
+                    str(total_instructions) + '\n'
+                )
+                res_file.write(
+                    string_utils.instruction_terminating +
+                    (str(file_terminate_dict[filename]) if filename in file_terminate_dict else str(False)) +
+                    '\t'
+                )
+                res_file.write(
+                    string_utils.instruction_sleeping +
+                    (str(file_sleep_dict[filename]) if filename in file_sleep_dict else str(False)) +
+                    '\t'
+                )
+                res_file.write(
+                    string_utils.instruction_crashing +
+                    (str(file_crash_dict[filename]) if filename in file_crash_dict else str(False)) +
+                    '\t'
+                )
+                res_file.write(
+                    string_utils.instruction_raising_error +
+                    (str(file_error_dict[filename]) if filename in file_error_dict else str(False)) +
+                    '\n\n'
+                )
+                cp_file.write('\n\n')
 
 
 # Prints the final output on file. Modified for system call counting output.

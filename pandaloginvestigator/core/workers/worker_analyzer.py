@@ -444,8 +444,7 @@ def analyze_log(filename):
         for line in logfile:
             try:
                 if tag_context_switch in line:
-                    is_context_switch(filename, line, process_dict,
-                                      inverted_process_dict)
+                    is_context_switch(filename, line, process_dict, inverted_process_dict)
                 elif tag_process_creation in line:
                     is_creating_process(line, filename)
                 elif tag_write_memory in line:
@@ -474,4 +473,5 @@ def analyze_log(filename):
         terminating_all,
         sleeping_all,
         crashing_all,
-        error_all)
+        error_all
+    )
