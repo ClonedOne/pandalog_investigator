@@ -1,8 +1,9 @@
 import sqlite3
 
 
-# This module is used to obtain the name of the starting malware tested in each log file.
-# Malware process names are the first 14 characters of the md5, the file name is actually the uuid.
+# This module is used to obtain the name of the starting malware tested in
+# each log file. Malware process names are the first 14 characters of the
+# md5, the log file name is actually the uuid.
 
 
 db_name = 'panda.db'
