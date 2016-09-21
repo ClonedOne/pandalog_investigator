@@ -1,6 +1,10 @@
 from collections import defaultdict
 import os
 import numpy
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 # ## STATISTICAL UTILITY METHODS ##
@@ -29,8 +33,6 @@ def prune_data(chosen_dict, threshold_number):
 
 # Delete values from a dictionary if their keys are contained in the specified dictionaries.
 def prune_crashing_errors(dict_list, crashing_dict, error_dict):
-    print(crashing_dict)
-    print(error_dict)
     clean_dicts = []
     i = 0
     for cur_dict in dict_list:
@@ -55,7 +57,7 @@ def clean_log(filename, dir_unpacked_path):
 # the worker sub result.
 def update_results(results, dict_list):
     if len(results[0]) != len(dict_list):
-        print('paaniiiic')
+        logger.error('Update Results length of partial result different from length of dict_list')
         return -1
     for sub_res in results:
         for i in range(len(sub_res)):

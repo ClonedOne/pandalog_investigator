@@ -1,9 +1,13 @@
 import subprocess
 import os
+import logging
 
 
 # This module handles utility methods which are inherently related to Panda or
 # the panda logs structure.
+
+
+logger = logging.getLogger(__name__)
 
 
 # Unpack the specified log file using the PANDA 'pandalog_reader' utility.
@@ -14,7 +18,7 @@ def unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path):
     return_code = subprocess.call(dir_panda_path + unpack_command + " " + dir_pandalogs_path + '/' + filename + " > " +
                                   dir_unpacked_path + '/' + reduced_filename, shell=True)
     if return_code != 0:
-        print ('return code: ' + str(return_code))
+        logger.debug('Unpack log: ' + reduced_filename + 'return code: ' + str(return_code))
 
 
 # Handles the acquisition of the path string from the log file.
