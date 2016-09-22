@@ -16,7 +16,6 @@ def generate_graph(dir_results_path):
         if len(corrupted_dict[filename]) == 0:
             continue
         for malware in corrupted_dict[filename]:
-            print(malware)
             process = str(malware[0][0]) + ',' + str(malware[0][1])
             malware_origin = malware[1]
             parent = str(malware[2][0]) + ',' + str(malware[2][1])
