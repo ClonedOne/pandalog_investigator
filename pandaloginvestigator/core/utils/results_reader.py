@@ -71,3 +71,23 @@ def read_result_syscall(dir_results_path):
                     value = file_utils.values_from_syscalls(line)
                     syscalls_totals_dict[last_file_name] = value
     return [syscalls_totals_dict, ]
+
+
+# Read the corrupted processes list and return a dictionary containing
+# as key the log file name and as value the structure of related processes.
+def read_result_corrupted(dir_results_path):
+    corrupted_dict = {}
+    file_path = dir_results_path + '/corrupted_processes.txt'
+    with open(file_path, 'r', encoding='utf-8', errors='replace') as resfile:
+        last_file_name = ''
+        for line in resfile:
+            if string_utils.filename in line:
+                last_file_name = file_utils.filename_from_analysis(line)
+                corrupted_dict[last_file_name] = []
+            elif line.strip():
+                line = line.split('\t')
+                malware = (line[2].strip(), line[3].strip())
+                origin = line[4].strip()
+                parent = (line[6].strip(), line[7].strip())
+                corrupted_dict[last_file_name].append([malware, origin, parent])
+    return corrupted_dict

@@ -8,7 +8,7 @@ setup(
     author='Giorgio Severi',
     description='Pandalogs analysis tool',
     url='https://ClonedOne@bitbucket.org/ClonedOne/seminar.git',
-    install_requires=['numpy', 'scipy', 'cement', 'matplotlib'],
+    install_requires=['numpy', 'scipy', 'cement', 'matplotlib', 'networkx'],
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,

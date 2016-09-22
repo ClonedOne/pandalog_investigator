@@ -68,8 +68,8 @@ def output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, sys
 # malware_object associated sums up the instruction for each pid, checks if
 # each pid has been terminated and if each pid has called the sleep function.
 def final_output_instructions(dir_results_path, filenames, db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict,file_sleep_dict, file_crash_dict, file_error_dict):
-    with open(dir_results_path + '/' + 'corrupted_processes.txt', 'w', encoding='utf-8', errors='replace') as cp_file:
-        with open(dir_results_path + '/' + 'analysis.txt', 'w', encoding='utf-8', errors='replace') as res_file:
+    with open(dir_results_path + '/corrupted_processes.txt', 'w', encoding='utf-8', errors='replace') as cp_file:
+        with open(dir_results_path + '/analysis.txt', 'w', encoding='utf-8', errors='replace') as res_file:
             for filename in filenames:
                 total_instructions = [0, 0, 0, 0]
 

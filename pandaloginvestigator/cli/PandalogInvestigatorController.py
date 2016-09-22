@@ -5,6 +5,7 @@ from pandaloginvestigator.cli.cmds.analyze import analyze_command
 from pandaloginvestigator.cli.cmds.syscalls import syscall_command
 from pandaloginvestigator.cli.cmds.plot import plot_command
 from pandaloginvestigator.cli.cmds.detect import detect_command
+from pandaloginvestigator.cli.cmds.graph import graph_command
 import logging
 
 
@@ -141,3 +142,13 @@ class PandalogInvestigatorController(ArgparseController):
             str(self.app.pargs.regkey)
         )
         detect_command(self.app)
+
+    @expose(help='''Represent corrupted processes as graphs, and output graph files
+    compatible with gephi and cytoscape visualization libraries. Can be executed
+    only after the analysis command.''',
+            arguments=[
+
+            ])
+    def graph(self):
+        logger.info('Generating graph output')
+        graph_command(self.app)
