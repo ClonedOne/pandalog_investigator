@@ -79,8 +79,6 @@ def repr_malware_processes(malware):
     name = malware.name
     for pid in pid_list:
         parent = malware.get_parent_of(pid)
-        if not parent:
-            parent = (name, pid)
         result = '\t\t{:15s}\t{:10d}\t{:15s}\tby:\t{:15s}\t{:10d}\n'.format(name, pid, malware.origin[pid], parent[0], parent[1])
     return result
 

@@ -246,7 +246,6 @@ def is_context_switch(filename, line, process_dict, inverted_process_dict):
     malware = is_db_malware(proc_name, filename)
     if not malware:
         malware = is_corrupted_process(proc_name, pid, filename)
-
     if active_malware:
         update_malware_instruction_count(current_instruction)
     if malware:
@@ -277,12 +276,7 @@ def update_malware_instruction_count(current_instruction):
 # and id of the terminating and terminated processes. Checks if terminating
 # process is a malware and if so updates malware's termination information.
 def is_terminating(line, filename):
-    commas = line.strip().split(',')
-    current_instruction = int((commas[0].split()[0].split('='))[1])
-    terminating_pid = int(commas[2].strip())
-    terminating_name = commas[3].split(')')[0].strip()
-    terminated_pid = int(commas[5].strip())
-    terminated_name = commas[6].split(')')[0].strip()
+    current_instruction, terminating_pid, terminating_name, terminated_pid, terminated_name = panda_utils.data_from_line(line)
 
     malware = is_db_malware(terminating_name, filename)
     if not malware:
@@ -345,14 +339,7 @@ def is_crashing(line, filename):
 # object and initialize it with the created pid. The path for the executable
 # of the created process is gathered through the method get_new_path().
 def is_creating_process(line, filename):
-    commas = line.strip().split(',')
-    current_instruction = int((commas[0].split()[0].split('='))[1])
-    new_path = panda_utils.get_new_path(line)
-    creating_pid = int(commas[2].strip())
-    creating_name = commas[3].split(')')[0].strip()
-    created_pid = int(commas[5].strip())
-    created_name = commas[6].split(')')[0].strip()
-
+    current_instruction, creating_pid, creating_name, created_pid, created_name, new_path = panda_utils.data_from_line(line, creating=True)
     malware = is_db_malware(creating_name, filename)
     if not malware:
         malware = is_corrupted_process(creating_name, creating_pid, filename)
@@ -390,13 +377,7 @@ def is_creating_process(line, filename):
 # pid is not already a valid pid for that malicious process. Else create a new
 # malware object and initialize it with the written pid.
 def is_writing_memory(line, filename):
-    commas = line.strip().split(',')
-    current_instruction = int((commas[0].split()[0].split('='))[1])
-    writing_pid = int(commas[2].strip())
-    writing_name = commas[3].split(')')[0].strip()
-    written_pid = int(commas[5].strip())
-    written_name = commas[6].split(')')[0].strip()
-
+    current_instruction, writing_pid, writing_name, written_pid, written_name = panda_utils.data_from_line(line)
     malware = is_db_malware(writing_name, filename)
     if not malware:
         malware = is_corrupted_process(writing_name, writing_pid, filename)
@@ -429,9 +410,9 @@ def is_malware(malware, pid, current_instruction):
     global active_malware
     pid_list = malware.get_pid_list()
     if pid not in pid_list:
-        malware.add_pid(pid, Malware.FROM_DB, None)
+        malware.add_pid(pid, Malware.FROM_DB, (malware.get_name(), pid))
     malware.update_starting_instruction(pid, current_instruction)
-    malware.set_active_pid(pid)
+    malware.activate_pid(pid)
     active_malware = malware
 
 

@@ -80,6 +80,7 @@ def final_output_instructions(dir_results_path, filenames, db_file_malware_dict,
                     entry = db_file_malware_dict[filename]
                     total_instructions = [sum(x) for x in zip(total_instructions, entry.get_total_executed_instructions())]
                     cp_file.write(domain_utils.repr_malware_processes(entry))
+                    print(domain_utils.repr_malware_processes(entry), filename)
 
                 if filename in file_corrupted_processes_dict:
                     for entry in file_corrupted_processes_dict[filename]:

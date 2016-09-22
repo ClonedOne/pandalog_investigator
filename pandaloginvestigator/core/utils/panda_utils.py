@@ -56,3 +56,18 @@ def update_dictionaries(pid, process_dict, proc_name, inverted_process_dict):
     else:
         inverted_process_dict[proc_name] = {}
         inverted_process_dict[proc_name][pid] = 1
+
+
+# Given a line of the log file returns the instruction
+def data_from_line(line, creating=False):
+    commas = line.strip().split(',')
+    current_instruction = int((commas[0].split()[0].split('='))[1])
+    subject_pid = int(commas[2].strip())
+    subject_name = commas[3].split(')')[0].strip()
+    object_pid = int(commas[5].strip())
+    object_name = commas[6].split(')')[0].strip()
+    if creating:
+        new_path = get_new_path(line)
+        return current_instruction, subject_pid, subject_name, object_pid, object_name, new_path
+    else:
+        return current_instruction, subject_pid, subject_name, object_pid, object_name

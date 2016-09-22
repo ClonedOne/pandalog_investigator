@@ -124,7 +124,7 @@ def is_malware(malware, pid):
     pid_list = malware.get_pid_list()
     if pid not in pid_list:
         malware.add_pid(pid, Malware.FROM_DB)
-    malware.set_active_pid(pid)
+    malware.activate_pid(pid)
     active_malware = malware
 
 
