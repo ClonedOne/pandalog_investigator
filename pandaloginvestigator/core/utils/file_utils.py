@@ -31,21 +31,18 @@ def output_on_file_instructions(filename, process_dict, inverted_process_dict, d
                 total_instructions = [sum(x) for x in zip(total_instructions, malware.get_total_executed_instructions())]
                 outfile.write(domain_utils.repr_malware(malware) + '\n\n')
 
-        outfile.write(
-            string_utils.instruction_final +
-            str(total_instructions) + '\n'
-        )
+        outfile.write('{} {}\n'.format(string_utils.instruction_final, total_instructions))
 
-        outfile.write(
-            string_utils.instruction_terminating +
-            str(terminating_all) + '\t' +
-            string_utils.instruction_sleeping +
-            str(sleeping_all) + '\t' +
-            string_utils.instruction_crashing +
-            str(crashing_all) + '\t' +
-            string_utils.instruction_raising_error +
-            str(error_all) + '\n'
-        )
+        outfile.write('{} {} {} {} {} {} {} {}\n'.format(
+            string_utils.instruction_terminating,
+            terminating_all,
+            string_utils.instruction_sleeping,
+            sleeping_all,
+            string_utils.instruction_crashing,
+            crashing_all,
+            string_utils.instruction_raising_error,
+            error_all
+        ))
 
 
 # Similar to the previous but modified to output system call counting results.
@@ -60,7 +57,7 @@ def output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, sys
                 outfile.write(system_call + ':\t' +
                               str(malware_syscall_dict[system_call]) + '\n')
 
-        outfile.write('\n' + string_utils.syscall_final + str(total_syscall))
+        outfile.write('{} {}\n'.format(string_utils.syscall_final, total_syscall))
 
 
 # Prints the final output on file. The final output contains aggregate data
@@ -73,14 +70,13 @@ def final_output_instructions(dir_results_path, filenames, db_file_malware_dict,
             for filename in filenames:
                 total_instructions = [0, 0, 0, 0]
 
-                res_file.write(string_utils.filename + filename + '\n')
-                cp_file.write(string_utils.filename + filename + '\n')
+                res_file.write('{} {}\n'.format(string_utils.filename, filename))
+                cp_file.write('{} {}\n'.format(string_utils.filename, filename))
 
                 if filename in db_file_malware_dict:
                     entry = db_file_malware_dict[filename]
                     total_instructions = [sum(x) for x in zip(total_instructions, entry.get_total_executed_instructions())]
                     cp_file.write(domain_utils.repr_malware_processes(entry))
-                    print(domain_utils.repr_malware_processes(entry), filename)
 
                 if filename in file_corrupted_processes_dict:
                     for entry in file_corrupted_processes_dict[filename]:
@@ -92,22 +88,22 @@ def final_output_instructions(dir_results_path, filenames, db_file_malware_dict,
                     str(total_instructions) + '\n'
                 )
                 res_file.write(
-                    string_utils.instruction_terminating +
+                    string_utils.instruction_terminating + '\t' +
                     (str(file_terminate_dict[filename]) if filename in file_terminate_dict else str(False)) +
                     '\t'
                 )
                 res_file.write(
-                    string_utils.instruction_sleeping +
+                    string_utils.instruction_sleeping + '\t' +
                     (str(file_sleep_dict[filename]) if filename in file_sleep_dict else str(False)) +
                     '\t'
                 )
                 res_file.write(
-                    string_utils.instruction_crashing +
+                    string_utils.instruction_crashing + '\t' +
                     (str(file_crash_dict[filename]) if filename in file_crash_dict else str(False)) +
                     '\t'
                 )
                 res_file.write(
-                    string_utils.instruction_raising_error +
+                    string_utils.instruction_raising_error + '\t' +
                     (str(file_error_dict[filename]) if filename in file_error_dict else str(False)) +
                     '\n\n'
                 )
@@ -120,14 +116,12 @@ def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
               errors='replace') as res_file:
         for filename in filenames:
             total_syscall = 0
-            res_file.write(string_utils.filename + filename + '\n')
+            res_file.write('{} {}\n'.format(string_utils.filename, filename))
             if filename in filename_syscall_dict:
                 entry = filename_syscall_dict[filename]
                 total_syscall = sum(entry.values())
 
-            res_file.write(string_utils.syscall_final +
-                           str(total_syscall))
-            res_file.write('\n\n')
+            res_file.write('{} {}\n\n'.format(string_utils.syscall_final, total_syscall))
 
 
 # Prints statistical information regarding the instruction analysis.

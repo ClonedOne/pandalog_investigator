@@ -223,7 +223,7 @@ def is_corrupted_process(proc_name, pid, filename):
         return None
     malwares = file_corrupted_processes_dict[filename]
     for malware in malwares:
-        if malware.get_name() == proc_name and pid in malware.get_pid_list():
+        if malware.get_name() == proc_name and malware.is_valid_pid(pid):
             return malware
     return None
 
@@ -344,7 +344,7 @@ def is_creating_process(line, filename):
     if not malware:
         malware = is_corrupted_process(creating_name, creating_pid, filename)
 
-    if malware and malware.is_valid_pid(creating_pid) and malware.has_active_pid() and malware.get_active_pid() == creating_pid:
+    if malware and malware.has_active_pid() and malware.get_active_pid() == creating_pid:
         malware.add_spawned_process(
             creating_pid,
             created_pid,
@@ -352,13 +352,16 @@ def is_creating_process(line, filename):
             current_instruction,
             new_path
         )
+
         target = is_db_malware(created_name, filename)
         if not target:
             target = is_corrupted_process(created_name, created_pid, filename)
+
         if target:
             if not target.is_valid_pid(created_pid):
                 target.add_pid(created_pid, Malware.CREATED, (creating_name, creating_pid))
             return
+
         new_malware = domain_utils.initialize_malware_object(
             filename,
             created_name,

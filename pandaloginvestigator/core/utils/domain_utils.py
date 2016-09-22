@@ -1,5 +1,6 @@
 from pandaloginvestigator.core.domain.malware_object import Malware
 from pandaloginvestigator.core.domain.suspect import Suspect
+from pandaloginvestigator.core.utils import string_utils
 
 
 # This module handles utility methods which are inherently related to the
@@ -27,47 +28,37 @@ def initialize_malware_object(filename, malware_name, db_file_malware_dict, file
 
 # Returns a string representation of the specified malware object.
 def repr_malware(malware):
-    string_spawned = '\nSpawned processes: new pid | process name | instruction | executable path\n'
-    string_terminated = '\nTerminated processes: terminated pid | terminated process name | instruction\n'
-    string_written = '\nMemory written: written pid | written process name | instruction\n'
-    string_sleep = '\nNtDelayExecution called: occurrences\n'
-    string_executed = '\nInstructions executed by all pids: DB | created | memory written | total\n'
-    string_crash_missing_dll = '\nCrashing | missing a dll:\n'
+    result = ''
+    for pid in malware.get_pid_list():
+        result += '{} {:20s}\n'.format(string_utils.proc_name, malware.name)
+        result += '{} {:20d}\n'.format(string_utils.proc_pid, pid)
+        result += '{} {:20s}\n'.format(string_utils.proc_orig, malware.get_origin(pid))
+        result += '{} {:20d}\n'.format(string_utils.last_inst, malware.get_starting_instruction(pid))
+        result += '{} {:20d}\n'.format(string_utils.exec_inst, malware.get_instruction_executed(pid))
 
-    result = 'Malware name: ' + malware.name + '\n'
-    for i in malware.pid_list:
-        result += '\nMalware pid: ' + str(i) + '\t' + malware.origin[i] + '\n' \
-                  + 'Last starting instruction: ' + str(malware.starting_instruction[i]) + '\n' \
-                  + 'Instruction executed: ' + str(malware.instruction_executed[i]) + '\n'
-
-        result += string_spawned
-        for entry in malware.spawned_processes[i]:
+        result += '\n{}\n'.format(string_utils.text_spawned)
+        for entry in malware.get_spawned_processes(pid):
             for sub_entry in entry:
                 result += str(sub_entry) + '\t'
             result += '\n'
 
-        result += string_terminated
-        for entry in malware.terminated_processes[i]:
+        result += '\n{}\n'.format(string_utils.text_terminated)
+        for entry in malware.get_terminated_processes(pid):
+            for sub_entry in entry:
+                result += str(sub_entry) + '\t'
+            result += '\n'
+        result += '\n{}\n'.format(string_utils.text_written)
+        for entry in malware.get_written_memories(pid):
             for sub_entry in entry:
                 result += str(sub_entry) + '\t'
             result += '\n'
 
-        result += string_written
-        for entry in malware.written_memory[i]:
-            for sub_entry in entry:
-                result += str(sub_entry) + '\t'
-            result += '\n'
+        result += '\n{} {:10d}\n'.format(string_utils.text_sleep, malware.get_sleep(pid))
+        result += '{} {} {}\n\n'.format(string_utils.text_crash_missing_dll, malware.get_crash(pid), malware.get_error(pid))
 
-        result += string_sleep
-        result += str(malware.sleep[i])
-        result += string_crash_missing_dll
-        result += str(malware.crashing[i]) + '\t' + str(malware.error[i])
-        result += '\n'
-
-    result += string_executed
     executed = malware.get_total_executed_instructions()
-    result += str(executed[0]) + '\t' + str(executed[1]) + '\t' + str(executed[2]) + '\t' + str(executed[3]) + '\n'
-
+    result += string_utils.text_executed + '\n'
+    result += '{:15d} {:15d} {:15d} {:15d}\n\n\n'.format(executed[0], executed[1], executed[2], executed[3])
     return result
 
 
@@ -79,7 +70,7 @@ def repr_malware_processes(malware):
     name = malware.name
     for pid in pid_list:
         parent = malware.get_parent_of(pid)
-        result = '\t\t{:15s}\t{:10d}\t{:15s}\tby:\t{:15s}\t{:10d}\n'.format(name, pid, malware.origin[pid], parent[0], parent[1])
+        result += '\t\t{:15s}\t{:10d}\t{:15s}\tby:\t{:15s}\t{:10d}\n'.format(name, pid, malware.origin[pid], parent[0], parent[1])
     return result
 
 
