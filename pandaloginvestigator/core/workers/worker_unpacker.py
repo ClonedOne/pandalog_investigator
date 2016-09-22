@@ -18,5 +18,5 @@ def work(params_pack):
     logger.info('WorkerId = ' + str(worker_id) + ' unpacking ' + str(total_files) + ' log files')
     for filename in filenames:
         j += 1
-        logger.info('Unpacker ' + str(worker_id) + ' ' + str(j / total_files * 100) + '%')
+        logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
         panda_utils.unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path)

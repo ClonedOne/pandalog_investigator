@@ -22,7 +22,7 @@ def work(data_pack):
     logger.info('WorkerId = ' + str(worker_id) + ' translating ' + str(total_files) + ' log files')
     for filename in filenames:
         j += 1
-        logger.info('Translator ' + str(worker_id) + ' ' + str(j / total_files * 100) + '%')
+        logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
         with codecs.open(dir_unpacked_path + '/' + filename, 'r', 'utf-8', errors='replace') as log_file:
             with codecs.open(dir_translated_path + '/' + filename, 'w', 'utf-8', errors='replace') as translated_file:
                 for line in log_file:

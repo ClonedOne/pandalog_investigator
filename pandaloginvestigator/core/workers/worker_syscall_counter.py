@@ -45,7 +45,7 @@ def work(data_pack):
         else:
             logger.error(str(worker_id) + ' ERROR filename not in db')
         j += 1
-        logger.info('System call counter' + str(worker_id) + ' ' + str((j * 100 / total_files)) + '%')
+        logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
     total_time = time.time() - t0
     logger.info(str(worker_id) + ' Total time: ' + str(total_time))
     return (filename_syscall_dict, )

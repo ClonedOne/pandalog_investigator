@@ -3,7 +3,8 @@ from pandaloginvestigator.core.domain.suspect import Suspect
 
 
 # This module handles utility methods which are inherently related to the
-# domain of the application.
+# domain of the application. Therefore this module has explicit knowledge
+# of domain's structure.
 
 
 # Utilities related to Malware class.
@@ -75,8 +76,12 @@ def repr_malware(malware):
 def repr_malware_processes(malware):
     result = ''
     pid_list = malware.pid_list
+    name = malware.name
     for pid in pid_list:
-        result += '\t\t' + malware.name + '\t' + str(pid) + '\t' + malware.origin[pid] + '\n'
+        parent = malware.get_parent_of(pid)
+        if not parent:
+            parent = (name, pid)
+        result = '\t\t{:15s} {:10d} {:25s} by: {:15s} {:10d}\n'.format(name, pid, malware.origin[pid], parent[0], parent[1])
     return result
 
 

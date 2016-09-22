@@ -27,5 +27,5 @@ def work(data_pack):
                         process_name = line.split(',')[3].split(')')[0].strip()
                         suspect_dict[filename].add_tag_occ(tag, (instr_num, process_id, process_name))
         j += 1
-        logger.info('WorkerId ' + str(worker_id) + ' ' + str((j * 100 / total_files)) + '%')
+        logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
     return (suspect_dict, )
