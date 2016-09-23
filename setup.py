@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-
 from setuptools import setup, find_packages
 
 setup(
     name='pandaloginvestigator',
     version='0.1',
     author='Giorgio Severi',
-    description='Pandalogs analysis tool',
+    description='Panda logs analysis tool',
     url='https://ClonedOne@bitbucket.org/ClonedOne/seminar.git',
     install_requires=['numpy', 'scipy', 'cement', 'matplotlib', 'networkx'],
     packages=find_packages(),
