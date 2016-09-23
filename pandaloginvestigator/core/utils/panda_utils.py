@@ -71,3 +71,12 @@ def data_from_line(line, creating=False):
         return current_instruction, subject_pid, subject_name, object_pid, object_name, new_path
     else:
         return current_instruction, subject_pid, subject_name, object_pid, object_name
+
+
+# Adapted version of get_data_from_line for the detector
+def data_from_line_d(line):
+    commas = line.strip().split(',')
+    current_instruction = int((commas[0].split()[0].split('='))[1])
+    subject_pid = int(commas[2].strip())
+    subject_name = commas[3].split(')')[0].strip()
+    return current_instruction, subject_pid, subject_name

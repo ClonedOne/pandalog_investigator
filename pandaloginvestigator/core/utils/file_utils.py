@@ -181,7 +181,7 @@ def output_instr_stats(dir_results_path, instr_totals_dict, inverted_totals, tot
 def output_suspects(dir_results_path, suspect_dict):
     with open(dir_results_path + '/suspects.txt', 'w', encoding='utf-8', errors='replace') as suspect_file:
         for filename, suspect in suspect_dict.items():
-            suspect_file.write(domain_utils.repr_suspect(suspect))
+            suspect_file.write(domain_utils.repr_suspect(suspect) + '\n\n')
 
 
 # ## INPUT UTILITY METHODS ##

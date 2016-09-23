@@ -91,9 +91,20 @@ def get_syscalls():
 
 # Provide a string representation of the suspect object.
 def repr_suspect(suspect):
-    result = 'Filename: ' + suspect.file_name + '\n'
-    for tag in suspect.reg_dict:
-        result += '\t' + tag + ':\n'
-        for details in suspect.reg_dict[tag]:
-            result += '\t\t' + details[0] + '\t' + details[1] + '\t' + details[2] + '\n'
+    result = '{} {}\n'.format(string_utils.filename, suspect.get_filename())
+    opened_keys = suspect.get_opened_keys()
+    queried_values = suspect.get_queries_key_values()
+    for malware in opened_keys:
+        proc_name = malware[0]
+        proc_id = malware[1]
+        mal_opened_keys = opened_keys[malware]
+        for key, occurrency in mal_opened_keys.items():
+            result += '{:15s} {:85s} {:10d} by {} {}\n'.format(string_utils.opened, key, occurrency, proc_name, proc_id)
+    for malware in queried_values:
+        proc_name = malware[0]
+        proc_id = malware[1]
+        mal_queried_values = queried_values[malware]
+        for value, occurrency in mal_queried_values.items():
+            result += '{:15s} {:85s} {:10d} by {} {}\n'.format(string_utils.queried, value, occurrency, proc_name, proc_id)
+
     return result

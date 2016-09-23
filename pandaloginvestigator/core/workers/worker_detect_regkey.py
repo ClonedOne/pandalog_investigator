@@ -1,31 +1,42 @@
 from pandaloginvestigator.core.domain.suspect import Suspect
+from pandaloginvestigator.core.utils import panda_utils
+from pandaloginvestigator.core.utils import string_utils
 import logging
 
 
 logger = logging.getLogger(__name__)
+
+tag_open_key = string_utils.tag_open_key
+tag_query_key = string_utils.tag_query_key
+tag_keys = string_utils.tag_keys
+tag_values = string_utils.tag_values
 
 
 def work(data_pack):
     suspect_dict = {}
     worker_id = data_pack[0]
     filenames = data_pack[1]
-    tags_reg_key = data_pack[2]
-    dir_unpacked_path = data_pack[3]
-    tags_reg_value = dict([reversed(i) for i in tags_reg_key.items()])
+    dir_unpacked_path = data_pack[2]
     j = 0.0
     total_files = len(filenames) if len(filenames) > 0 else -1
-    logger.info('WorkerId ' + str(worker_id) + ' detecting ' + str(total_files) + ' log files')
+    logger.info('WorkerId {} detecting {} log files'.format(worker_id, total_files))
     for filename in filenames:
-        suspect_dict[filename] = Suspect(filename)
+        cur_suspect = Suspect(filename)
+        suspect_dict[filename] = cur_suspect
         with open(dir_unpacked_path + '/' + filename, encoding='utf-8', errors='replace') as log_file:
             for line in log_file:
-                for value in tags_reg_value:
-                    if value in line:
-                        tag = tags_reg_value[value]
-                        instr_num = line.split('=')[1].split()[0]
-                        process_id = line.split(',')[2].strip()
-                        process_name = line.split(',')[3].split(')')[0].strip()
-                        suspect_dict[filename].add_tag_occ(tag, (instr_num, process_id, process_name))
+                if tag_open_key in line:
+                    for tag in tag_keys:
+                        if tag in line:
+                            current_instruction, subject_pid, subject_name = panda_utils.data_from_line_d(line)
+                            cur_suspect.add_opened_key((subject_name, subject_pid), tag)
+                elif tag_query_key in line:
+                    for tag in tag_values:
+                        if tag in line:
+                            current_instruction, subject_pid, subject_name = panda_utils.data_from_line_d(line)
+                            cur_suspect.add_queried_key_value((subject_name, subject_pid), tag)
         j += 1
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
     return (suspect_dict, )
+
+

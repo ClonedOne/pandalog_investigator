@@ -29,6 +29,8 @@ filename = 'File name:'
 proc_name = 'Process name:'
 proc_pid = 'Process ID:'
 proc_orig = 'Process origin:'
+opened = 'Opened key:'
+queried = 'Queried value:'
 instruction_terminating = 'Terminating all:'
 instruction_sleeping = 'Sleeping all:'
 instruction_crashing = 'Crashing all:'
@@ -50,8 +52,20 @@ target_i = 'instructions'
 target_s = 'syscalls'
 
 
-# String used by detection modules
-tags_reg_key = {
-    'tag_scsi0_key': 'HARDWARE\\DEVICEMAP\\Scsi\\Scsi Port 0\\Scsi Bus 0\\Target Id 0\\Logical Unit Id 0',
-    'tag_system_bios': 'HARDWARE\\Description\\System'
-}
+# System calls used to access registry keys
+tag_open_key = 'nt_open_key'
+tag_query_key = 'nt_query_value_key'
+
+# Interesting registry keys
+tag_keys = [
+    'HARDWARE\\DEVICEMAP\\Scsi\\Scsi Port 0\\Scsi Bus 0\\Target Id 0\\Logical Unit Id 0',
+    'HARDWARE\\Description\\System',
+    'HARDWARE\\ACPI\\DSDT\\VBOX__',
+    'HARDWARE\\ACPI\\FADT\\VBOX__',
+    'HARDWARE\\ACPI\\RSDT\\VBOX__',
+    'SOFTWARE\\Oracle\\VirtualBox Guest Additions',
+    'HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Services\\Disk\\Enum'
+]
+
+# Values to be checked inside the keys
+tag_values = ['SystemBiosDate', 'SystemBiosVersion', 'VideoBiosVersion']
