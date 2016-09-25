@@ -1,8 +1,9 @@
 {
     "pandaloginvestigator": {
-        "dir_database_path" : "/home/homeub/projects/panda_db",
-        "dir_pandalogs_path" : "/home/homeub/projects/panda_logs",
-        "dir_panda_path" : "/home/homeub/projects/panda/qemu/panda",
+        "dir_database_path" : "/home/yogaub/projects/panda_db",
+        "dir_pandalogs_path" : "/home/yogaub/projects/panda_logs",
+        "dir_panda_path" : "/home/yogaub/projects/panda/qemu/panda",
+        "created_dirs_path": "/home/yogaub/projects/seminar/created_dirs",
         "core_num" : 4
     }
 }

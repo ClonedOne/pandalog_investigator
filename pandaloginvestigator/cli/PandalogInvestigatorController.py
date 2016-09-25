@@ -46,10 +46,10 @@ class PandalogInvestigatorController(ArgparseController):
             ])
     def unpack(self):
         logger.info(
-            'Unpacking logs. Received num option with value ' +
-            str(self.app.pargs.num) +
-            'and file option with value ' +
-            str(self.app.pargs.file)
+            'Unpacking logs. Received num option with value {} and file option with value {}'.format(
+                self.app.pargs.num,
+                self.app.pargs.file
+            )
         )
         if self.app.pargs.file:
             unpack_command(self.app, file_list=self.app.pargs.file)
@@ -67,8 +67,11 @@ class PandalogInvestigatorController(ArgparseController):
                 (['-u', '--unpack'], dict(help=help_u, action='store_true'))
             ])
     def translate(self):
-        logger.info('Translating logs. Received num option with value ' +
-                    str(self.app.pargs.num))
+        logger.info(
+            'Translating logs. Received num option with value {}'.format(
+                    self.app.pargs.num
+            )
+        )
         if self.app.pargs.unpack:
             self.unpack()
         if self.app.pargs.num:
@@ -85,8 +88,11 @@ class PandalogInvestigatorController(ArgparseController):
                 (['-u', '--unpack'], dict(help=help_u, action='store_true'))
             ])
     def analyze(self):
-        logger.info('Analyzing logs. Received num option with value ' +
-                    str(self.app.pargs.num))
+        logger.info(
+            'Analyzing logs. Received num option with value {}'.format(
+                self.app.pargs.num
+            )
+        )
         if self.app.pargs.unpack:
             self.unpack()
         if self.app.pargs.num:
@@ -103,8 +109,11 @@ class PandalogInvestigatorController(ArgparseController):
                 (['-u', '--unpack'], dict(help=help_u, action='store_true'))
             ])
     def syscalls(self):
-        logger.info('Counting system calls. Received num option with value ' +
-                    str(self.app.pargs.num))
+        logger.info(
+            'Counting system calls. Received num option with value {}'.format(
+                    self.app.pargs.num
+            )
+        )
         if self.app.pargs.unpack:
             self.unpack()
         if self.app.pargs.num:
@@ -120,8 +129,11 @@ class PandalogInvestigatorController(ArgparseController):
                 (['-s', '--syscall'], dict(help=help_s, action='store_true'))
             ])
     def plot(self):
-        logger.info('Plotting analysis results. Received option: ' +
-                    ('syscalls' if self.app.pargs.syscall else 'instructions'))
+        logger.info(
+            'Plotting analysis results. Received option: {}'.format(
+                'syscalls' if self.app.pargs.syscall else 'instructions'
+            )
+        )
         if self.app.pargs.instr:
             plot_command(self.app, 'instructions')
         elif self.app.pargs.syscall:
@@ -138,8 +150,9 @@ class PandalogInvestigatorController(ArgparseController):
             ])
     def detect(self):
         logger.info(
-            'Detecting sandbox detection techniques. Received option regkey with value ' +
-            str(self.app.pargs.regkey)
+            'Detecting sandbox detection techniques. Received option regkey with value {}'.format(
+                self.app.pargs.regkey
+            )
         )
         detect_command(self.app)
 

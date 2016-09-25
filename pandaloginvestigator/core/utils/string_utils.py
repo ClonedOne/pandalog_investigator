@@ -3,11 +3,11 @@
 
 
 # Paths relevant to the application.
-dir_unpacked_path = 'created_dirs/dir_unpacked'
-dir_translated_path = 'created_dirs/dir_translated'
-dir_results_path = 'created_dirs/dir_results'
-dir_analyzed_path = 'created_dirs/dir_analyzed'
-dir_syscall_path = 'created_dirs/dir_syscall'
+dir_unpacked_path = 'dir_unpacked'
+dir_translated_path = 'dir_translated'
+dir_results_path = 'dir_results'
+dir_analyzed_path = 'dir_analyzed'
+dir_syscall_path = 'dir_syscall'
 
 
 # Strings used to identify section of interest in panda log files.
