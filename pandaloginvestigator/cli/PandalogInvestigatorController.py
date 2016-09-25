@@ -11,6 +11,8 @@ import logging
 logger = logging.getLogger(__name__)
 help_n = 'Specify the number of logs to operate on'
 help_u = 'Unpack log files before operation'
+help_i = 'Plot the result of the instruction anYalysis'
+help_s = 'Plot the result of the system call analysis'
 help_f = 'Unpack the log files listed in the specified file'
 help_r = 'Detect the use of specific registry key to discover Qemu emulation'
 
