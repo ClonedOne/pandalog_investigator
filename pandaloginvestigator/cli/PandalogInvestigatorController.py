@@ -3,7 +3,6 @@ from pandaloginvestigator.cli.cmds.unpack import unpack_command
 from pandaloginvestigator.cli.cmds.translate import translate_command
 from pandaloginvestigator.cli.cmds.analyze import analyze_command
 from pandaloginvestigator.cli.cmds.syscalls import syscall_command
-from pandaloginvestigator.cli.cmds.plot import plot_command
 from pandaloginvestigator.cli.cmds.detect import detect_command
 from pandaloginvestigator.cli.cmds.graph import graph_command
 import logging
@@ -12,8 +11,6 @@ import logging
 logger = logging.getLogger(__name__)
 help_n = 'Specify the number of logs to operate on'
 help_u = 'Unpack log files before operation'
-help_i = 'Plot the result of the instruction analysis'
-help_s = 'Plot the result of the system call analysis'
 help_f = 'Unpack the log files listed in the specified file'
 help_r = 'Detect the use of specific registry key to discover Qemu emulation'
 
@@ -120,27 +117,6 @@ class PandalogInvestigatorController(ArgparseController):
             syscall_command(self.app, int(self.app.pargs.num))
         else:
             syscall_command(self.app)
-
-    @expose(help='''Analysis result plotting command: generate result graphs
-    and statistics. Generates also a final statistics file. Please specify the
-    result you wish to visualize: instructions or system calls analysis.''',
-            arguments=[
-                (['-i', '--instr'], dict(help=help_i, action='store_true')),
-                (['-s', '--syscall'], dict(help=help_s, action='store_true'))
-            ])
-    def plot(self):
-        logger.info(
-            'Plotting analysis results. Received option: {}'.format(
-                'syscalls' if self.app.pargs.syscall else 'instructions'
-            )
-        )
-        if self.app.pargs.instr:
-            plot_command(self.app, 'instructions')
-        elif self.app.pargs.syscall:
-            plot_command(self.app, 'syscalls')
-        else:
-            logger.info('Must specify a parameter')
-            self.app.args.print_help()
 
     @expose(help='''Detect attempts of sandbox detection: Generates a final
     statistics file. Please specify the kind of detection method you wish to

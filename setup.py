@@ -7,7 +7,7 @@ setup(
     author='Giorgio Severi',
     description='Panda logs analysis tool',
     url='https://ClonedOne@bitbucket.org/ClonedOne/seminar.git',
-    install_requires=['numpy', 'scipy', 'cement', 'matplotlib', 'networkx'],
+    install_requires=['numpy', 'cement', 'networkx'],
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,

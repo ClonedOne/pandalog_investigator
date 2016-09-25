@@ -1,6 +1,5 @@
 from pandaloginvestigator.core.utils import results_reader
 import networkx as nx
-import matplotlib.pyplot as plt
 
 
 color_db = 'blue'
@@ -29,7 +28,5 @@ def generate_graph(dir_results_path):
                 c = color_unknown
             graph.add_node(process, origin=malware_origin, color=c)
             graph.add_edge(parent, process)
-    nx.draw(graph)
-    plt.show()
     nx.write_graphml(graph, dir_results_path + '/graph.graphml')
 
