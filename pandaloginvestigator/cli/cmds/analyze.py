@@ -45,9 +45,9 @@ def analyze_command(app, max_num=None):
     )
 
     log_analyzer.analyze_logs(
-        string_utils.dir_unpacked_path,
-        string_utils.dir_analyzed_path,
-        string_utils.dir_results_path,
+        dir_unpacked_path,
+        dir_analyzed_path,
+        dir_results_path,
         dir_database_path,
         core_num,
         max_num
