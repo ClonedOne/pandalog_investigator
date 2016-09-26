@@ -124,66 +124,6 @@ def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
             res_file.write('{} {}\n\n'.format(string_utils.syscall_final, total_syscall))
 
 
-# Prints statistical information regarding the instruction analysis.
-def output_instr_stats(dir_results_path, instr_totals_dict, inverted_totals, total_stats, terms, clean_stats, clean_instr_totals_dict):
-
-    with open(dir_results_path + '/stats.txt', 'w', encoding='utf-8',
-              errors='replace') as stats_file:
-        stats_file.write('Filename <-> Total instruction count:\n\n')
-        for f_name, tot in instr_totals_dict.items():
-            stats_file.write(f_name + '\t' + str(tot) + '\n')
-        stats_file.write('\n')
-        stats_file.write('Total instruction count <-> Filename:\n\n')
-        for key in sorted(inverted_totals.keys()):
-            stats_file.write(str(key) + '\t' +
-                             str(inverted_totals[key]) + '\n')
-        stats_file.write('\n')
-        stats_file.write(
-            'Number of log files with non-null instruction count: \t' +
-            str(len(instr_totals_dict)) + '\n')
-        stats_file.write('Mean: \t' + str(total_stats[0]) + '\n')
-        stats_file.write('Standard Deviation: \t' + str(total_stats[1]) + '\n')
-        stats_file.write('Variance: \t' + str(total_stats[2]) + '\n\n')
-        stats_file.write('Number of log files without crashes/errors: \t' +
-                         str(len(clean_instr_totals_dict)) + '\n')
-        stats_file.write('Mean without crashes/errors: \t' +
-                         str(clean_stats[0]) + '\n')
-        stats_file.write(
-            'Standard Deviation without crashes/errors: \t' +
-            str(clean_stats[1]) + '\n')
-        stats_file.write('Variance without crashes/errors: \t' +
-                         str(clean_stats[2]) + '\n\n')
-        stats_file.write('Instruction count threshold: \t' +
-                         str(total_stats[0] * 0.1) + '\n')
-        stats_file.write(
-            'Malwares below threshold: \t' + str(terms[0]) + '\n'
-        )
-        stats_file.write(
-            'Malwares below threshold terminating all processes:\t' +
-            str(terms[1]) + '\n'
-        )
-        stats_file.write(
-            'Malwares below threshold sleeping all processes:\t' +
-            str(terms[2]) + '\n'
-        )
-        stats_file.write(
-            'Malwares below threshold crashing all processes:\t' +
-            str(terms[3]) + '\n'
-        )
-        stats_file.write(
-            'Malwares below threshold raising errors on all processes:\t' +
-            str(terms[4]) + '\n'
-        )
-        stats_file.write(
-            'Malwares below threshold sleeping or terminating: \t' +
-            str(terms[5]) + '\n'
-        )
-        stats_file.write(
-            'Malwares below threshold crashing or raising errors:\t' +
-            str(terms[6]) + '\n\n'
-        )
-
-
 # Print the list of suspect log files with the suspect elements to a file.
 def output_suspects(dir_results_path, suspect_dict):
     with open(dir_results_path + '/suspects.txt', 'w', encoding='utf-8', errors='replace') as suspect_file:

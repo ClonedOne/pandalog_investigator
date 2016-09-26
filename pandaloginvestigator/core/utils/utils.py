@@ -1,48 +1,9 @@
 from collections import defaultdict
 import os
-import numpy
 import logging
 
 
 logger = logging.getLogger(__name__)
-
-
-# ## STATISTICAL UTILITY METHODS ##
-
-# Compute statistical information about the specified dictionary.
-# Returns mean, standard deviation and variance of the values contained.
-def compute_stats(chosen_dict):
-    values = numpy.array(list(chosen_dict.values()))
-    mean = values.mean()
-    standard_deviation = values.std()
-    variance = values.var()
-    return mean, standard_deviation, variance
-
-
-# Delete the highest and lowest (key, value) pairs from a dictionary,
-# ordered by value.
-def prune_data(chosen_dict, threshold_number):
-    pruned_dict = {}
-    values = sorted(chosen_dict.values())
-    values = values[threshold_number : -threshold_number]
-    for filename, value in chosen_dict.items():
-        if value in values:
-            pruned_dict[filename] = value
-    return pruned_dict
-
-
-# Delete values from a dictionary if their keys are contained in the specified dictionaries.
-def prune_crashing_errors(dict_list, crashing_dict, error_dict):
-    clean_dicts = []
-    i = 0
-    for cur_dict in dict_list:
-        new_clean_dict = {}
-        for filename in cur_dict:
-            if not (crashing_dict.get(filename, False)) and not(error_dict.get(filename, False)):
-                new_clean_dict[filename] = cur_dict[filename]
-        clean_dicts.append(new_clean_dict)
-        i += 1
-    return clean_dicts
 
 
 # ## OTHER UTILITY METHODS ##
