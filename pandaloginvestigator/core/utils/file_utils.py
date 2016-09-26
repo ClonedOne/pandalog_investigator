@@ -84,7 +84,7 @@ def final_output_instructions(dir_results_path, filenames, db_file_malware_dict,
                         cp_file.write(domain_utils.repr_malware_processes(entry))
 
                 res_file.write(
-                    string_utils.instruction_final +
+                    string_utils.instruction_final + '\t' +
                     str(total_instructions) + '\n'
                 )
                 res_file.write(
@@ -156,25 +156,32 @@ def output_instr_stats(dir_results_path, instr_totals_dict, inverted_totals, tot
         stats_file.write('Instruction count threshold: \t' +
                          str(total_stats[0] * 0.1) + '\n')
         stats_file.write(
-            'Malwares below threshold: \t' + str(terms[0]) + '\n')
+            'Malwares below threshold: \t' + str(terms[0]) + '\n'
+        )
         stats_file.write(
             'Malwares below threshold terminating all processes:\t' +
-            str(terms[1]) + '\n')
+            str(terms[1]) + '\n'
+        )
         stats_file.write(
             'Malwares below threshold sleeping all processes:\t' +
-            str(terms[2]) + '\n')
+            str(terms[2]) + '\n'
+        )
         stats_file.write(
             'Malwares below threshold crashing all processes:\t' +
-            str(terms[3]) + '\n')
+            str(terms[3]) + '\n'
+        )
         stats_file.write(
             'Malwares below threshold raising errors on all processes:\t' +
-            str(terms[4]) + '\n')
+            str(terms[4]) + '\n'
+        )
         stats_file.write(
             'Malwares below threshold sleeping or terminating: \t' +
-            str(terms[5]) + '\n')
+            str(terms[5]) + '\n'
+        )
         stats_file.write(
             'Malwares below threshold crashing or raising errors:\t' +
-            str(terms[6]) + '\n\n')
+            str(terms[6]) + '\n\n'
+        )
 
 
 # Print the list of suspect log files with the suspect elements to a file.

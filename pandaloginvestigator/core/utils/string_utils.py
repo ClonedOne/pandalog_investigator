@@ -23,8 +23,8 @@ tag_system_call = u'nt_any_syscall (num='
 
 
 # Strings related to output files.
-no_instructions = 'Final instruction count:  [0, 0, 0, 0]'
-no_syscalls = 'Final system call count:     0'
+no_instructions = 'Final instruction count:\t[0, 0, 0, 0]'
+no_syscalls = 'Final system call count:\t0'
 filename = 'File name:'
 proc_name = 'Process name:'
 proc_pid = 'Process ID:'
