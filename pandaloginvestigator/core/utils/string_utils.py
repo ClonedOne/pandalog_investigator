@@ -68,4 +68,4 @@ tag_keys = [
 ]
 
 # Values to be checked inside the keys
-tag_values = ['SystemBiosDate', 'SystemBiosVersion', 'VideoBiosVersion']
+tag_values = ['SystemBiosDate', 'SystemBiosVersion', 'VideoBiosVersion', 'QEMU']
