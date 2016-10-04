@@ -19,7 +19,7 @@ def strip_filename_ext(filenames):
 def update_results(results, dict_list):
     if len(results[0]) != len(dict_list):
         logger.error('Update Results length of partial result different from length of dict_list')
-        return -1
+        quit()
     for sub_res in results:
         for i in range(len(sub_res)):
             dict_list[i].update(sub_res[i])

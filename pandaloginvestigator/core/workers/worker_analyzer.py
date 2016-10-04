@@ -57,14 +57,57 @@ def work(data_pack):
                 from_db=True)
             analyze_log(filename)
         else:
-            logger.error(str(worker_id) + ' ERROR filename not in db')
-        j += 1
+            logger.error(str(worker_id) + ' ERROR filename not in db: ' + str(filename))
         if small_disk:
             panda_utils.remove_log_file(filename, dir_unpacked_path)
+        j += 1
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
     total_time = time.time() - t0
     logger.info('WorkerId ' + str(worker_id) + ' Total time: ' + str(total_time))
     return db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict
+
+
+# Analyze the log file line by line. Checks if each line contains a context
+# switch, a process creation, a memory write or a process termination. At the
+# end print a summary of the analyzed mawlares on a file.
+def analyze_log(filename):
+    process_dict = {}
+    inverted_process_dict = {}
+    with open(dir_unpacked_path + '/' + filename, 'r', encoding='utf-8', errors='replace') as logfile:
+        for line in logfile:
+            try:
+                if tag_context_switch in line:
+                    is_tag_context_switch(filename, line, process_dict, inverted_process_dict)
+                elif tag_process_creation in line:
+                    is_creating_process(line, filename)
+                elif tag_write_memory in line:
+                    is_writing_memory(line, filename)
+                elif tag_sleep in line and active_malware:
+                    is_calling_sleep()
+                elif tag_termination in line:
+                    is_terminating(line, filename)
+                elif tag_read_memory in line and error_manager in line:
+                    is_crashing(line, filename)
+                elif tag_raise_error in line and active_malware:
+                    is_raising_error()
+            except:
+                traceback.print_exc()
+    terminating_all = is_terminating_all(filename)
+    sleeping_all = is_sleeping_all(filename)
+    crashing_all = is_crashing_all(filename)
+    error_all = is_raising_error_all(filename)
+    file_utils.output_on_file_instructions(
+        filename,
+        process_dict,
+        inverted_process_dict,
+        dir_analyzed_logs,
+        db_file_malware_dict,
+        file_corrupted_processes_dict,
+        terminating_all,
+        sleeping_all,
+        crashing_all,
+        error_all
+    )
 
 
 # Checks if the malware_objects associated with the filename have called the
@@ -244,15 +287,14 @@ def is_corrupted_process(proc_name, pid, filename):
 # malware instruction count. If it is a malware/corrupt process, update the
 # instruction count of a previous malicious process (if there was one) and
 # call the method is_malware().
-def is_context_switch(filename, line, process_dict, inverted_process_dict):
-    commas = line.strip().split(',')
-    pid = int(commas[2].strip())
-    proc_name = commas[3].split(')')[0].strip()
-    current_instruction = int((commas[0].split()[0].split('='))[1])
+def is_tag_context_switch(filename, line, process_dict, inverted_process_dict):
+    current_instruction, pid, proc_name = panda_utils.data_from_line_basic(line)
     panda_utils.update_dictionaries(pid, process_dict, proc_name, inverted_process_dict)
+
     malware = is_db_malware(proc_name, filename)
     if not malware:
         malware = is_corrupted_process(proc_name, pid, filename)
+
     if active_malware:
         update_malware_instruction_count(current_instruction)
     if malware:
@@ -266,8 +308,6 @@ def is_context_switch(filename, line, process_dict, inverted_process_dict):
 def update_malware_instruction_count(current_instruction):
     global active_malware
     malware = active_malware
-    if not malware:
-        return -1
     active_pid = malware.get_active_pid()
     if active_pid == -1:
         return -1
@@ -347,6 +387,7 @@ def is_crashing(line, filename):
 # of the created process is gathered through the method get_new_path().
 def is_creating_process(line, filename):
     current_instruction, creating_pid, creating_name, created_pid, created_name, new_path = panda_utils.data_from_line(line, creating=True)
+
     malware = is_db_malware(creating_name, filename)
     if not malware:
         malware = is_corrupted_process(creating_name, creating_pid, filename)
@@ -388,15 +429,23 @@ def is_creating_process(line, filename):
 # malware object and initialize it with the written pid.
 def is_writing_memory(line, filename):
     current_instruction, writing_pid, writing_name, written_pid, written_name = panda_utils.data_from_line(line)
+
     malware = is_db_malware(writing_name, filename)
     if not malware:
         malware = is_corrupted_process(writing_name, writing_pid, filename)
 
     if malware and malware.is_valid_pid(writing_pid) and malware.has_active_pid() and malware.get_active_pid() == writing_pid:
-        malware.add_written_memory(writing_pid, written_pid, written_name, current_instruction)
+        malware.add_written_memory(
+            writing_pid,
+            written_pid,
+            written_name,
+            current_instruction
+        )
+
         target = is_db_malware(written_name, filename)
         if not target:
             target = is_corrupted_process(written_name, written_pid, filename)
+
         if target:
             if not target.is_valid_pid(written_pid):
                 target.add_pid(written_pid, Malware.WRITTEN, (writing_name, writing_pid))
@@ -424,46 +473,3 @@ def is_malware(malware, pid, current_instruction):
     malware.update_starting_instruction(pid, current_instruction)
     malware.activate_pid(pid)
     active_malware = malware
-
-
-# Analyze the log file line by line. Checks if each line contains a context
-# switch, a process creation, a memory write or a process termination. At the
-# end print a summary of the analyzed mawlares on a file.
-def analyze_log(filename):
-    process_dict = {}
-    inverted_process_dict = {}
-    with open(dir_unpacked_path + '/' + filename, 'r', encoding='utf-8', errors='replace') as logfile:
-        for line in logfile:
-            try:
-                if tag_context_switch in line:
-                    is_context_switch(filename, line, process_dict, inverted_process_dict)
-                elif tag_process_creation in line:
-                    is_creating_process(line, filename)
-                elif tag_write_memory in line:
-                    is_writing_memory(line, filename)
-                elif tag_sleep in line and active_malware:
-                    is_calling_sleep()
-                elif tag_termination in line:
-                    is_terminating(line, filename)
-                elif tag_read_memory in line and error_manager in line:
-                    is_crashing(line, filename)
-                elif tag_raise_error in line and active_malware:
-                    is_raising_error()
-            except:
-                traceback.print_exc()
-    terminating_all = is_terminating_all(filename)
-    sleeping_all = is_sleeping_all(filename)
-    crashing_all = is_crashing_all(filename)
-    error_all = is_raising_error_all(filename)
-    file_utils.output_on_file_instructions(
-        filename,
-        process_dict,
-        inverted_process_dict,
-        dir_analyzed_logs,
-        db_file_malware_dict,
-        file_corrupted_processes_dict,
-        terminating_all,
-        sleeping_all,
-        crashing_all,
-        error_all
-    )

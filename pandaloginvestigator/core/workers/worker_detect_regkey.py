@@ -28,12 +28,12 @@ def work(data_pack):
                 if tag_open_key in line:
                     for tag in tag_keys:
                         if tag in line:
-                            current_instruction, subject_pid, subject_name = panda_utils.data_from_line_d(line)
+                            current_instruction, subject_pid, subject_name = panda_utils.data_from_line_basic(line)
                             cur_suspect.add_opened_key((subject_name, subject_pid), tag)
                 elif tag_query_key in line:
                     for tag in tag_values:
                         if tag in line:
-                            current_instruction, subject_pid, subject_name = panda_utils.data_from_line_d(line)
+                            current_instruction, subject_pid, subject_name = panda_utils.data_from_line_basic(line)
                             cur_suspect.add_queried_key_value((subject_name, subject_pid), tag)
         j += 1
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))

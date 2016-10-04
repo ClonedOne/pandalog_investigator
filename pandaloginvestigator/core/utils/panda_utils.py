@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 # The content of the log will be saved in a temporary file with the same name.
 def unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path):
     unpack_command = '/pandalog_reader'
-    reduced_filename = filename[:-9]
+    reduced_filename = filename[:-9] if '.txz.plog' in filename else filename
     logger.debug('unpacking = ' + str(filename))
     return_code = subprocess.call(dir_panda_path + unpack_command + " " + dir_pandalogs_path + '/' + filename + " > " +
                                   dir_unpacked_path + '/' + reduced_filename, shell=True)
@@ -79,8 +79,8 @@ def data_from_line(line, creating=False):
         return current_instruction, subject_pid, subject_name, object_pid, object_name
 
 
-# Adapted version of get_data_from_line for the detector
-def data_from_line_d(line):
+# Basic version of get_data_from_line.
+def data_from_line_basic(line):
     commas = line.strip().split(',')
     current_instruction = int((commas[0].split()[0].split('='))[1])
     subject_pid = int(commas[2].strip())

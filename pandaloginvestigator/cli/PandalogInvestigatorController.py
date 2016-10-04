@@ -110,7 +110,7 @@ class PandalogInvestigatorController(ArgparseController):
             if unpack:
                 unpack = False
         if unpack:
-            unpack_command(self.app, max_num=int(self.app.pargs.num))
+            self.unpack()
 
         analyze_command(self.app, max_num, small_disk)
 
@@ -120,7 +120,8 @@ class PandalogInvestigatorController(ArgparseController):
                  of log files upon which you want to operate, or all.''',
             arguments=[
                 (['-n', '--num'], dict(help=help_n, action='store')),
-                (['-u', '--unpack'], dict(help=help_u, action='store_true'))
+                (['-u', '--unpack'], dict(help=help_u, action='store_true')),
+                (['--small-disk'], dict(help=help_sd, action='store_true'))
             ])
     def syscalls(self):
         logger.info(
@@ -128,12 +129,21 @@ class PandalogInvestigatorController(ArgparseController):
                     self.app.pargs.num
             )
         )
+        unpack = False
+        max_num = None
+        small_disk = False
         if self.app.pargs.unpack:
-            self.unpack()
+            unpack = True
         if self.app.pargs.num:
-            syscall_command(self.app, int(self.app.pargs.num))
-        else:
-            syscall_command(self.app)
+            max_num = self.app.pargs.num
+        if self.app.pargs.small_disk:
+            small_disk = True
+            if unpack:
+                unpack = False
+        if unpack:
+            self.unpack()
+
+        syscall_command(self.app, max_num, small_disk)
 
     @expose(help='''Detect attempts of sandbox detection: Generates a final
     statistics file. Please specify the kind of detection method you wish to

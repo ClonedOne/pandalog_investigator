@@ -1,6 +1,7 @@
 from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import file_utils
+from pandaloginvestigator.core.utils import panda_utils
 from pandaloginvestigator.core.domain.malware_object import Malware
 import logging
 import time
@@ -24,8 +25,8 @@ syscall_dict = {}
 
 
 def work(data_pack):
-    global active_malware, dir_unpacked_path, dir_syscall_path, syscall_dict
     t0 = time.time()
+    global active_malware, dir_unpacked_path, dir_syscall_path, syscall_dict
     j = 0.0
     filename_syscall_dict = {}
     worker_id = data_pack[0]
@@ -34,9 +35,14 @@ def work(data_pack):
     dir_syscall_path = data_pack[3]
     syscall_dict = data_pack[4]
     db_file_malware_name_map = data_pack[5]
+    small_disk = data_pack[6]
+    dir_panda_path = data_pack[7]
+    dir_pandalogs_path = data_pack[8]
     total_files = len(filenames) if len(filenames) > 0 else -1
     logger.info('WorkerId = ' + str(worker_id) + ' counting system calls on ' + str(total_files) + ' log files')
     for filename in filenames:
+        if small_disk:
+            panda_utils.unpack_log(dir_panda_path, filename + '.txz.plog', dir_pandalogs_path, dir_unpacked_path)
         active_malware = None
         if filename in db_file_malware_name_map:
             domain_utils.initialize_malware_object(filename, db_file_malware_name_map[filename],
@@ -44,6 +50,8 @@ def work(data_pack):
             filename_syscall_dict[filename] = syscall_count(filename)
         else:
             logger.error(str(worker_id) + ' ERROR filename not in db')
+        if small_disk:
+            panda_utils.remove_log_file(filename, dir_unpacked_path)
         j += 1
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
     total_time = time.time() - t0
@@ -79,22 +87,15 @@ def syscall_count(filename):
 # the new process and the current value of the instruction counter. Then it
 # tries to understand if the new process is a malware or a corrupted process.
 def is_tag_context_switch(filename, line):
-    commas = line.strip().split(',')
-    pid = int(commas[2].strip())
-    proc_name = commas[3].split(')')[0].strip()
-    not_malware = False
+    current_instruction, pid, proc_name = panda_utils.data_from_line_basic(line)
+
     malware = is_db_malware(proc_name, filename)
     if not malware:
-        malware = is_corrupted_process(proc_name, filename)
-        if not malware:
-            not_malware = True
+        malware = is_corrupted_process(proc_name, pid, filename)
 
-    if not_malware and active_malware:
+    if active_malware:
         deactivate_malware()
-    elif malware and active_malware:
-        deactivate_malware()
-        is_malware(malware, pid)
-    elif malware:
+    if malware:
         is_malware(malware, pid)
 
 
@@ -104,8 +105,6 @@ def is_tag_context_switch(filename, line):
 def deactivate_malware():
     global active_malware
     malware = active_malware
-    if not malware:
-        return -1
     active_pid = malware.get_active_pid()
     if active_pid == -1:
         return -1
@@ -118,12 +117,13 @@ def deactivate_malware():
 # malicious one. Checks if the current pid is not already in the pid list of
 # the malware. If it isn't, it means it is the first instruction of the
 # db_malware. Therefore it adds the new pid value to the malware's list. Then
-# set active_malware to specified malware.
+# it updates malware's starting instruction for that pid and set
+# active_malware to specified malware.
 def is_malware(malware, pid):
     global active_malware
     pid_list = malware.get_pid_list()
     if pid not in pid_list:
-        malware.add_pid(pid, Malware.FROM_DB)
+        malware.add_pid(pid, Malware.FROM_DB, (malware.get_name(), pid))
     malware.activate_pid(pid)
     active_malware = malware
 
@@ -136,27 +136,29 @@ def is_malware(malware, pid):
 # the written pid is not already a valid pid for that malicious process. Else
 # create a new malware object and initialize it with the written pid.
 def is_writing_memory(line, filename):
-    commas = line.strip().split(',')
-    writing_pid = int(commas[2].strip())
-    writing_name = commas[3].split(')')[0].strip()
-    written_pid = int(commas[5].strip())
-    written_name = commas[6].split(')')[0].strip()
+    current_instruction, writing_pid, writing_name, written_pid, written_name = panda_utils.data_from_line(line)
 
     malware = is_db_malware(writing_name, filename)
     if not malware:
-        malware = is_corrupted_process(writing_name, filename)
+        malware = is_corrupted_process(writing_name, writing_pid, filename)
 
-    if malware and malware.is_valid_pid(writing_pid) and malware.has_active_pid() \
-            and malware.get_active_pid() == writing_pid:
+    if malware and malware.is_valid_pid(writing_pid) and malware.has_active_pid() and malware.get_active_pid() == writing_pid:
+
         target = is_db_malware(written_name, filename)
         if not target:
-            target = is_corrupted_process(written_name, filename)
+            target = is_corrupted_process(written_name, written_pid, filename)
+
         if target:
             if not target.is_valid_pid(written_pid):
-                target.add_pid(written_pid, Malware.WRITTEN)
+                target.add_pid(written_pid, Malware.WRITTEN, (writing_name, writing_pid))
             return
-        new_malware = domain_utils.initialize_malware_object(filename, written_name, db_file_malware_dict, file_corrupted_processes_dict)
-        new_malware.add_pid(written_pid, Malware.WRITTEN)
+        new_malware = domain_utils.initialize_malware_object(
+            filename,
+            written_name,
+            db_file_malware_dict,
+            file_corrupted_processes_dict
+        )
+        new_malware.add_pid(written_pid, Malware.WRITTEN, (writing_name, writing_pid))
 
 
 # Handles process creation system calls. Analyze the log to find out process
@@ -167,26 +169,30 @@ def is_writing_memory(line, filename):
 # the created pid is not already a valid pid for that malicious process. Else
 # create a new malware object and initialize it with the created pid.
 def is_creating_process(line, filename):
-    commas = line.strip().split(',')
-    creating_pid = int(commas[2].strip())
-    creating_name = commas[3].split(')')[0].strip()
-    created_pid = int(commas[5].strip())
-    created_name = commas[6].split(')')[0].strip()
+    current_instruction, creating_pid, creating_name, created_pid, created_name, new_path = panda_utils.data_from_line(line, creating=True)
 
     malware = is_db_malware(creating_name, filename)
     if not malware:
-        malware = is_corrupted_process(creating_name, filename)
+        malware = is_corrupted_process(creating_name, creating_pid, filename)
 
     if malware and malware.is_valid_pid(creating_pid) and malware.has_active_pid() and malware.get_active_pid() == creating_pid:
+
         target = is_db_malware(created_name, filename)
         if not target:
-            target = is_corrupted_process(created_name, filename)
+            target = is_corrupted_process(created_name, created_pid, filename)
+
         if target:
             if not target.is_valid_pid(created_pid):
-                target.add_pid(created_pid, Malware.CREATED)
+                target.add_pid(created_pid, Malware.CREATED, (creating_name, creating_pid))
             return
-        new_malware = domain_utils.initialize_malware_object(filename, created_name, db_file_malware_dict, file_corrupted_processes_dict)
-        new_malware.add_pid(created_pid, Malware.CREATED)
+
+        new_malware = domain_utils.initialize_malware_object(
+            filename,
+            created_name,
+            db_file_malware_dict,
+            file_corrupted_processes_dict
+        )
+        new_malware.add_pid(created_pid, Malware.CREATED, (creating_name, creating_pid))
 
 
 # Checks if the process name is inside the db_file_malware_dict.
@@ -207,11 +213,11 @@ def is_db_malware(proc_name, filename):
 # malware That is because spawned or memory written processes may have the
 # same name of correct processes in the system. Therefore the method looks
 # only for valid couples name/pid. If found returns the malware.
-def is_corrupted_process(proc_name, filename):
+def is_corrupted_process(proc_name, pid, filename):
     if filename not in file_corrupted_processes_dict:
         return None
     malwares = file_corrupted_processes_dict[filename]
     for malware in malwares:
-        if malware.get_name() == proc_name:
+        if malware.get_name() == proc_name and malware.is_valid_pid(pid):
             return malware
     return None
