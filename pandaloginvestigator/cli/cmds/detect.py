@@ -9,6 +9,11 @@ logger = logging.getLogger(__name__)
 
 def detect_command(app):
     try:
+        dir_pandalogs_path = app.config.get('pandaloginvestigator', 'dir_pandalogs_path')
+    except:
+        logger.error('dir_pandalogs_path not set in configuration file')
+        return
+    try:
         core_num = app.config.get('pandaloginvestigator', 'core_num')
     except:
         logger.error('core_num not set in configuration file')
@@ -28,7 +33,8 @@ def detect_command(app):
         os.makedirs(dir_results_path)
 
     logger.debug(
-        'Detect command with parameters: {}, {}, {}, {}'.format(
+        'Detect command with parameters: {}, {}, {}, {}, {}'.format(
+            dir_pandalogs_path,
             dir_unpacked_path,
             dir_results_path,
             core_num,
@@ -37,7 +43,7 @@ def detect_command(app):
     )
 
     if app.pargs.regkey:
-        detector_reg_key.detect_reg_key(dir_unpacked_path, dir_results_path, core_num)
+        detector_reg_key.detect_reg_key(dir_pandalogs_path, dir_unpacked_path, dir_results_path, core_num)
     else:
         # Eventually other detectors will be called here
-        detector_reg_key.detect_reg_key(dir_unpacked_path, dir_results_path, core_num)
+        detector_reg_key.detect_reg_key(dir_pandalogs_path, dir_unpacked_path, dir_results_path, core_num)

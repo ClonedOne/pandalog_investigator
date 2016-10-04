@@ -15,6 +15,7 @@ help_i = 'Plot the result of the instruction anYalysis'
 help_s = 'Plot the result of the system call analysis'
 help_f = 'Unpack the log files listed in the specified file'
 help_r = 'Detect the use of specific registry key to discover Qemu emulation'
+help_sd = 'Disk size is too small to contain unpacked logs. Remove each log after analysis'
 
 
 class PandalogInvestigatorController(ArgparseController):
@@ -28,7 +29,9 @@ class PandalogInvestigatorController(ArgparseController):
             (['-i', '--instr'], dict(help=help_i, action='store_true')),
             (['-s', '--syscall'], dict(help=help_s, action='store_true')),
             (['-f', '--file'], dict(help=help_f, action='store')),
-            (['-r', '--regkey'], dict(help=help_f, action='store_true'))
+            (['-r', '--regkey'], dict(help=help_f, action='store_true')),
+            (['--smalldisk'], dict(help=help_sd, action='store_true'))
+
         ]
 
     @expose(hide=True)

@@ -10,6 +10,11 @@ logger = logging.getLogger(__name__)
 
 def translate_command(app, max_num=None):
     try:
+        dir_pandalogs_path = app.config.get('pandaloginvestigator', 'dir_pandalogs_path')
+    except:
+        logger.error('dir_pandalogs_path not set in configuration file')
+        return
+    try:
         core_num = app.config.get('pandaloginvestigator', 'core_num')
     except:
         logger.error('core_num not set in configuration file')
@@ -29,7 +34,8 @@ def translate_command(app, max_num=None):
         os.makedirs(dir_translated_path)
 
     logger.debug(
-        'Translate command with parameters: {}, {}, {}, {}'.format(
+        'Translate command with parameters: {}, {}, {}, {}, {}'.format(
+            dir_pandalogs_path,
             dir_unpacked_path,
             dir_translated_path,
             core_num,
@@ -38,6 +44,7 @@ def translate_command(app, max_num=None):
     )
     syscall_dict = domain_utils.get_syscalls()
     log_translator.translate_logs(
+        dir_pandalogs_path,
         dir_unpacked_path,
         syscall_dict,
         dir_translated_path,

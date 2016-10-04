@@ -24,10 +24,6 @@ def unpack_logs(dir_pandalogs_path, dir_panda_path, dir_unpacked_path, core_num,
     else:
         filenames = sorted(os.listdir(dir_pandalogs_path))
     file_names_sublists = utils.divide_workload(filenames, core_num, max_num)
-    if len(file_names_sublists) != core_num:
-        logger.error(
-            'ERROR: size of split workload different from number of cores'
-        )
     formatted_input = utils.format_worker_input(core_num, file_names_sublists,
                     (dir_pandalogs_path, dir_unpacked_path, dir_panda_path))
     pool = Pool(processes=core_num)

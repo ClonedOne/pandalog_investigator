@@ -9,6 +9,11 @@ logger = logging.getLogger(__name__)
 
 def syscall_command(app, max_num=None):
     try:
+        dir_pandalogs_path = app.config.get('pandaloginvestigator', 'dir_pandalogs_path')
+    except:
+        logger.error('dir_pandalogs_path not set in configuration file')
+        return
+    try:
         dir_database_path = app.config.get('pandaloginvestigator', 'dir_database_path')
     except:
         logger.error('dir_database_path not set in configuration file')
@@ -37,7 +42,8 @@ def syscall_command(app, max_num=None):
         os.makedirs(dir_results_path)
 
     logger.debug(
-        'Syscalls command with parameters: {}, {}, {}, {}, {}, {}'.format(
+        'Syscalls command with parameters: {}, {}, {}, {}, {}, {}, {}'.format(
+            dir_pandalogs_path,
             dir_unpacked_path,
             dir_database_path,
             dir_results_path,
@@ -48,6 +54,7 @@ def syscall_command(app, max_num=None):
     )
 
     log_syscall_counter.count_syscalls(
+        dir_pandalogs_path,
         dir_unpacked_path,
         dir_database_path,
         dir_results_path,

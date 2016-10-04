@@ -13,7 +13,6 @@ def unpack_command(app, file_list=None, max_num=None):
         dir_pandalogs_path = app.config.get('pandaloginvestigator', 'dir_pandalogs_path')
     except:
         logger.error('dir_pandalogs_path not set in configuration file')
-        traceback.print_exc()
         return
     try:
         dir_panda_path = app.config.get('pandaloginvestigator', 'dir_panda_path')

@@ -13,6 +13,11 @@ def clean_log(filename, dir_unpacked_path):
     os.remove(dir_unpacked_path + '/' + filename)
 
 
+# Strip log file names from the extension.
+def strip_filename_ext(filenames):
+    return [filename[:-9] for filename in filenames]
+
+
 # Given the results form the workers updates a list of dictionaries with
 # the corresponding partial dictionaries contained in each of
 # the worker sub result.
@@ -39,6 +44,9 @@ def divide_workload(item_list, core_num, max_num=None):
         c += 1
         if c == max_num:
             break
+    if len(item_sublists) != core_num:
+        logger.error('ERROR: size of split workload different from number of cores')
+        return
     return item_sublists
 
 
