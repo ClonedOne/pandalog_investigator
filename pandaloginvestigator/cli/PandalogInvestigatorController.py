@@ -30,7 +30,7 @@ class PandalogInvestigatorController(ArgparseController):
             (['-s', '--syscall'], dict(help=help_s, action='store_true')),
             (['-f', '--file'], dict(help=help_f, action='store')),
             (['-r', '--regkey'], dict(help=help_f, action='store_true')),
-            (['--smalldisk'], dict(help=help_sd, action='store_true'))
+            (['--small-disk'], dict(help=help_sd, action='store_true'))
 
         ]
 
@@ -87,20 +87,32 @@ class PandalogInvestigatorController(ArgparseController):
     upon which you want to operate, or leave blank for all.''',
             arguments=[
                 (['-n', '--num'], dict(help=help_n, action='store')),
-                (['-u', '--unpack'], dict(help=help_u, action='store_true'))
+                (['-u', '--unpack'], dict(help=help_u, action='store_true')),
+                (['--small-disk'], dict(help=help_sd, action='store_true'))
             ])
     def analyze(self):
         logger.info(
-            'Analyzing logs. Received num option with value {}'.format(
-                self.app.pargs.num
+            'Analyzing logs. Received options value {} {} {}'.format(
+                self.app.pargs.unpack,
+                self.app.pargs.num,
+                self.app.pargs.small_disk
             )
         )
+        unpack = False
+        max_num = None
+        small_disk = False
         if self.app.pargs.unpack:
-            self.unpack()
+            unpack = True
         if self.app.pargs.num:
-            analyze_command(self.app, int(self.app.pargs.num))
-        else:
-            analyze_command(self.app)
+            max_num = self.app.pargs.num
+        if self.app.pargs.small_disk:
+            small_disk = True
+            if unpack:
+                unpack = False
+        if unpack:
+            unpack_command(self.app, max_num=int(self.app.pargs.num))
+
+        analyze_command(self.app, max_num, small_disk)
 
     @expose(help='''System calls counting command: count system calls executed
                  by malicious programs. Then outputs the results on file,
@@ -138,8 +150,7 @@ class PandalogInvestigatorController(ArgparseController):
         detect_command(self.app)
 
     @expose(help='''Represent corrupted processes as graphs, and output graph files
-    compatible with gephi and cytoscape visualization libraries. Can be executed
-    only after the analysis command.''',
+    compatible with Gephi visualization library. Requires previous analysis.''',
             arguments=[
 
             ])

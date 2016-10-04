@@ -39,9 +39,14 @@ def work(data_pack):
     db_file_malware_name_map = data_pack[2]
     dir_unpacked_path = data_pack[3]
     dir_analyzed_logs = data_pack[4]
+    small_disk = data_pack[5]
+    dir_panda_path = data_pack[6]
+    dir_pandalogs_path = data_pack[7]
     total_files = len(filenames) if len(filenames) > 0 else -1
     logger.info('WorkerId ' + str(worker_id) + ' analyzing ' + str(total_files) + ' log files')
     for filename in filenames:
+        if small_disk:
+            panda_utils.unpack_log(dir_panda_path, filename + '.txz.plog', dir_pandalogs_path, dir_unpacked_path)
         active_malware = None
         if filename in db_file_malware_name_map:
             domain_utils.initialize_malware_object(
@@ -54,6 +59,8 @@ def work(data_pack):
         else:
             logger.error(str(worker_id) + ' ERROR filename not in db')
         j += 1
+        if small_disk:
+            panda_utils.remove_log_file(filename, dir_unpacked_path)
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
     total_time = time.time() - t0
     logger.info('WorkerId ' + str(worker_id) + ' Total time: ' + str(total_time))

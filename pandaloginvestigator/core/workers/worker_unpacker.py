@@ -21,8 +21,3 @@ def work(params_pack):
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
         panda_utils.unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path)
 
-
-# Auxiliary method to perform analysis when disk space is not sufficient
-# to unpack all log files before analysis.
-def work_hidden(filename,dir_pandalogs_path, dir_unpacked_path, dir_panda_path):
-    panda_utils.unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path)

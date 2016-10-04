@@ -7,7 +7,7 @@ import os
 logger = logging.getLogger(__name__)
 
 
-def analyze_command(app, max_num=None):
+def analyze_command(app, max_num=None, small_disk=False):
     try:
         dir_pandalogs_path = app.config.get('pandaloginvestigator', 'dir_pandalogs_path')
     except:
@@ -28,7 +28,11 @@ def analyze_command(app, max_num=None):
     except:
         logger.error('created_dirs_path not set in configuration file')
         return
-
+    try:
+        dir_panda_path = app.config.get('pandaloginvestigator', 'dir_panda_path')
+    except:
+        logger.error('dir_panda_path not set in configuration file')
+        return
     dir_unpacked_path = created_dirs_path + '/' + string_utils.dir_unpacked_path
     if not os.path.exists(dir_unpacked_path):
         os.makedirs(dir_unpacked_path)
@@ -42,21 +46,24 @@ def analyze_command(app, max_num=None):
         os.makedirs(dir_results_path)
 
     logger.debug(
-        'Analysis command with parameters: {}, {}, {}, {}, {}'.format(
+        'Analysis command with parameters: {}, {}, {}, {}, {}, {}, {}'.format(
+            dir_panda_path,
             dir_pandalogs_path,
             dir_unpacked_path,
             dir_analyzed_path,
             dir_results_path,
-            str(max_num)
+            str(max_num),
+            str(small_disk)
         )
     )
-
     log_analyzer.analyze_logs(
+        dir_panda_path,
         dir_pandalogs_path,
         dir_unpacked_path,
         dir_analyzed_path,
         dir_results_path,
         dir_database_path,
         core_num,
-        max_num
+        max_num,
+        small_disk
     )

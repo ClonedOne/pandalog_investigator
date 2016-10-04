@@ -23,6 +23,10 @@ def unpack_logs(dir_pandalogs_path, dir_panda_path, dir_unpacked_path, core_num,
                 filenames.append(line.strip())
     else:
         filenames = sorted(os.listdir(dir_pandalogs_path))
+    if max_num:
+        max_num = int(max_num)
+    else:
+        max_num = len(filenames)
     file_names_sublists = utils.divide_workload(filenames, core_num, max_num)
     formatted_input = utils.format_worker_input(core_num, file_names_sublists,
                     (dir_pandalogs_path, dir_unpacked_path, dir_panda_path))

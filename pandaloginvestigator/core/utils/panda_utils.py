@@ -15,10 +15,16 @@ logger = logging.getLogger(__name__)
 def unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path):
     unpack_command = '/pandalog_reader'
     reduced_filename = filename[:-9]
+    logger.debug('unpacking = ' + str(filename))
     return_code = subprocess.call(dir_panda_path + unpack_command + " " + dir_pandalogs_path + '/' + filename + " > " +
                                   dir_unpacked_path + '/' + reduced_filename, shell=True)
     if return_code != 0:
         logger.debug('Unpack log: ' + reduced_filename + 'return code: ' + str(return_code))
+
+
+# Delete the temporary unpacked log file to avoid disk congestion.
+def remove_log_file(filename, dir_unpacked_path):
+    os.remove(dir_unpacked_path + '/' + filename)
 
 
 # Handles the acquisition of the path string from the log file.
