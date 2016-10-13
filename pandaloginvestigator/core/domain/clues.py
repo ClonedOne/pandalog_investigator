@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 # In the following methods the 'malware' object is represented as a
 # process name, process id pair.
-class Suspect:
+class Clues:
 
     def __init__(self, file_name):
         self.file_name = file_name

@@ -1,4 +1,4 @@
-from pandaloginvestigator.core.domain.suspect import Suspect
+from pandaloginvestigator.core.domain.clues import Clues
 from pandaloginvestigator.core.utils import panda_utils
 from pandaloginvestigator.core.utils import string_utils
 import logging
@@ -21,7 +21,7 @@ def work(data_pack):
     total_files = len(filenames) if len(filenames) > 0 else -1
     logger.info('WorkerId {} detecting {} log files'.format(worker_id, total_files))
     for filename in filenames:
-        cur_suspect = Suspect(filename)
+        cur_suspect = Clues(filename)
         suspect_dict[filename] = cur_suspect
         with open(dir_unpacked_path + '/' + filename, encoding='utf-8', errors='replace') as log_file:
             for line in log_file:

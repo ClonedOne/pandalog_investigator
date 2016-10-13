@@ -3,6 +3,7 @@
         "dir_database_path" : "/home/yogaub/projects/panda_db",
         "dir_pandalogs_path" : "/home/yogaub/projects/panda_logs",
         "dir_panda_path" : "/home/yogaub/projects/panda/qemu/panda",
+        "dir_clues_path" : "/home/yogaub/projects/panda_clues",
         "created_dirs_path": "/home/yogaub/projects/seminar/created_dirs",
         "core_num" : 4
     }

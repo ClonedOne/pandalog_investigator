@@ -125,10 +125,10 @@ def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
 
 
 # Print the list of suspect log files with the suspect elements to a file.
-def output_suspects(dir_results_path, suspect_dict):
-    with open(dir_results_path + '/suspects.txt', 'w', encoding='utf-8', errors='replace') as suspect_file:
-        for filename, suspect in suspect_dict.items():
-            suspect_file.write(domain_utils.repr_suspect(suspect) + '\n\n')
+def output_regkey_clues(dir_results_path, clues_dict):
+    with open(dir_results_path + '/clues.txt', 'w', encoding='utf-8', errors='replace') as clues_file:
+        for filename, clue in clues_dict.items():
+            clues_file.write(domain_utils.repr_clue(clue) + '\n\n')
 
 
 # ## INPUT UTILITY METHODS ##

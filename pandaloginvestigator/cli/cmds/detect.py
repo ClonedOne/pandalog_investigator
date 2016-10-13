@@ -1,4 +1,4 @@
-from pandaloginvestigator.core.detection import detector_reg_key
+from pandaloginvestigator.core.detection import detector_regkey
 from pandaloginvestigator.core.utils import string_utils
 import logging
 import os
@@ -43,7 +43,7 @@ def detect_command(app):
     )
 
     if app.pargs.regkey:
-        detector_reg_key.detect_reg_key(dir_pandalogs_path, dir_unpacked_path, dir_results_path, core_num)
+        detector_regkey.detect_reg_key(dir_pandalogs_path, dir_unpacked_path, dir_results_path, core_num)
     else:
-        # Eventually other detectors will be called here
-        detector_reg_key.detect_reg_key(dir_pandalogs_path, dir_unpacked_path, dir_results_path, core_num)
+        # Possibly other detectors will be called here
+        detector_regkey.detect_reg_key(dir_pandalogs_path, dir_unpacked_path, dir_results_path, core_num)

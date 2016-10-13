@@ -126,7 +126,7 @@ class PandalogInvestigatorController(ArgparseController):
     def syscalls(self):
         logger.info(
             'Counting system calls. Received num option with value {}'.format(
-                    self.app.pargs.num
+                self.app.pargs.num
             )
         )
         unpack = False
@@ -147,7 +147,7 @@ class PandalogInvestigatorController(ArgparseController):
 
     @expose(help='''Detect attempts of sandbox detection: Generates a final
     statistics file. Please specify the kind of detection method you wish to
-    look for, or leave blank for all.''',
+    look for, or leave blank for all. Requires previous analysis.''',
             arguments=[
                 (['-r', '--regkey'], dict(help=help_f, action='store_true'))
             ])
