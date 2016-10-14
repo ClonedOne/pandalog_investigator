@@ -99,7 +99,7 @@ def repr_clue(clue):
         proc_id = malware[1]
         mal_opened_keys = opened_keys[malware]
         for key, occurrency in mal_opened_keys.items():
-            result += '{:15s} {:85s} {:10d} by {} {}\n'.format(
+            result += '{:15s}\t{:85s}\t{:10d}\tby\t{}\t{}\n'.format(
                 string_utils.opened,
                 key,
                 occurrency,
@@ -111,7 +111,7 @@ def repr_clue(clue):
         proc_id = malware[1]
         mal_queried_values = queried_values[malware]
         for value, occurrency in mal_queried_values.items():
-            result += '{:15s} {:85s} {:10d} by {} {}\n'.format(
+            result += '{:15s}\t{:85s}\t{:10d}\tby\t{}\t{}\n'.format(
                 string_utils.queried,
                 value,
                 occurrency,

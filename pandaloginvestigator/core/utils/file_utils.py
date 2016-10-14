@@ -126,7 +126,7 @@ def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
 
 # Print the list of suspect log files with the suspect elements to a file.
 def output_regkey_clues(dir_results_path, clues_dict):
-    with open(dir_results_path + '/clues.txt', 'w', encoding='utf-8', errors='replace') as clues_file:
+    with open(dir_results_path + '/clues_regkey.txt', 'w', encoding='utf-8', errors='replace') as clues_file:
         for filename, clue in clues_dict.items():
             clues_file.write(domain_utils.repr_clue(clue) + '\n\n')
 
@@ -162,3 +162,10 @@ def status_from_analysis(line):
 # in the final analysis output text file.
 def values_from_syscalls(line):
     return int(line.strip().split('\t')[1])
+
+
+# Returns the list of elements from a line of the output registry key clues file.
+def values_from_clues_regkey(line):
+    line = line.strip()
+    elems = line.split('\t')
+    return [elem.strip() for elem in elems]

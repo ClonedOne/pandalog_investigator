@@ -1,4 +1,5 @@
 from pandaloginvestigator.core.detection import detector_regkey
+from pandaloginvestigator.core.detection import suspect_builder
 from pandaloginvestigator.core.utils import string_utils
 import logging
 import os
@@ -23,6 +24,11 @@ def detect_command(app):
     except:
         logger.error('created_dirs_path not set in configuration file')
         return
+    try:
+        dir_clues_path = app.config.get('pandaloginvestigator', 'dir_clues_path')
+    except:
+        logger.error('dir_clues_path not set in configuration file')
+        return
 
     dir_unpacked_path = created_dirs_path + '/' + string_utils.dir_unpacked_path
     if not os.path.exists(dir_unpacked_path):
@@ -33,10 +39,11 @@ def detect_command(app):
         os.makedirs(dir_results_path)
 
     logger.debug(
-        'Detect command with parameters: {}, {}, {}, {}, {}'.format(
+        'Detect command with parameters: {}, {}, {}, {}, {}, {}'.format(
             dir_pandalogs_path,
             dir_unpacked_path,
             dir_results_path,
+            dir_clues_path,
             core_num,
             app.pargs.regkey
         )
@@ -47,3 +54,5 @@ def detect_command(app):
     else:
         # Possibly other detectors will be called here
         detector_regkey.detect_reg_key(dir_pandalogs_path, dir_unpacked_path, dir_results_path, core_num)
+
+    suspect_builder.build_suspects(dir_results_path, dir_clues_path)
