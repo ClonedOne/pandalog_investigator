@@ -124,11 +124,27 @@ def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
             res_file.write('{} {}\n\n'.format(string_utils.syscall_final, total_syscall))
 
 
-# Print the list of suspect log files with the suspect elements to a file.
+# Prints the list of suspect log files with the suspect elements to a file.
 def output_regkey_clues(dir_results_path, clues_dict):
     with open(dir_results_path + '/clues_regkey.txt', 'w', encoding='utf-8', errors='replace') as clues_file:
         for filename, clue in clues_dict.items():
             clues_file.write(domain_utils.repr_clue(clue) + '\n\n')
+
+
+# Prints the suspects dictionary into a human readable file.
+def output_suspects(dir_results_path, suspects):
+    with open(dir_results_path + '/suspects.txt', 'w', encoding='utf-8', errors='replace') as suspects_file:
+        for filename in suspects:
+            suspects_file.write(
+                '{}\t{}\n'.format(string_utils.filename, filename)
+            )
+            for orig_mal, index in suspects[filename].items():
+                suspects_file.write(
+                    '{}\t{}\t{}\n'.format(string_utils.original_mal, orig_mal[0], orig_mal[1])
+                )
+                suspects_file.write(
+                    '{}\t{}\n'.format(string_utils.suspect_ind, index)
+                )
 
 
 # ## INPUT UTILITY METHODS ##
