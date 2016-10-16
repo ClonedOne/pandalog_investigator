@@ -87,7 +87,7 @@ def get_syscalls():
     return syscall_dict
 
 
-# Utilities related to Suspect class.
+# Utilities related to Clues class.
 
 # Provide a string representation of the suspect object.
 def repr_clue(clue):

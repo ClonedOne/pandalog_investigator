@@ -18,7 +18,15 @@ def translate_logs(dir_pandalogs_path, dir_unpacked_path, syscall_dict, dir_tran
     t1 = time.time()
     filenames = sorted(utils.strip_filename_ext(os.listdir(dir_pandalogs_path)))
     file_names_sublists = utils.divide_workload(filenames, core_num, max_num)
-    formatted_input = utils.format_worker_input(core_num, file_names_sublists, (dir_unpacked_path, dir_translated_path, syscall_dict))
+    formatted_input = utils.format_worker_input(
+        core_num,
+        file_names_sublists,
+        (
+            dir_unpacked_path,
+            dir_translated_path,
+            syscall_dict
+        )
+    )
     pool = Pool(processes=core_num)
     pool.map(worker_translator.work, formatted_input)
     pool.close()

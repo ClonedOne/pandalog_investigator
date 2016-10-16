@@ -3,7 +3,7 @@ import os
 import time
 from multiprocessing import Pool
 
-from pandaloginvestigator.core.detection import worker_detect_regkey
+from pandaloginvestigator.core.detection import worker_regkey_detector
 from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import utils
@@ -21,7 +21,7 @@ def detect_reg_key(dir_pandalogs_path, dir_unpacked_path, dir_results_path, core
     file_names_sublists = utils.divide_workload(filenames, core_num)
     formatted_input = utils.format_worker_input(core_num, file_names_sublists, [dir_unpacked_path, ])
     pool = Pool(processes=core_num)
-    results = pool.map(worker_detect_regkey.work, formatted_input)
+    results = pool.map(worker_regkey_detector.work, formatted_input)
     pool.close()
     utils.update_results(results, [suspect_dict, ])
     file_utils.output_regkey_clues(dir_results_path, suspect_dict)

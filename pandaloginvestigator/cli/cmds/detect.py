@@ -55,4 +55,4 @@ def detect_command(app):
         # Possibly other detectors will be called here
         detector_regkey.detect_reg_key(dir_pandalogs_path, dir_unpacked_path, dir_results_path, core_num)
 
-    suspect_builder.build_suspects(dir_results_path, dir_clues_path)
+    suspect_builder.build_suspects(dir_results_path, dir_clues_path, core_num)

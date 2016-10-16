@@ -49,7 +49,16 @@ text_written = 'Memory written: written pid | written process name | instruction
 text_executed = 'Instructions executed by all pids: DB | created | memory written | total'
 
 
-# Strings used in plotting modules.
+# Strings used in clues files
+current_process = 'Current process:'
+current_pid = 'PID:'
+parent_pid = 'PPID:'
+instruction_mnemonic = 'Instruction mnemonic:'
+instruction_operands = 'Instruction operands:'
+instruction_size = 'Instruction size:'
+instruction_bytes = 'Instruction bytes:'
+
+# Strings used in plotting modules
 target_i = 'instructions'
 target_s = 'syscalls'
 
