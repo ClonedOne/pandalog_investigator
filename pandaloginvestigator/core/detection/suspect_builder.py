@@ -96,4 +96,4 @@ def update_suspects_multiproc(suspects_multiproc, results):
         for filename in result[0]:
             suspects = suspects_multiproc.get(filename, {})
             for proc in result[0][filename]:
-                 suspects[proc] = suspects.get(proc, 0) + result[0][filename][proc]
+                suspects[proc] = suspects.get(proc, 0) + result[0][filename][proc]
