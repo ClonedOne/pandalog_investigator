@@ -1,5 +1,6 @@
 from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import file_utils
+from pandaloginvestigator.core.utils import domain_utils
 import logging
 import os
 
@@ -106,6 +107,36 @@ def read_result_corrupted(dir_results_path):
 
 
 # Read the registry key clues output file and generate a dictionary of clues
+# def read_clues_regkey(dir_results_path):
+#     clues_dict = {}
+#     clues_file_path = dir_results_path + '/clues_regkey.txt'
+#
+#     if not os.path.isfile(clues_file_path):
+#         logger.error('WARNING: clues_regkey.txt file  not found')
+#         return clues_dict
+#
+#     with open(clues_file_path, encoding='utf-8', errors='replace') as clues_file:
+#         last_file_name = ''
+#         for line in clues_file:
+#             if string_utils.filename in line:
+#                 last_file_name = file_utils.filename_from_analysis(line)
+#                 clues_dict[last_file_name] = {}
+#             else:
+#                 if not line.strip():
+#                     pass
+#                 else:
+#                     values = file_utils.values_from_clues_regkey(line)
+#                     counter = int(values[2])
+#                     proc_name = values[4]
+#                     proc_id = values[5]
+#                     process = (proc_name, proc_id)
+#                     if process in clues_dict.get(last_file_name, {}):
+#                         clues_dict[last_file_name][process] += counter
+#                     else:
+#                         clues_dict[last_file_name][process] = counter
+#     return clues_dict
+
+
 def read_clues_regkey(dir_results_path):
     clues_dict = {}
     clues_file_path = dir_results_path + '/clues_regkey.txt'
@@ -116,21 +147,17 @@ def read_clues_regkey(dir_results_path):
 
     with open(clues_file_path, encoding='utf-8', errors='replace') as clues_file:
         last_file_name = ''
+        lines = []
         for line in clues_file:
-            if string_utils.filename in line:
+            if not line.strip():
+                if len(lines) > 0:
+                    new_clue = domain_utils.read_clue(last_file_name, lines)
+                    clues_dict[last_file_name] = new_clue
+                    last_file_name = ''
+                    lines = []
+            elif string_utils.filename in line:
                 last_file_name = file_utils.filename_from_analysis(line)
-                clues_dict[last_file_name] = {}
             else:
-                if not line.strip():
-                    pass
-                else:
-                    values = file_utils.values_from_clues_regkey(line)
-                    counter = int(values[2])
-                    proc_name = values[4]
-                    proc_id = values[5]
-                    process = (proc_name, proc_id)
-                    if process in clues_dict.get(last_file_name, {}):
-                        clues_dict[last_file_name][process] += counter
-                    else:
-                        clues_dict[last_file_name][process] = counter
+                lines.append(line)
+
     return clues_dict

@@ -1,7 +1,11 @@
 from pandaloginvestigator.core.domain.malware_object import Malware
-from pandaloginvestigator.core.domain.clues import Clues
+from pandaloginvestigator.core.domain.clue_object import Clue
+from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.utils import string_utils
+import logging
 
+
+logger = logging.getLogger(__name__)
 
 # This module handles utility methods which are inherently related to the
 # domain of the application. Therefore this module has explicit knowledge
@@ -94,6 +98,7 @@ def repr_clue(clue):
     result = '{} {}\n'.format(string_utils.filename, clue.get_filename())
     opened_keys = clue.get_opened_keys()
     queried_values = clue.get_queries_key_values()
+    dangerous_inst = clue.get_dangerous_instructions()
     for malware in opened_keys:
         proc_name = malware[0]
         proc_id = malware[1]
@@ -118,5 +123,35 @@ def repr_clue(clue):
                 proc_name,
                 proc_id
             )
-
+    for malware in dangerous_inst:
+        proc_name = malware[0]
+        proc_id = malware[1]
+        mal_dangerous_inst = dangerous_inst[malware]
+        for inst, occurrency in mal_dangerous_inst.items():
+            result += '{:15s}\t{:85s}\t{:10d}\tby\t{}\t{}\n'.format(
+                string_utils.dangerous_instruction,
+                inst,
+                occurrency,
+                proc_name,
+                proc_id
+            )
     return result
+
+
+def read_clue(filename, lines):
+    new_clue = Clue(filename)
+    for line in lines:
+        values = file_utils.values_from_clues_regkey(line)
+        kind = values[0]
+        tag = values[1]
+        counter = int(values[2])
+        proc_name = values[4]
+        proc_id = values[5]
+        process = (proc_name, proc_id)
+        if kind == string_utils.opened:
+            new_clue.add_opened_key(process, tag, counter)
+        if kind == string_utils.queried:
+            new_clue.add_queried_key_value(process, tag, counter)
+        if kind == string_utils.dangerous_instruction:
+            new_clue.add_dangerous_instructions(process, tag, counter)
+    return new_clue
