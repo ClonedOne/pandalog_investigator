@@ -9,15 +9,24 @@ color_unknown = 'green'
 
 
 def generate_graph(dir_results_path):
+    """
+    Generate a .graphml file containing the structure of the graph of corrupted processes.
+    :param dir_results_path:
+    :return:
+    """
     graph = nx.DiGraph()
     corrupted_dict = results_reader.read_result_corrupted(dir_results_path)
+
     for filename in corrupted_dict:
+
         if len(corrupted_dict[filename]) == 0:
             continue
+
         for malware in corrupted_dict[filename]:
             process = str(malware[0][0]) + ',' + str(malware[0][1])
             malware_origin = malware[1]
             parent = str(malware[2][0]) + ',' + str(malware[2][1])
+
             if malware_origin == 'database':
                 c = color_db
             elif malware_origin == 'created':
@@ -26,7 +35,9 @@ def generate_graph(dir_results_path):
                 c = color_wirtten
             else:
                 c = color_unknown
+
             graph.add_node(process, origin=malware_origin, color=c)
             graph.add_edge(parent, process)
+
     nx.write_graphml(graph, dir_results_path + '/graph.graphml')
 

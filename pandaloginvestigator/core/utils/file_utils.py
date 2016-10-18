@@ -6,14 +6,26 @@ import ast
 
 # ## OUTPUT UTILITY METHODS ##
 
-
-# Output on file the analyzed content of one log file. For each malware object
-# related to the specified file name it prints the content of each malware pid
-# and sums up the executed instructions. The instruction count is divided into
-# 4 separated parts: from_db, created, memory_written and total. Each of these
-# counters consider only the instructions executed by pids whose origin
-# corresponds to the specified one.
 def output_on_file_instructions(filename, process_dict, inverted_process_dict, dir_analyzed_logs, db_file_malware_dict, file_corrupted_processes_dict, terminating_all, sleeping_all, crashing_all, error_all):
+    """
+    Output on file the analyzed content of one log file. For each malware object
+    related to the specified file name it prints the content of each malware pid
+    and sums up the executed instructions. The instruction count is divided into
+    4 separated parts: from_db, created, memory_written and total. Each of these
+    counters consider only the instructions executed by pids whose origin
+    corresponds to the specified one.
+    :param filename:
+    :param process_dict:
+    :param inverted_process_dict:
+    :param dir_analyzed_logs:
+    :param db_file_malware_dict:
+    :param file_corrupted_processes_dict:
+    :param terminating_all:
+    :param sleeping_all:
+    :param crashing_all:
+    :param error_all:
+    :return:
+    """
     with open(dir_analyzed_logs + '/' + filename, 'w', encoding='utf-8', errors='replace') as outfile:
         total_instructions = [0, 0, 0, 0]
         pprint.pprint(process_dict, outfile)
@@ -45,8 +57,15 @@ def output_on_file_instructions(filename, process_dict, inverted_process_dict, d
         ))
 
 
-# Similar to the previous but modified to output system call counting results.
 def output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, syscall_dict):
+    """
+    Similar to the previous but modified to output system call counting results.
+    :param filename:
+    :param dir_syscall_path:
+    :param malware_syscall_dict:
+    :param syscall_dict:
+    :return:
+    """
     with open(dir_syscall_path + '/' + filename, 'w', encoding='utf-8', errors='replace') as outfile:
         total_syscall = 0
 
@@ -60,11 +79,22 @@ def output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, sys
         outfile.write('{} {}\n'.format(string_utils.syscall_final, total_syscall))
 
 
-# Prints the final output on file. The final output contains aggregate data
-# regarding the totality of the analyzed logs. For each filename and each
-# malware_object associated sums up the instruction for each pid, checks if
-# each pid has been terminated and if each pid has called the sleep function.
 def final_output_instructions(dir_results_path, filenames, db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict,file_sleep_dict, file_crash_dict, file_error_dict):
+    """
+    Prints the final output on file. The final output contains aggregate data
+    regarding the totality of the analyzed logs. For each filename and each
+    malware_object associated sums up the instruction for each pid, checks if
+    each pid has been terminated and if each pid has called the sleep function.
+    :param dir_results_path:
+    :param filenames:
+    :param db_file_malware_dict:
+    :param file_corrupted_processes_dict:
+    :param file_terminate_dict:
+    :param file_sleep_dict:
+    :param file_crash_dict:
+    :param file_error_dict:
+    :return:
+    """
     with open(dir_results_path + '/corrupted_processes.txt', 'w', encoding='utf-8', errors='replace') as cp_file:
         with open(dir_results_path + '/analysis.txt', 'w', encoding='utf-8', errors='replace') as res_file:
             for filename in filenames:
@@ -110,8 +140,14 @@ def final_output_instructions(dir_results_path, filenames, db_file_malware_dict,
                 cp_file.write('\n\n')
 
 
-# Prints the final output on file. Modified for system call counting output.
 def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
+    """
+    Prints the final output on file. Modified for system call counting output.
+    :param dir_results_path:
+    :param filenames:
+    :param filename_syscall_dict:
+    :return:
+    """
     with open(dir_results_path + '/syscalls.txt', 'w', encoding='utf-8',
               errors='replace') as res_file:
         for filename in filenames:
@@ -124,15 +160,25 @@ def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
             res_file.write('{} {}\n\n'.format(string_utils.syscall_final, total_syscall))
 
 
-# Prints the list of suspect log files with the suspect elements to a file.
 def output_regkey_clues(dir_results_path, clues_dict):
+    """
+    Prints the list of suspect log files with the suspect elements to a file.
+    :param dir_results_path:
+    :param clues_dict:
+    :return:
+    """
     with open(dir_results_path + '/clues_regkey.txt', 'w', encoding='utf-8', errors='replace') as clues_file:
         for filename, clue in clues_dict.items():
             clues_file.write(domain_utils.repr_clue(clue) + '\n\n')
 
 
-# Prints the suspects dictionary into a human readable file.
 def output_suspects(dir_results_path, suspects):
+    """
+    Prints the suspects dictionary into a human readable file.
+    :param dir_results_path:
+    :param suspects:
+    :return:
+    """
     with open(dir_results_path + '/suspects.txt', 'w', encoding='utf-8', errors='replace') as suspects_file:
         for filename in suspects:
             suspects_file.write(
@@ -149,24 +195,35 @@ def output_suspects(dir_results_path, suspects):
 
 # ## INPUT UTILITY METHODS ##
 
-
-# Utility method to obtain the instruction count values from the relative line
-# in the final analysis output text file.
 def values_from_analysis(line):
+    """
+    Utility method to obtain the instruction count values from the relative
+    line in the final analysis output text file.
+    :param line:
+    :return: list of values
+    """
     values = line.strip().split('\t')[1]
     values = values.translate({ord(c): None for c in '[],'}).split()
     return [int(val) for val in values]
 
 
-# Utility method to obtain the file name value from the relative line
-# in the final analysis output text file.
 def filename_from_analysis(line):
+    """
+    Utility method to obtain the file name value from the relative line
+    in the final analysis output text file.
+    :param line:
+    :return: string containing file name
+    """
     return line.split()[2].strip()
 
 
-# Utility method to obtain the process status boolean flags from the relative
-# line in the final analysis output text file.
 def status_from_analysis(line):
+    """
+    Utility method to obtain the process status boolean flags from the relative
+    line in the final analysis output text file.
+    :param line:
+    :return: list of boolean status flags
+    """
     line = line.strip().split('\t')
     return [ast.literal_eval(line[1]),
             ast.literal_eval(line[3]),
@@ -174,14 +231,22 @@ def status_from_analysis(line):
             ast.literal_eval(line[7])]
 
 
-# Utility method to obtain the system call count values from the relative line
-# in the final analysis output text file.
 def values_from_syscalls(line):
+    """
+    Utility method to obtain the system call count values from the relative line
+    in the final analysis output text file.
+    :param line:
+    :return: int corresponding to system call frequency
+    """
     return int(line.strip().split('\t')[1])
 
 
-# Returns the list of elements from a line of the output registry key clues file.
 def values_from_clues_regkey(line):
+    """
+    Returns the list of elements from a line of the output registry key clues file.
+    :param line:
+    :return: list of string elements of a registry key clue
+    """
     line = line.strip()
     elems = line.split('\t')
     return [elem.strip() for elem in elems]

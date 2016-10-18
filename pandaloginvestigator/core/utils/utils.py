@@ -62,12 +62,16 @@ def merge_dict_dict(dict1, dict2):
     return dict_res
 
 
-
-
-# Given a list of items and the number of processing cores available compute
-# a list of items lists of equal dimension, one for each core.
-# 'max_num' is a parameter bounding the maximum number of items to divide.
 def divide_workload(item_list, core_num, max_num=None):
+    """
+    Given a list of items and the number of processing cores available compute
+    a list of items lists of equal dimension, one for each core.
+    'max_num' is a parameter bounding the maximum number of items to divide.
+    :param item_list:
+    :param core_num:
+    :param max_num:
+    :return: defaultdict containing lists of elements divided equally
+    """
     j = 0
     c = 0
     item_sublists = defaultdict(list)
@@ -88,9 +92,15 @@ def divide_workload(item_list, core_num, max_num=None):
     return item_sublists
 
 
-# Generate a list of tuples containing the parameters to pass to worker
-# subprocesses.
 def format_worker_input(core_num, item_sublists, fixed_params_list):
+    """
+    Generate a list of tuples containing the parameters to pass to worker
+    sub processes.
+    :param core_num:
+    :param item_sublists:
+    :param fixed_params_list:
+    :return: list of input formatted accordingly to worker modules specs
+    """
     formatted_input = []
     for i in range(core_num):
         formatted_input.append(
@@ -98,9 +108,13 @@ def format_worker_input(core_num, item_sublists, fixed_params_list):
     return formatted_input
 
 
-# Given a dictionary returns the inverted dictionary, where each value is
-# considered as a the new key.
 def invert_dictionary(chosen_dict):
+    """
+    Given a dictionary returns the inverted dictionary, where each value is
+    considered as a the new key.
+    :param chosen_dict:
+    :return: dictionary containing reverse of passed dictionary
+    """
     inverted_dict = {}
     for malware_name, count in chosen_dict.items():
         if count in inverted_dict:

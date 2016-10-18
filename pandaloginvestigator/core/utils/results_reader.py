@@ -8,8 +8,14 @@ import os
 logger = logging.getLogger(__name__)
 
 
-# Wrapper used to provide the correct data to both plotter methods.
+
 def read_data(dir_results_path, target):
+    """
+    Wrapper used to provide the correct data to both plotter methods.
+    :param dir_results_path:
+    :param target:
+    :return:
+    """
     if target == string_utils.target_i:
         return read_result_instr(dir_results_path)
     elif target == string_utils.target_s:
@@ -64,10 +70,13 @@ def read_result_instr(dir_results_path):
     ]
 
 
-# Read the system call counting result file in order to generate a dictionary
-# containing the values from the file. This data will then be used in the
-# statistics generation and plotting phase.
 def read_result_syscall(dir_results_path):
+    """
+    Read the system call counting result file in order to generate a dictionary
+    containing the values from the file.
+    :param dir_results_path:
+    :return: list of dictionaries
+    """
     syscalls_totals_dict = {}
     file_path = dir_results_path + '/syscalls.txt'
     with open(file_path, 'r', encoding='utf-8', errors='replace') as resfile:
@@ -82,9 +91,13 @@ def read_result_syscall(dir_results_path):
     return [syscalls_totals_dict, ]
 
 
-# Read the corrupted processes list and return a dictionary containing
-# as key the log file name and as value the structure of related processes.
 def read_result_corrupted(dir_results_path):
+    """
+    Read the corrupted processes list and return a dictionary containing
+    as key the log file name and as value the structure of related processes.
+    :param dir_results_path:
+    :return: dictionary of corrupted processes by file name
+    """
     corrupted_dict = {}
     file_path = dir_results_path + '/corrupted_processes.txt'
 
@@ -109,38 +122,12 @@ def read_result_corrupted(dir_results_path):
     return corrupted_dict
 
 
-# Read the registry key clues output file and generate a dictionary of clues
-# def read_clues_regkey(dir_results_path):
-#     clues_dict = {}
-#     clues_file_path = dir_results_path + '/clues_regkey.txt'
-#
-#     if not os.path.isfile(clues_file_path):
-#         logger.error('WARNING: clues_regkey.txt file  not found')
-#         return clues_dict
-#
-#     with open(clues_file_path, encoding='utf-8', errors='replace') as clues_file:
-#         last_file_name = ''
-#         for line in clues_file:
-#             if string_utils.filename in line:
-#                 last_file_name = file_utils.filename_from_analysis(line)
-#                 clues_dict[last_file_name] = {}
-#             else:
-#                 if not line.strip():
-#                     pass
-#                 else:
-#                     values = file_utils.values_from_clues_regkey(line)
-#                     counter = int(values[2])
-#                     proc_name = values[4]
-#                     proc_id = values[5]
-#                     process = (proc_name, proc_id)
-#                     if process in clues_dict.get(last_file_name, {}):
-#                         clues_dict[last_file_name][process] += counter
-#                     else:
-#                         clues_dict[last_file_name][process] = counter
-#     return clues_dict
-
-
 def read_clues_regkey(dir_results_path):
+    """
+    Read the registry key clues output file and generate a dictionary of clues
+    :param dir_results_path:
+    :return: dictionary of clues by file name
+    """
     clues_dict = {}
     clues_file_path = dir_results_path + '/clues_regkey.txt'
 

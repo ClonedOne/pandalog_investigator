@@ -20,10 +20,13 @@ def work(data_pack):
     j = 0.0
     total_files = len(filenames) if len(filenames) > 0 else -1
     logger.info('WorkerId {} detecting {} log files'.format(worker_id, total_files))
+
     for filename in filenames:
         cur_clue = Clue(filename)
         clues_dict[filename] = cur_clue
+
         with open(dir_unpacked_path + '/' + filename, encoding='utf-8', errors='replace') as log_file:
+
             for line in log_file:
                 if tag_open_key in line:
                     for tag in tag_keys:
@@ -35,8 +38,10 @@ def work(data_pack):
                         if tag in line:
                             current_instruction, subject_pid, subject_name = panda_utils.data_from_line_basic(line)
                             cur_clue.add_queried_key_value((subject_name, subject_pid), tag)
+
         j += 1
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
+
     return (clues_dict, )
 
 

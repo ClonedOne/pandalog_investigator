@@ -12,9 +12,16 @@ logger = logging.getLogger(__name__)
 empty_list = string_utils.no_instructions
 
 
-# Checks the log files for malwares trying to access well known registry
-# keys used to determine if the code is being executed with Qemu emulator.
 def detect_reg_key(dir_pandalogs_path, dir_unpacked_path, dir_results_path, core_num):
+    """
+    Checks the log files for malwares trying to access well known registry
+    keys used to determine if the code is being executed with Qemu emulator.
+    :param dir_pandalogs_path:
+    :param dir_unpacked_path:
+    :param dir_results_path:
+    :param core_num:
+    :return:
+    """
     t1 = time.time()
     suspect_dict = {}
     filenames = sorted(os.listdir(dir_unpacked_path))
