@@ -15,6 +15,7 @@ def unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path):
     Unpack the specified log file using the PANDA 'pandalog_reader' utility.
     The content of the log will be saved in a file with the same name in a
     folder under the created_dirs_path specified in the configuration.
+
     :param dir_panda_path:
     :param filename:
     :param dir_pandalogs_path:
@@ -34,6 +35,7 @@ def remove_log_file(filename, dir_unpacked_path):
     """
     Delete the temporary unpacked log file to avoid disk congestion.
     Used if the --small-disk flag is specified as parameter to commands.
+
     :param filename:
     :param dir_unpacked_path:
     :return:
@@ -45,6 +47,7 @@ def get_new_path(path_input):
     """
     Handles the acquisition of the path string from the log file.
     It is used to handle linux problems with windows style path strings.
+
     :param path_input:
     :return: path to the created process executable
     """
@@ -63,6 +66,7 @@ def update_dictionaries(pid, process_dict, proc_name, inverted_process_dict):
     Updates the process id <-> process name dictionaries (direct and
     inverted). At each context switch the new couple (pid, process_name)
     is either added or its frequency is updated inside the dictionaries.
+
     :param pid:
     :param process_dict:
     :param proc_name:
@@ -94,6 +98,7 @@ def data_from_line(line, creating=False):
     Given a line of the log file returns the instruction counter, pid of
     the caller, process name of the caller, pid of the callee, process name
      of the callee and optionally the path to the executable if present.
+
     :param line:
     :param creating:
     :return: list of elements of the panda log file line
@@ -115,6 +120,7 @@ def data_from_line_basic(line):
     """
     Basic version of get_data_from_line. Returns the instruction counter,
     pid of the caller, process name of the caller.
+
     :param line:
     :return: list of elements of the panda log file line
     """

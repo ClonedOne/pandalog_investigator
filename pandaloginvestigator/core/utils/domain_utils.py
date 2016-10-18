@@ -20,12 +20,13 @@ def initialize_malware_object(filename, malware_name, db_file_malware_dict, file
     Utility method to initialize a new malware object given the relative process
     name and file name. Checks whether the new process would be the db_malware
     or a corrupted process.
+
     :param filename:
     :param malware_name:
     :param db_file_malware_dict:
     :param file_corrupted_processes_dict:
     :param from_db:
-    :return:
+    :return: new Malware object
     """
     malware = Malware(malware_name)
     if from_db:
@@ -42,6 +43,7 @@ def initialize_malware_object(filename, malware_name, db_file_malware_dict, file
 def repr_malware(malware):
     """
     Returns a string representation of the specified malware object.
+
     :param malware:
     :return: string representing the whole malware
     """
@@ -83,6 +85,7 @@ def repr_malware_processes(malware):
     """
     Returns a list of the processes names and ids of the specified malware as
     a string.
+
     :param malware:
     :return: string representing the malware processes
     """
@@ -102,6 +105,7 @@ def get_syscalls():
     """
     Use the provided table of system calls to generate a system call number -> system call name dictionary.
     Reference system is Windows 7 SP 01.
+
     :return: dictionary of system calls
     """
     syscall_dict = {}
@@ -117,6 +121,7 @@ def get_syscalls():
 def repr_clue(clue):
     """
     Provide a string representation of the suspect object.
+
     :param clue:
     :return:
     """
@@ -193,6 +198,7 @@ def merge_clues(clue1, clue2):
     """
     Merge two clues object returning a new clue object containing all
     the elements present in the original objects
+
     :param clue1:
     :param clue2:
     :return: new clue object

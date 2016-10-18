@@ -16,6 +16,7 @@ def detect_reg_key(dir_pandalogs_path, dir_unpacked_path, dir_results_path, core
     """
     Checks the log files for malwares trying to access well known registry
     keys used to determine if the code is being executed with Qemu emulator.
+
     :param dir_pandalogs_path:
     :param dir_unpacked_path:
     :param dir_results_path:

@@ -8,10 +8,15 @@ tag_system_call = string_utils.tag_system_call
 logger = logging.getLogger(__name__)
 
 
-# For each file in the filenames list, uses the system call dictionary passed
-# to translate the system calls from number to explicit names, and save it to
-# a separate folder.
 def work(data_pack):
+    """
+    For each file in the filenames list, uses the system call dictionary passed
+    to translate the system calls from number to explicit names, and save it to
+    a separate folder.
+
+    :param data_pack:
+    :return:
+    """
     worker_id = data_pack[0]
     filenames = data_pack[1]
     dir_unpacked_path = data_pack[2]

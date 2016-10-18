@@ -14,6 +14,7 @@ def output_on_file_instructions(filename, process_dict, inverted_process_dict, d
     4 separated parts: from_db, created, memory_written and total. Each of these
     counters consider only the instructions executed by pids whose origin
     corresponds to the specified one.
+
     :param filename:
     :param process_dict:
     :param inverted_process_dict:
@@ -60,6 +61,7 @@ def output_on_file_instructions(filename, process_dict, inverted_process_dict, d
 def output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, syscall_dict):
     """
     Similar to the previous but modified to output system call counting results.
+
     :param filename:
     :param dir_syscall_path:
     :param malware_syscall_dict:
@@ -85,6 +87,7 @@ def final_output_instructions(dir_results_path, filenames, db_file_malware_dict,
     regarding the totality of the analyzed logs. For each filename and each
     malware_object associated sums up the instruction for each pid, checks if
     each pid has been terminated and if each pid has called the sleep function.
+
     :param dir_results_path:
     :param filenames:
     :param db_file_malware_dict:
@@ -143,6 +146,7 @@ def final_output_instructions(dir_results_path, filenames, db_file_malware_dict,
 def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
     """
     Prints the final output on file. Modified for system call counting output.
+
     :param dir_results_path:
     :param filenames:
     :param filename_syscall_dict:
@@ -163,6 +167,7 @@ def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
 def output_regkey_clues(dir_results_path, clues_dict):
     """
     Prints the list of suspect log files with the suspect elements to a file.
+
     :param dir_results_path:
     :param clues_dict:
     :return:
@@ -175,6 +180,7 @@ def output_regkey_clues(dir_results_path, clues_dict):
 def output_suspects(dir_results_path, suspects):
     """
     Prints the suspects dictionary into a human readable file.
+
     :param dir_results_path:
     :param suspects:
     :return:
@@ -199,6 +205,7 @@ def values_from_analysis(line):
     """
     Utility method to obtain the instruction count values from the relative
     line in the final analysis output text file.
+
     :param line:
     :return: list of values
     """
@@ -211,6 +218,7 @@ def filename_from_analysis(line):
     """
     Utility method to obtain the file name value from the relative line
     in the final analysis output text file.
+
     :param line:
     :return: string containing file name
     """
@@ -221,6 +229,7 @@ def status_from_analysis(line):
     """
     Utility method to obtain the process status boolean flags from the relative
     line in the final analysis output text file.
+
     :param line:
     :return: list of boolean status flags
     """
@@ -235,6 +244,7 @@ def values_from_syscalls(line):
     """
     Utility method to obtain the system call count values from the relative line
     in the final analysis output text file.
+
     :param line:
     :return: int corresponding to system call frequency
     """
@@ -244,6 +254,7 @@ def values_from_syscalls(line):
 def values_from_clues_regkey(line):
     """
     Returns the list of elements from a line of the output registry key clues file.
+
     :param line:
     :return: list of string elements of a registry key clue
     """

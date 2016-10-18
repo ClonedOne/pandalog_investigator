@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 def read_data(dir_results_path, target):
     """
     Wrapper used to provide the correct data to both plotter methods.
+
     :param dir_results_path:
     :param target:
     :return:
@@ -26,6 +27,7 @@ def read_result_instr(dir_results_path):
     """
     Read the instruction counting analysis result file in order to generate a
     list of dictionaries containing the values from the file.
+
     :param dir_results_path:
     :return: list of dictionaries
     """
@@ -74,6 +76,7 @@ def read_result_syscall(dir_results_path):
     """
     Read the system call counting result file in order to generate a dictionary
     containing the values from the file.
+
     :param dir_results_path:
     :return: list of dictionaries
     """
@@ -125,6 +128,7 @@ def read_result_corrupted(dir_results_path):
 def read_clues_regkey(dir_results_path):
     """
     Read the registry key clues output file and generate a dictionary of clues
+
     :param dir_results_path:
     :return: dictionary of clues by file name
     """

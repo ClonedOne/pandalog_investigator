@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 def strip_filename_ext(filenames):
     """
     Strip log file names from the extension.
+
     :param filenames:
     :return: string filename without extension
     """
@@ -22,6 +23,7 @@ def update_results(results, dict_list):
     Given the results form the workers updates a list of dictionaries with
     the corresponding partial dictionaries contained in each of
     the worker sub result.
+
     :param results:
     :param dict_list:
     :return:
@@ -39,6 +41,7 @@ def merge_dict_dict(dict1, dict2):
     Merge two dictionaries of dictionaries  of int values into
     a new dictionary of dictionaries of int values where each
     value is the sum of the values in the original dictionaries.
+
     :param dict1:
     :param dict2:
     :return: dict
@@ -67,6 +70,7 @@ def divide_workload(item_list, core_num, max_num=None):
     Given a list of items and the number of processing cores available compute
     a list of items lists of equal dimension, one for each core.
     'max_num' is a parameter bounding the maximum number of items to divide.
+
     :param item_list:
     :param core_num:
     :param max_num:
@@ -96,6 +100,7 @@ def format_worker_input(core_num, item_sublists, fixed_params_list):
     """
     Generate a list of tuples containing the parameters to pass to worker
     sub processes.
+
     :param core_num:
     :param item_sublists:
     :param fixed_params_list:
@@ -112,6 +117,7 @@ def invert_dictionary(chosen_dict):
     """
     Given a dictionary returns the inverted dictionary, where each value is
     considered as a the new key.
+
     :param chosen_dict:
     :return: dictionary containing reverse of passed dictionary
     """

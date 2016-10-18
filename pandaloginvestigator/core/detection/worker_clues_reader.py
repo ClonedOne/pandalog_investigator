@@ -61,6 +61,7 @@ def work(data_pack):
 def is_corrupted(filename, cur_proc, corrupted_dict):
     """
     Checks if a clue is relative to a corrupted process
+
     :param filename:
     :param cur_proc:
     :param corrupted_dict:

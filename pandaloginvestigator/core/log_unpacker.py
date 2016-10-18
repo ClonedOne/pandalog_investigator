@@ -9,11 +9,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# Unpack the compressed logs. Iterate through all the log files in the folder
-# specified in the configuration. Generate equal lists of files to pass to
-# worker_unpack workers. The number of logs to unpack is passed as argument,
-# unpack all logs file if max_num = None. Logs time spent unpacking.
 def unpack_logs(dir_pandalogs_path, dir_panda_path, dir_unpacked_path, core_num, file_list=None, max_num=None):
+    """
+    Unpack the compressed logs. Iterate through all the log files in the folder
+    specified in the configuration. Generate equal lists of files to pass to
+    worker_unpack workers. The number of logs to unpack is passed as argument,
+    unpack all logs file if max_num = None. Logs time spent unpacking.
+
+    :param dir_pandalogs_path:
+    :param dir_panda_path:
+    :param dir_unpacked_path:
+    :param core_num:
+    :param file_list:
+    :param max_num:
+    :return:
+    """
     logger.info('Starting unpacking operation with max_num = ' + str(max_num))
     t1 = time.time()
     if file_list:

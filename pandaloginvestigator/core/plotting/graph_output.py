@@ -11,6 +11,7 @@ color_unknown = 'green'
 def generate_graph(dir_results_path):
     """
     Generate a .graphml file containing the structure of the graph of corrupted processes.
+
     :param dir_results_path:
     :return:
     """

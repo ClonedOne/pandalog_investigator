@@ -5,9 +5,14 @@ from pandaloginvestigator.core.utils import panda_utils
 logger = logging.getLogger(__name__)
 
 
-# For each file in the filenames list, uses the 'pandalog_reader' tool inside
-# panda to unpack it and save it to a separate folder.
 def work(params_pack):
+    """
+    For each file in the filenames list, uses the 'pandalog_reader' tool inside
+    panda to unpack it and save it to a separate folder.
+
+    :param params_pack:
+    :return:
+    """
     worker_id = params_pack[0]
     filenames = params_pack[1]
     dir_pandalogs_path = params_pack[2]

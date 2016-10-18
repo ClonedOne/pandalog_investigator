@@ -52,6 +52,7 @@ def build_suspects(dir_results_path, dir_clues_path, core_num):
 def initalize_clues(corrupted_dict):
     """
     Initialize the clue dictionary to empty clues.
+
     :param corrupted_dict:
     :return:
     """
@@ -64,6 +65,7 @@ def initalize_clues(corrupted_dict):
 def add_clues(clues, new_clues_dict):
     """
     Add newly discovered clues in new_clues_dict to previously found clues
+
     :param clues:
     :param new_clues_dict:
     :return:
@@ -77,9 +79,10 @@ def sum_suspects(clues, corrupted_dict):
     """
     Sum the values of different corrupted processes to obtain a single
     value relative to the original malware.
+
     :param clues:
     :param corrupted_dict:
-    :return: dict
+    :return: dictionary mapping file names to int
     """
     suspects = {}
     for filename in clues:
@@ -110,6 +113,7 @@ def normalize_suspects(suspects):
     """
     Normalize the values in suspects dictionary to obtain an
     index between 0 and 1
+
     :param suspects:
     :return:
     """
@@ -128,6 +132,7 @@ def add_status_modifier(suspects, analysis_results):
     Add a modifier for the special status condition of processes.
     2 points for termination of all processes
     1 point for sleep on all porcesses
+
     :param suspects:
     :param analysis_results:
     :return:

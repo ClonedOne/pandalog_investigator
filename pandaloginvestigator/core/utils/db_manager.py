@@ -17,6 +17,7 @@ def acquire_malware_file_dict(dir_database_path):
     """
     Read the panda database file (sqlite) and returns a dictionary mapping of
     panda log file names and malware process names.
+
     :param dir_database_path:
     :return:
     """
