@@ -62,3 +62,26 @@ class Clue:
 
     def get_dangerous_instructions(self):
         return self.dangerous_instructions
+
+    def get_processes(self):
+        processes = set(self.opened_keys.keys())
+        processes = processes | set(self.queried_key_values.keys())
+        processes = processes | set(self.dangerous_instructions.keys())
+        return processes
+
+    def get_everything_proc(self, process):
+        res_list = []
+        if self.opened_keys.get(process, None):
+            res_list.append(self.opened_keys.get(process, None))
+        if self.queried_key_values.get(process, None):
+            res_list.append(self.queried_key_values.get(process, None))
+        if self.dangerous_instructions.get(process, None):
+            res_list.append(self.dangerous_instructions.get(process, None))
+        return res_list
+
+    # Remover Methods
+
+    def remove_process(self, process):
+        self.opened_keys.pop(process, None)
+        self.queried_key_values.pop(process, None)
+        self.dangerous_instructions.pop(process, None)

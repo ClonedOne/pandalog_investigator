@@ -143,7 +143,7 @@ def output_suspects(dir_results_path, suspects):
                     '{}\t{}\t{}\n'.format(string_utils.original_mal, orig_mal[0], orig_mal[1])
                 )
                 suspects_file.write(
-                    '{}\t{}\n'.format(string_utils.suspect_ind, index)
+                    '{}\t{}\n\n'.format(string_utils.suspect_ind, index)
                 )
 
 

@@ -3,6 +3,7 @@ from pandaloginvestigator.core.domain.clue_object import Clue
 from pandaloginvestigator.core.detection import worker_clues_reader
 from pandaloginvestigator.core.utils import results_reader
 from pandaloginvestigator.core.utils import domain_utils
+from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.utils import utils
 from multiprocessing import Pool
 import logging
@@ -15,13 +16,9 @@ logger = logging.getLogger(__name__)
 def build_suspects(dir_results_path, dir_clues_path, core_num):
     corrupted_dict = results_reader.read_result_corrupted(dir_results_path)
     clues = initalize_clues(corrupted_dict)
-    clues_regkey_dict = results_reader.read_clues_regkey(dir_results_path)
 
-    for filename, clue in clues_regkey_dict.items():
-        print(domain_utils.repr_clue(clue))
+    clues_regkey_dict = results_reader.read_clues_regkey(dir_results_path)
     add_clues(clues, clues_regkey_dict)
-    for filename, clue in clues.items():
-        print(domain_utils.repr_clue(clue))
 
     clues_from_panda = {}
     t1 = time.time()
@@ -41,17 +38,11 @@ def build_suspects(dir_results_path, dir_clues_path, core_num):
         pool.close()
         logger.info('Total clue reading time: ' + str(time.time() - t1))
         utils.update_results(results, [clues_from_panda, ])
-
-    for filename, clue in clues_from_panda.items():
-        print(domain_utils.repr_clue(clue))
     add_clues(clues, clues_from_panda)
-    for filename, clue in clues.items():
-        print(domain_utils.repr_clue(clue))
 
     suspects = sum_suspects(clues, corrupted_dict)
-    print(suspects)
-    # normalize_suspects(suspects)
-    # file_utils.output_suspects(dir_results_path, suspects)
+    normalize_suspects(suspects)
+    file_utils.output_suspects(dir_results_path, suspects)
 
 
 def initalize_clues(corrupted_dict):
@@ -90,13 +81,23 @@ def sum_suspects(clues, corrupted_dict):
     for filename in clues:
         if filename in corrupted_dict:
             original_proc = None
+            corrupted_procs = []
             for process in corrupted_dict[filename]:
                 if Malware.FROM_DB in process:
                     original_proc = process[0]
+                corrupted_procs.append(process[0])
             acc_value = 0.0
-            cur_clue =  clues[filename]
-            # acc_value += suspects_multiproc[filename][process]
-            acc_value += 1
+            cur_clue = clues[filename]
+            cur_clue_procs = cur_clue.get_processes()
+
+            for proc in cur_clue_procs:
+                if proc not in corrupted_procs:
+                    cur_clue.remove_process(proc)
+
+            for proc in cur_clue.get_processes():
+                for sub_dict in cur_clue.get_everything_proc(proc):
+                    for i in range(len(sub_dict)):
+                        acc_value += 1
             suspects[filename] = {original_proc: acc_value}
     return suspects
 

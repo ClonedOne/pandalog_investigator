@@ -15,10 +15,18 @@ logger = logging.getLogger(__name__)
 
 # Utilities related to Malware class.
 
-# Utility method to initialize a new malware object given the relative process
-# name and file name. Checks whether the new process would be the db_malware
-# or a corrupted process.
 def initialize_malware_object(filename, malware_name, db_file_malware_dict, file_corrupted_processes_dict, from_db=False):
+    """
+    Utility method to initialize a new malware object given the relative process
+    name and file name. Checks whether the new process would be the db_malware
+    or a corrupted process.
+    :param filename:
+    :param malware_name:
+    :param db_file_malware_dict:
+    :param file_corrupted_processes_dict:
+    :param from_db:
+    :return:
+    """
     malware = Malware(malware_name)
     if from_db:
         db_file_malware_dict[filename] = malware
@@ -31,8 +39,12 @@ def initialize_malware_object(filename, malware_name, db_file_malware_dict, file
     return malware
 
 
-# Returns a string representation of the specified malware object.
 def repr_malware(malware):
+    """
+    Returns a string representation of the specified malware object.
+    :param malware:
+    :return: string representing the whole malware
+    """
     result = ''
     for pid in malware.get_pid_list():
         result += '{} {:20s}\n'.format(string_utils.proc_name, malware.name)
@@ -67,9 +79,13 @@ def repr_malware(malware):
     return result
 
 
-# Returns a list of the processes names and ids of the specified malware as
-# a string.
 def repr_malware_processes(malware):
+    """
+    Returns a list of the processes names and ids of the specified malware as
+    a string.
+    :param malware:
+    :return: string representing the malware processes
+    """
     result = ''
     pid_list = malware.pid_list
     name = malware.name
@@ -81,9 +97,13 @@ def repr_malware_processes(malware):
 
 # Utilities related to system calls.
 
-# Use the provided table of system calls to generate a system call number -> system call name dictionary.
-# Reference system is Windows 7 SP 01.
+
 def get_syscalls():
+    """
+    Use the provided table of system calls to generate a system call number -> system call name dictionary.
+    Reference system is Windows 7 SP 01.
+    :return: dictionary of system calls
+    """
     syscall_dict = {}
     with open('syscalls.tsv') as syscall_file:
         for line in syscall_file:
