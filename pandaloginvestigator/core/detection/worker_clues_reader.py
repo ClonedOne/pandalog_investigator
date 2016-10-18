@@ -1,3 +1,4 @@
+from pandaloginvestigator.core.domain.clue_object import Clue
 from pandaloginvestigator.core.utils import string_utils
 import logging
 
@@ -26,13 +27,20 @@ def work(data_pack):
     for filename in filenames:
         with open(dir_clues_path + '/' + filename, encoding='utf-8', errors='replace') as clue_file:
             filename = filename[:-10]
-            clues_dict[filename] = {}
+            # clues_dict[filename] = {}
+            new_clue =  Clue(filename)
             cur_features = [None] * 7
             for line in clue_file:
                 if not line.strip() and cur_features[0] is not None:
                     cur_proc = (cur_features[0], cur_features[1])
                     if is_corrupted(filename, cur_proc, corrupted_dict):
-                        clues_dict[filename][cur_proc] = clues_dict[filename].get(cur_proc, 0) + 1
+                        # clues_dict[filename][cur_proc] = clues_dict[filename].get(cur_proc, 0) + 1
+                        if int(cur_features[5]) >= 15:
+                            tag_inst = 'oversize'
+                        else:
+                            tag_inst = cur_features[3]
+                        new_clue.add_dangerous_instructions(cur_proc, tag_inst)
+                        clues_dict[filename] = new_clue
                     cur_features = [None] * 7
                 split_line = line.split(':')
                 for i in range(len(features)):

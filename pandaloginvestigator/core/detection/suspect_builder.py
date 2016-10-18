@@ -1,7 +1,7 @@
 from pandaloginvestigator.core.domain.malware_object import Malware
 from pandaloginvestigator.core.detection import worker_clues_reader
 from pandaloginvestigator.core.utils import results_reader
-from pandaloginvestigator.core.utils import file_utils
+from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import utils
 from multiprocessing import Pool
 import logging
@@ -16,23 +16,28 @@ def build_suspects(dir_results_path, dir_clues_path, core_num):
     suspects_multiproc = initalize_suspects(corrupted_dict)
     clues_regkey_dict = results_reader.read_clues_regkey(dir_results_path)
     # add_clues(suspects_multiproc, clues_regkey_dict)
-    # t1 = time.time()
-    # if os.path.exists(dir_clues_path):
-    #     filenames = sorted(os.listdir(dir_clues_path))
-    #     file_names_sublists = utils.divide_workload(filenames, core_num)
-    #     formatted_input = utils.format_worker_input(
-    #         core_num,
-    #         file_names_sublists,
-    #         (
-    #             dir_clues_path,
-    #             corrupted_dict
-    #         )
-    #     )
-    #     pool = Pool(processes=core_num)
-    #     results = pool.map(worker_clues_reader.work, formatted_input)
-    #     pool.close()
-    #     logger.info('Total clue reading time: ' + str(time.time() - t1))
-    #     update_suspects_multiproc(suspects_multiproc, results)
+    clues_form_panda = {}
+    t1 = time.time()
+    if os.path.exists(dir_clues_path):
+        filenames = sorted(os.listdir(dir_clues_path))
+        file_names_sublists = utils.divide_workload(filenames, core_num)
+        formatted_input = utils.format_worker_input(
+            core_num,
+            file_names_sublists,
+            (
+                dir_clues_path,
+                corrupted_dict
+            )
+        )
+        pool = Pool(processes=core_num)
+        results = pool.map(worker_clues_reader.work, formatted_input)
+        pool.close()
+        logger.info('Total clue reading time: ' + str(time.time() - t1))
+        utils.update_results(results, [clues_form_panda, ])
+        for filename, clue in clues_form_panda.items():
+            print(domain_utils.repr_clue(clue))
+
+        # update_suspects_multiproc(suspects_multiproc, results)
     #
     # suspects = sum_suspects(suspects_multiproc, corrupted_dict)
     # normalize_suspects(suspects)
