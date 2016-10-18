@@ -2,6 +2,7 @@ from pandaloginvestigator.core.domain.malware_object import Malware
 from pandaloginvestigator.core.domain.clue_object import Clue
 from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.utils import string_utils
+from pandaloginvestigator.core.utils import utils
 import logging
 
 
@@ -93,8 +94,12 @@ def get_syscalls():
 
 # Utilities related to Clues class.
 
-# Provide a string representation of the suspect object.
 def repr_clue(clue):
+    """
+    Provide a string representation of the suspect object.
+    :param clue:
+    :return:
+    """
     result = '{} {}\n'.format(string_utils.filename, clue.get_filename())
     opened_keys = clue.get_opened_keys()
     queried_values = clue.get_queries_key_values()
@@ -139,6 +144,13 @@ def repr_clue(clue):
 
 
 def read_clue(filename, lines):
+    """
+    Takes as imput the list of clue file lines and the file name
+    and returns a clue object
+    :param filename:
+    :param lines:
+    :return: new clue object
+    """
     new_clue = Clue(filename)
     for line in lines:
         values = file_utils.values_from_clues_regkey(line)
@@ -154,4 +166,34 @@ def read_clue(filename, lines):
             new_clue.add_queried_key_value(process, tag, counter)
         if kind == string_utils.dangerous_instruction:
             new_clue.add_dangerous_instructions(process, tag, counter)
+    return new_clue
+
+
+def merge_clues(clue1, clue2):
+    """
+    Merge two clues object returning a new clue object containing all
+    the elements present in the original objects
+    :param clue1:
+    :param clue2:
+    :return: new clue object
+    """
+    if clue1.get_filename() != clue2.get_filename():
+        return None
+    new_clue = Clue(clue1.get_filename())
+
+    opened_keys1 = clue1.get_opened_keys()
+    opened_keys2 = clue2.get_opened_keys()
+    queried_values1 = clue1.get_queries_key_values()
+    queried_values2 = clue2.get_queries_key_values()
+    dangerous_inst1 = clue1.get_dangerous_instructions()
+    dangerous_inst2 = clue2.get_dangerous_instructions()
+
+    opened_keys = utils.merge_dict_dict(opened_keys1, opened_keys2)
+    queried_values = utils.merge_dict_dict(queried_values1, queried_values2)
+    dangerous_inst = utils.merge_dict_dict(dangerous_inst1, dangerous_inst2)
+
+    new_clue.set_opened_keys(opened_keys)
+    new_clue.set_queried_key_values(queried_values)
+    new_clue.set_dangerous_instructions(dangerous_inst)
+
     return new_clue

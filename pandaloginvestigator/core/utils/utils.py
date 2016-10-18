@@ -8,22 +8,60 @@ logger = logging.getLogger(__name__)
 
 # ## OTHER UTILITY METHODS ##
 
-# Strip log file names from the extension.
 def strip_filename_ext(filenames):
+    """
+    Strip log file names from the extension.
+    :param filenames:
+    :return: string filename without extension
+    """
     return [filename[:-9] for filename in filenames]
 
 
-# Given the results form the workers updates a list of dictionaries with
-# the corresponding partial dictionaries contained in each of
-# the worker sub result.
 def update_results(results, dict_list):
+    """
+    Given the results form the workers updates a list of dictionaries with
+    the corresponding partial dictionaries contained in each of
+    the worker sub result.
+    :param results:
+    :param dict_list:
+    :return:
+    """
     if len(results[0]) != len(dict_list):
         logger.error('Update Results length of partial result different from length of dict_list')
         quit()
     for sub_res in results:
         for i in range(len(sub_res)):
             dict_list[i].update(sub_res[i])
-    return 1
+
+
+def merge_dict_dict(dict1, dict2):
+    """
+    Merge two dictionaries of dictionaries  of int values into
+    a new dictionary of dictionaries of int values where each
+    value is the sum of the values in the original dictionaries.
+    :param dict1:
+    :param dict2:
+    :return: dict
+    """
+    dict_res = {}
+    keys1 = list(dict1.keys())
+    keys2 = list(dict2.keys())
+    keys = set(keys1) | set(keys2)
+    for key in keys:
+        dict_res[key] = {}
+        sub_dict1 = dict1.get(key, {})
+        sub_dict2 = dict2.get(key, {})
+        sub_keys1 = list(sub_dict1.keys())
+        sub_keys2 = list(sub_dict2.keys())
+        sub_keys = set(sub_keys1) | set(sub_keys2)
+        for sub_key in sub_keys:
+            val1 = sub_dict1.get(sub_key, 0)
+            val2 = sub_dict2.get(sub_key, 0)
+            val = val1 + val2
+            dict_res[key][sub_key] = val
+    return dict_res
+
+
 
 
 # Given a list of items and the number of processing cores available compute
