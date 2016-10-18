@@ -3,6 +3,7 @@ from pandaloginvestigator.core.domain.clue_object import Clue
 from pandaloginvestigator.core.detection import worker_clues_reader
 from pandaloginvestigator.core.utils import results_reader
 from pandaloginvestigator.core.utils import domain_utils
+from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.utils import utils
 from multiprocessing import Pool
@@ -41,7 +42,10 @@ def build_suspects(dir_results_path, dir_clues_path, core_num):
     add_clues(clues, clues_from_panda)
 
     suspects = sum_suspects(clues, corrupted_dict)
+    analysis_results = results_reader.read_data(dir_results_path, string_utils.target_i)
+    add_status_modifier(suspects, analysis_results)
     normalize_suspects(suspects)
+
     file_utils.output_suspects(dir_results_path, suspects)
 
 
@@ -117,3 +121,23 @@ def normalize_suspects(suspects):
     for filename, processes in suspects.items():
         for process, cur_val in processes.items():
             processes[process] = cur_val / max_val
+
+
+def add_status_modifier(suspects, analysis_results):
+    """
+    Add a modifier for the special status condition of processes.
+    2 points for termination of all processes
+    1 point for sleep on all porcesses
+    :param suspects:
+    :param analysis_results:
+    :return:
+    """
+    terminating_dict = analysis_results[4]
+    sleeping_dict = analysis_results[5]
+    for filename in suspects:
+        if terminating_dict.get(filename, False):
+            for proc in suspects[filename]:
+                suspects[filename][proc] += 2
+        if sleeping_dict.get(filename, False):
+            for proc in suspects[filename]:
+                suspects[filename][proc] += 1

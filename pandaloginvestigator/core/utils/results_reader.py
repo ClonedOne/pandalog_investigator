@@ -16,10 +16,13 @@ def read_data(dir_results_path, target):
         return read_result_syscall(dir_results_path)
 
 
-# Read the instruction counting analysis result file in order to generate a
-# dictionary containing the values from the file. This data will then be used
-# in the statistics generation and plotting phase.
 def read_result_instr(dir_results_path):
+    """
+    Read the instruction counting analysis result file in order to generate a
+    list of dictionaries containing the values from the file.
+    :param dir_results_path:
+    :return: list of dictionaries
+    """
     instr_totals_dict = {}
     instr_from_db_dict = {}
     created_dict = {}
