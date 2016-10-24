@@ -79,6 +79,8 @@ def divide_workload(item_list, core_num, max_num=None):
     j = 0
     c = 0
     item_sublists = defaultdict(list)
+    if max_num:
+        max_num = int(max_num)
     for item in item_list:
         item_sublists[j].append(item)
         j = (j + 1) % core_num

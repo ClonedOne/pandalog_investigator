@@ -8,7 +8,7 @@ import os
 logger = logging.getLogger(__name__)
 
 
-def detect_command(app):
+def detect_command(app, max_num=None, small_disk=False):
     try:
         dir_pandalogs_path = app.config.get('pandaloginvestigator', 'dir_pandalogs_path')
     except:
@@ -29,6 +29,11 @@ def detect_command(app):
     except:
         logger.error('dir_clues_path not set in configuration file')
         return
+    try:
+        dir_panda_path = app.config.get('pandaloginvestigator', 'dir_panda_path')
+    except:
+        logger.error('dir_panda_path not set in configuration file')
+        return
 
     dir_unpacked_path = created_dirs_path + '/' + string_utils.dir_unpacked_path
     if not os.path.exists(dir_unpacked_path):
@@ -39,20 +44,39 @@ def detect_command(app):
         os.makedirs(dir_results_path)
 
     logger.debug(
-        'Detect command with parameters: {}, {}, {}, {}, {}, {}'.format(
+        'Detect command with parameters: {}, {}, {}, {}, {}, {}, {}, {}, {}'.format(
+            dir_panda_path,
             dir_pandalogs_path,
             dir_unpacked_path,
             dir_results_path,
             dir_clues_path,
             core_num,
-            app.pargs.regkey
+            app.pargs.regkey,
+            small_disk,
+            max_num
         )
     )
 
     if app.pargs.regkey:
-        detector_regkey.detect_reg_key(dir_pandalogs_path, dir_unpacked_path, dir_results_path, core_num)
+        detector_regkey.detect_reg_key(
+            dir_panda_path,
+            dir_pandalogs_path,
+            dir_unpacked_path,
+            dir_results_path,
+            core_num,
+            small_disk,
+            max_num
+        )
     else:
         # Possibly other detectors will be called here
-        detector_regkey.detect_reg_key(dir_pandalogs_path, dir_unpacked_path, dir_results_path, core_num)
+        detector_regkey.detect_reg_key(
+            dir_panda_path,
+            dir_pandalogs_path,
+            dir_unpacked_path,
+            dir_results_path,
+            core_num,
+            small_disk,
+            max_num
+        )
 
     suspect_builder.build_suspects(dir_results_path, dir_clues_path, core_num)

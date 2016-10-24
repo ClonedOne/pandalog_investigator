@@ -149,15 +149,33 @@ class PandalogInvestigatorController(ArgparseController):
     statistics file. Please specify the kind of detection method you wish to
     look for, or leave blank for all. Requires previous analysis.''',
             arguments=[
+                (['-n', '--num'], dict(help=help_n, action='store')),
+                (['--small-disk'], dict(help=help_sd, action='store_true')),
+                (['-u', '--unpack'], dict(help=help_u, action='store_true')),
                 (['-r', '--regkey'], dict(help=help_f, action='store_true'))
             ])
     def detect(self):
         logger.info(
-            'Detecting sandbox detection techniques. Received option regkey with value {}'.format(
-                self.app.pargs.regkey
+            'Detecting sandbox detection techniques. Received options regkey:{} num:{}'.format(
+                self.app.pargs.regkey,
+                self.app.pargs.num
             )
         )
-        detect_command(self.app)
+        unpack = False
+        max_num = None
+        small_disk = False
+        if self.app.pargs.unpack:
+            unpack = True
+        if self.app.pargs.num:
+            max_num = self.app.pargs.num
+        if self.app.pargs.small_disk:
+            small_disk = True
+            if unpack:
+                unpack = False
+        if unpack:
+            self.unpack()
+
+        detect_command(self.app, max_num, small_disk)
 
     @expose(help='''Represent corrupted processes as graphs, and output graph files
     compatible with Gephi visualization library. Requires previous analysis.''',

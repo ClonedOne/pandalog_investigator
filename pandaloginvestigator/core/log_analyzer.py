@@ -15,7 +15,7 @@ def analyze_logs(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_anal
                  dir_results_path, dir_database_path, core_num, max_num, small_disk):
     """
     Analyze each unpacked log file counting the number of instruction executed
-    and identifying corrupted subprocesses. Iterate through all the log files
+    and identifying corrupted sub processes. Iterate through all the log files
     in the folder specified in the configuration. Generate equal lists of
     files to pass to worker_analyzer workers. The number of logs to analyze
     is passed as argument, analyze all logs file if max_num = None.

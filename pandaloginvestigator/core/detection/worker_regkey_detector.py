@@ -17,11 +17,16 @@ def work(data_pack):
     worker_id = data_pack[0]
     filenames = data_pack[1]
     dir_unpacked_path = data_pack[2]
+    small_disk = data_pack[3]
+    dir_panda_path = data_pack[4]
+    dir_pandalogs_path = data_pack[5]
     j = 0.0
     total_files = len(filenames) if len(filenames) > 0 else -1
     logger.info('WorkerId {} detecting {} log files'.format(worker_id, total_files))
 
     for filename in filenames:
+        if small_disk:
+            panda_utils.unpack_log(dir_panda_path, filename + '.txz.plog', dir_pandalogs_path, dir_unpacked_path)
         cur_clue = Clue(filename)
         clues_dict[filename] = cur_clue
 
@@ -39,6 +44,8 @@ def work(data_pack):
                             current_instruction, subject_pid, subject_name = panda_utils.data_from_line_basic(line)
                             cur_clue.add_queried_key_value((subject_name, subject_pid), tag)
 
+        if small_disk:
+            panda_utils.remove_log_file(filename, dir_unpacked_path)
         j += 1
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
 
