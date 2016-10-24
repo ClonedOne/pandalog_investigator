@@ -42,6 +42,7 @@ def build_suspects(dir_results_path, dir_clues_path, core_num):
     add_clues(clues, clues_from_panda)
     file_utils.output_clues(dir_results_path, clues, 'total_clues.txt')
     suspects = sum_suspects(clues, corrupted_dict)
+    file_utils.output_clues(dir_results_path, clues, 'total_clues_corrupted_only.txt')
     analysis_results = results_reader.read_data(dir_results_path, string_utils.target_i)
     add_status_modifier(suspects, analysis_results)
     normalize_suspects(suspects)
