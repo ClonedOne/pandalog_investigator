@@ -46,6 +46,6 @@ def detect_reg_key(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_re
     results = pool.map(worker_regkey_detector.work, formatted_input)
     pool.close()
     utils.update_results(results, [suspect_dict, ])
-    file_utils.output_regkey_clues(dir_results_path, suspect_dict)
+    file_utils.output_clues(dir_results_path, suspect_dict, 'clues_regkey.txt')
     t2 = time.time()
     logger.info('Total detection time: ' + str(t2 - t1))

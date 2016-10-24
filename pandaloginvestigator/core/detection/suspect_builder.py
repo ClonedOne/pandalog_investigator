@@ -40,7 +40,7 @@ def build_suspects(dir_results_path, dir_clues_path, core_num):
         logger.info('Total clue reading time: ' + str(time.time() - t1))
         utils.update_results(results, [clues_from_panda, ])
     add_clues(clues, clues_from_panda)
-
+    file_utils.output_clues(dir_results_path, clues, 'total_clues.txt')
     suspects = sum_suspects(clues, corrupted_dict)
     analysis_results = results_reader.read_data(dir_results_path, string_utils.target_i)
     add_status_modifier(suspects, analysis_results)
@@ -101,10 +101,13 @@ def sum_suspects(clues, corrupted_dict):
                 if proc not in corrupted_procs:
                     cur_clue.remove_process(proc)
 
+            already_considered = set()
             for proc in cur_clue.get_processes():
                 for sub_dict in cur_clue.get_everything_proc(proc):
-                    for i in range(len(sub_dict)):
-                        acc_value += 1
+                    for key in sub_dict:
+                        if key not in already_considered:
+                            acc_value += 1
+                            already_considered.add(key)
             suspects[filename] = {original_proc: acc_value}
     return suspects
 

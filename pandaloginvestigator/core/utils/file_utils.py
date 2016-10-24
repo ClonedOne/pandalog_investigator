@@ -164,7 +164,7 @@ def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
             res_file.write('{} {}\n\n'.format(string_utils.syscall_final, total_syscall))
 
 
-def output_regkey_clues(dir_results_path, clues_dict):
+def output_clues(dir_results_path, clues_dict, out_file_name):
     """
     Prints the list of suspect log files with the suspect elements to a file.
 
@@ -172,7 +172,7 @@ def output_regkey_clues(dir_results_path, clues_dict):
     :param clues_dict:
     :return:
     """
-    with open(dir_results_path + '/clues_regkey.txt', 'w', encoding='utf-8', errors='replace') as clues_file:
+    with open(dir_results_path + '/' + out_file_name, 'w', encoding='utf-8', errors='replace') as clues_file:
         for filename, clue in clues_dict.items():
             clues_file.write(domain_utils.repr_clue(clue) + '\n\n')
 
@@ -191,12 +191,15 @@ def output_suspects(dir_results_path, suspects):
                 '{}\t{}\n'.format(string_utils.filename, filename)
             )
             for orig_mal, index in suspects[filename].items():
-                suspects_file.write(
-                    '{}\t{}\t{}\n'.format(string_utils.original_mal, orig_mal[0], orig_mal[1])
-                )
-                suspects_file.write(
-                    '{}\t{}\n\n'.format(string_utils.suspect_ind, index)
-                )
+                if orig_mal is not None:
+                    suspects_file.write(
+                        '{}\t{}\t{}\n'.format(string_utils.original_mal, orig_mal[0], orig_mal[1])
+                    )
+                    suspects_file.write(
+                        '{}\t{}\n\n'.format(string_utils.suspect_ind, index)
+                    )
+                else:
+                    suspects_file.write('\n\n\n')
 
 
 # ## INPUT UTILITY METHODS ##
