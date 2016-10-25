@@ -57,6 +57,9 @@ The application contains a help menu which can be requested with `pandaloginvest
                             provide a list of log files or leave blank for all.
 
 
+The Investigator can be used alone. However if provided with the results of the [Investigator plugin](https://github.com/ClonedOne/panda_plugins_c1) for PANDA, the Investigator will be able to identify more sandbox detection techniques. 
+
+
 ####Known issues
 
 There is a small issue with the logging function. 
