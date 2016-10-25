@@ -2,6 +2,7 @@
 
 Welcome to Panda Log Investigator!
 This software was developed to analyze the content of panda log files, generated using Platform for Architecture-Neutral Dynamic Analysis [PANDA](https://github.com/moyix/panda).
+The objective of the investigator is to gather information regarding the execution of malware samples from the panda log files, and to possibly identify which malware samples adopted sandbox detection and evasion techniques.
 
 ####Installation
 
@@ -58,7 +59,8 @@ The application contains a help menu which can be requested with `pandaloginvest
 
 ####Known issues
 
-There is a small issue with the logging function. It (seemingly) randomly raises and exception like:
+There is a small issue with the logging function. 
+It (seemingly) randomly raises and exception like:
 
     Traceback (most recent call last):
       File "/usr/lib/python3.5/multiprocessing/util.py", line 254, in _run_finalizers
@@ -76,5 +78,5 @@ There is a small issue with the logging function. It (seemingly) randomly raises
     cement.core.exc.CaughtSignal: Caught signal 15
     Process ForkPoolWorker-8:
 
-While it may be annoying, the exception is related only to the logging code and does not in any way affect the overall execution of the application.
+While it may be annoying, the exception is related only to the logging code and does not in any way affect the overall execution of the application. 
 It is also only displayed in the console output, the debug and error rolling log files are not affected by the problem.
