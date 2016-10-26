@@ -80,4 +80,4 @@ tag_keys = [
 ]
 
 # Values to be checked inside the keys
-tag_values = ['SystemBiosDate', 'SystemBiosVersion', 'VideoBiosVersion', 'QEMU']
+tag_values = ['SystemBiosDate', 'SystemBiosVersion', 'VideoBiosVersion', 'QEMU', 'VMWARE', 'VBOX']
