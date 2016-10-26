@@ -1,6 +1,5 @@
 from pandaloginvestigator.core.domain.malware_object import Malware
 from pandaloginvestigator.core.domain.clue_object import Clue
-from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import utils
 import logging
@@ -178,7 +177,7 @@ def read_clue(filename, lines):
     """
     new_clue = Clue(filename)
     for line in lines:
-        values = file_utils.values_from_clues_regkey(line)
+        values = values_from_clues_regkey(line)
         kind = values[0]
         tag = values[1]
         counter = int(values[2])
@@ -192,6 +191,18 @@ def read_clue(filename, lines):
         if kind == string_utils.dangerous_instruction:
             new_clue.add_dangerous_instructions(process, tag, counter)
     return new_clue
+
+
+def values_from_clues_regkey(line):
+    """
+    Returns the list of elements from a line of the output registry key clues file.
+
+    :param line:
+    :return: list of string elements of a registry key clue
+    """
+    line = line.strip()
+    elems = line.split('\t')
+    return [elem.strip() for elem in elems]
 
 
 def merge_clues(clue1, clue2):

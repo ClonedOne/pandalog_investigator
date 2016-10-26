@@ -254,13 +254,3 @@ def values_from_syscalls(line):
     return int(line.strip().split('\t')[1])
 
 
-def values_from_clues_regkey(line):
-    """
-    Returns the list of elements from a line of the output registry key clues file.
-
-    :param line:
-    :return: list of string elements of a registry key clue
-    """
-    line = line.strip()
-    elems = line.split('\t')
-    return [elem.strip() for elem in elems]
