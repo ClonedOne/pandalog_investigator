@@ -65,6 +65,7 @@ def repr_malware(malware):
             for sub_entry in entry:
                 result += str(sub_entry) + '\t'
             result += '\n'
+
         result += '\n{}\n'.format(string_utils.text_written)
         for entry in malware.get_written_memories(pid):
             for sub_entry in entry:

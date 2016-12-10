@@ -13,6 +13,7 @@ dir_unpacked_path = None
 dir_analyzed_logs = None
 active_malware = None
 
+# Performance optimization
 tag_context_switch = string_utils.tag_context_switch
 tag_termination = string_utils.tag_termination
 tag_process_creation = string_utils.tag_process_creation
@@ -20,6 +21,7 @@ tag_write_memory = string_utils.tag_write_memory
 tag_read_memory = string_utils.tag_read_memory
 tag_sleep = string_utils.tag_sleep
 tag_raise_error = string_utils.tag_raise_error
+tag_write_file = string_utils.tag_write_file
 error_manager = string_utils.error_manager
 
 file_corrupted_processes_dict = {}
@@ -87,6 +89,8 @@ def analyze_log(filename):
                     is_creating_process(line, filename)
                 elif tag_write_memory in line:
                     is_writing_memory(line, filename)
+                elif tag_write_file in line:
+                    is_writing_file(line, filename)
                 elif tag_sleep in line and active_malware:
                     is_calling_sleep()
                 elif tag_termination in line:
@@ -385,7 +389,7 @@ def is_terminating(line, filename):
     malware = is_db_malware(terminating_name, filename)
     if not malware:
         malware = is_corrupted_process(terminating_name, terminating_pid, filename)
-    if malware and malware.is_valid_pid(terminating_pid) and malware.has_active_pid() and malware.get_active_pid() == terminating_pid:
+    if malware and malware.is_valid_pid(terminating_pid) and malware.has_active_pid() and malware.is_active_pid(terminating_pid):
         malware.add_terminated_process(
             terminating_pid,
             terminated_pid,
@@ -469,7 +473,7 @@ def is_creating_process(line, filename):
     if not malware:
         malware = is_corrupted_process(creating_name, creating_pid, filename)
 
-    if malware and malware.has_active_pid() and malware.get_active_pid() == creating_pid:
+    if malware and malware.has_active_pid() and malware.is_active_pid(creating_pid):
         malware.add_spawned_process(
             creating_pid,
             created_pid,
@@ -500,7 +504,7 @@ def is_writing_memory(line, filename):
     """
     Handles the write on virtual memory system calls. Analyze the log to find
     out process name and id of the writing and written processes. Checks if the
-    writing process is a malware and if so updates the malware memory writing
+    writing process is a malware and, if so, updates the malware memory writing
     information. If the writing process is a malicious one, the written process
     will also be considered as corrupted. If the new malware is already known
     adds the written pid to that object after having checked that the written
@@ -517,7 +521,7 @@ def is_writing_memory(line, filename):
     if not malware:
         malware = is_corrupted_process(writing_name, writing_pid, filename)
 
-    if malware and malware.is_valid_pid(writing_pid) and malware.has_active_pid() and malware.get_active_pid() == writing_pid:
+    if malware and malware.is_valid_pid(writing_pid) and malware.has_active_pid() and malware.is_active_pid(writing_pid):
         malware.add_written_memory(
             writing_pid,
             written_pid,
@@ -563,3 +567,24 @@ def is_malware(malware, pid, current_instruction):
     malware.update_starting_instruction(pid, current_instruction)
     malware.activate_pid(pid)
     active_malware = malware
+
+
+def is_writing_file(line, filename):
+    """
+    Handles the write on file system calls. Finds out the writers id and
+    process name. Checks if the writing process is a malware and, if so,
+    updates the malware file writing information.
+
+    :param line:
+    :param filename:
+    :return:
+    """
+    current_instruction, subject_pid, subject_name = panda_utils.data_from_line_basic(line)
+
+    malware = is_db_malware(subject_name, filename)
+    if not malware:
+        malware = is_corrupted_process(subject_name, subject_pid, filename)
+
+    if malware and malware.has_active_pid() and malware.is_active_pid(subject_pid):
+        file_path = panda_utils.get_written_file_path(line)
+        malware.add_written_file(subject_pid, current_instruction, file_path)

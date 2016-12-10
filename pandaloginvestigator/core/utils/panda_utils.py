@@ -43,22 +43,32 @@ def remove_log_file(filename, dir_unpacked_path):
     os.remove(dir_unpacked_path + '/' + filename)
 
 
-def get_new_path(path_input):
+def get_new_path(line):
     """
-    Handles the acquisition of the path string from the log file.
+    Handles the acquisition of the path string for a created process.
     It is used to handle linux problems with windows style path strings.
 
-    :param path_input:
+    :param line:
     :return: path to the created process executable
     """
-    words = path_input.split()
-    line = ''
-    fixed_substring = 'name=['
-    for word in words:
-        line += word + ' '
+    fixed_substring = u'name=['
     index = line.find(fixed_substring)
     line = line[index:]
-    return os.path.normpath(line.split('[')[1].replace(']', ''))
+    return os.path.normpath(line.strip().split('[')[1].replace(']', ''))
+
+
+def get_written_file_path(line):
+    """
+    Handles the acquisition of the path string for a written file.
+    It is used to handle linux problems with windows style path strings.
+
+    :param line:
+    :return:
+    """
+    fixed_substring = u'filename,'
+    index = line.find(fixed_substring)
+    line = line[index:]
+    return os.path.normpath(line.strip().split(')')[0])
 
 
 def update_dictionaries(pid, process_dict, proc_name, inverted_process_dict):
