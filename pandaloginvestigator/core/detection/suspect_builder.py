@@ -133,9 +133,9 @@ def normalize_suspects(suspects):
 
 def add_status_modifier(suspects, analysis_results):
     """
-    Add a modifier for the special status condition of processes.
+    Add a modifier for the special status conditions.
     2 points for termination of all processes
-    1 point for sleep on all porcesses
+    1 point for sleep on all processes
 
     :param suspects:
     :param analysis_results:

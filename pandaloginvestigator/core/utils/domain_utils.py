@@ -48,36 +48,65 @@ def repr_malware(malware):
     """
     result = ''
     for pid in malware.get_pid_list():
-        result += '{} {:20s}\n'.format(string_utils.proc_name, malware.name)
-        result += '{} {:20d}\n'.format(string_utils.proc_pid, pid)
-        result += '{} {:20s}\n'.format(string_utils.proc_orig, malware.get_origin(pid))
-        result += '{} {:20d}\n'.format(string_utils.last_inst, malware.get_starting_instruction(pid))
-        result += '{} {:20d}\n'.format(string_utils.exec_inst, malware.get_instruction_executed(pid))
+        result += '{}\t{}\n'.format(string_utils.proc_name, malware.name)
+        result += '{}\t{}\n'.format(string_utils.proc_pid, pid)
+        result += '{}\t{}\n'.format(string_utils.proc_orig, malware.get_origin(pid))
+        result += '{}\t{}\n'.format(string_utils.last_inst, malware.get_starting_instruction(pid))
+        result += '{}\t{}\n'.format(string_utils.exec_inst, malware.get_instruction_executed(pid))
+        result += '{}\t{}\n'.format(string_utils.text_sleep, malware.get_sleep(pid))
 
         result += '\n{}\n'.format(string_utils.text_spawned)
+        result += '| {:20s} | {:20s} | {:20s} | {:20s} |\n'.format(
+            'New pid',
+            'Process name',
+            'Instruction',
+            'Executable path'
+        )
         for entry in malware.get_spawned_processes(pid):
             for sub_entry in entry:
-                result += str(sub_entry) + '\t'
-            result += '\n'
+                result += '| {:20s} '.format(str(sub_entry))
+            result += '|\n'
 
         result += '\n{}\n'.format(string_utils.text_terminated)
+        result += '| {:20s} | {:20s} | {:20s} |\n'.format(
+            'Terminated pid',
+            'Process name',
+            'Instruction'
+        )
         for entry in malware.get_terminated_processes(pid):
             for sub_entry in entry:
-                result += str(sub_entry) + '\t'
-            result += '\n'
+                result += '| {:20s} '.format(str(sub_entry))
+            result += '|\n'
 
         result += '\n{}\n'.format(string_utils.text_written)
+        result += '| {:20s} | {:20s} | {:20s} |\n'.format(
+            'Written pid',
+            'Process name',
+            'Instruction'
+        )
         for entry in malware.get_written_memories(pid):
             for sub_entry in entry:
-                result += str(sub_entry) + '\t'
-            result += '\n'
+                result += '| {:20s} '.format(str(sub_entry))
+            result += '|\n'
 
-        result += '\n{} {:10d}\n'.format(string_utils.text_sleep, malware.get_sleep(pid))
-        result += '{} {} {}\n\n'.format(string_utils.text_crash_missing_dll, malware.get_crash(pid), malware.get_error(pid))
+        result += '\n{}\n'.format(string_utils.text_written_file)
+        result += '| {:20s} | {:20s} |\n'.format(
+            'Instruction',
+            'File path'
+        )
+        for entry in malware.get_written_files(pid):
+            for sub_entry in entry:
+                result += '| {:20s} '.format(str(sub_entry))
+            result += '|\n'
+
+        result += '\n{}\n'.format(string_utils.text_spec_status)
+        result += '| {:20s} | {:20s} |\n'.format(string_utils.text_crash, string_utils.text_raise_err)
+        result += '| {:20s} | {:20s} |\n\n'.format(str(malware.get_crash(pid)), str(malware.get_error(pid)))
 
     executed = malware.get_total_executed_instructions()
     result += string_utils.text_executed + '\n'
-    result += '{:15d} {:15d} {:15d} {:15d}\n\n\n'.format(executed[0], executed[1], executed[2], executed[3])
+    result += '| {:15s} | {:15s} | {:15s} | {:15s} |\n'.format('DB', 'created', 'memory written', 'total')
+    result += '| {:15d} | {:15d} | {:15d} | {:15d} |\n\n\n'.format(executed[0], executed[1], executed[2], executed[3])
     return result
 
 

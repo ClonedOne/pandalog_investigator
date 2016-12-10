@@ -68,7 +68,7 @@ def get_written_file_path(line):
     fixed_substring = u'filename,'
     index = line.find(fixed_substring)
     line = line[index:]
-    return os.path.normpath(line.strip().split(')')[0])
+    return os.path.normpath(line.strip().split(',')[1].split(')')[0])
 
 
 def update_dictionaries(pid, process_dict, proc_name, inverted_process_dict):
