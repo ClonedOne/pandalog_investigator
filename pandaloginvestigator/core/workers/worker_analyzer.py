@@ -30,6 +30,7 @@ file_terminate_dict = {}
 file_sleep_dict = {}
 file_crash_dict = {}
 file_error_dict = {}
+file_writefile_dict = {}
 
 
 def work(data_pack):
@@ -66,7 +67,7 @@ def work(data_pack):
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
     total_time = time.time() - t0
     logger.info('WorkerId ' + str(worker_id) + ' Total time: ' + str(total_time))
-    return db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict
+    return db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict, file_writefile_dict
 
 
 def analyze_log(filename):
@@ -101,10 +102,11 @@ def analyze_log(filename):
                     is_raising_error()
             except:
                 traceback.print_exc()
-    terminating_all = is_terminating_all(filename)
-    sleeping_all = is_sleeping_all(filename)
+    terminating_all = terminates_all(filename)
+    sleeping_all = calls_sleep_on_all(filename)
     crashing_all = is_crashing_all(filename)
     error_all = is_raising_error_all(filename)
+    writes_file = writes_at_least_one_file(filename)
     file_utils.output_on_file_instructions(
         filename,
         process_dict,
@@ -115,11 +117,12 @@ def analyze_log(filename):
         terminating_all,
         sleeping_all,
         crashing_all,
-        error_all
+        error_all,
+        writes_file
     )
 
 
-def is_sleeping_all(filename):
+def calls_sleep_on_all(filename):
     """
     Checks if the malware_objects associated with the filename have called the
     sleep function on all their processes.
@@ -159,7 +162,7 @@ def is_sleeping_all(filename):
         return False
 
 
-def is_terminating_all(filename):
+def terminates_all(filename):
     """
     Checks if the malware_objects associated with the filename have terminated
     all their processes.
@@ -197,6 +200,34 @@ def is_terminating_all(filename):
     else:
         file_terminate_dict[filename] = False
         return False
+
+
+def writes_at_least_one_file(filename):
+    """
+    Checks if the malware_objects associated with the filename have written
+    at least one file in all their processes.
+
+    :param filename:
+    :return:
+    """
+    if filename in db_file_malware_dict:
+        malware = db_file_malware_dict[filename]
+        pid_list = malware.get_pid_list()
+        for pid in pid_list:
+            if len(malware.get_written_files(pid)) > 0:
+                file_writefile_dict[filename] = True
+                return True
+    if filename in file_corrupted_processes_dict:
+        malwares = file_corrupted_processes_dict[filename]
+        for malware in malwares:
+            pid_list = malware.get_pid_list()
+            for pid in pid_list:
+                if len(malware.get_written_files(pid)) > 0:
+                    file_writefile_dict[filename] = True
+                    return True
+
+    file_writefile_dict[filename] = False
+    return False
 
 
 def is_crashing_all(filename):

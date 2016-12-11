@@ -68,12 +68,14 @@ def analyze_logs(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_anal
     file_sleep_dict = {}
     file_crash_dict = {}
     file_error_dict = {}
+    file_writefile_dict = {}
     dict_list = [db_file_malware_dict,
                  file_corrupted_processes_dict,
                  file_terminate_dict,
                  file_sleep_dict,
                  file_crash_dict,
-                 file_error_dict]
+                 file_error_dict,
+                 file_writefile_dict]
     utils.update_results(results, dict_list)
 
     file_utils.final_output_instructions(
@@ -84,7 +86,8 @@ def analyze_logs(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_anal
         file_terminate_dict,
         file_sleep_dict,
         file_crash_dict,
-        file_error_dict
+        file_error_dict,
+        file_writefile_dict
     )
 
     t2 = time.time()
