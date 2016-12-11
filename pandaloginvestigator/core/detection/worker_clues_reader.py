@@ -67,7 +67,7 @@ def is_corrupted(filename, cur_proc, corrupted_dict):
     :param corrupted_dict:
     :return: True if cur_proc is in corrupted_dict, else False.
     """
-    corrupted_procs = corrupted_dict[filename]
+    corrupted_procs = corrupted_dict.get(filename, [])
     for proc in corrupted_procs:
         if proc[0] == cur_proc:
             return True
