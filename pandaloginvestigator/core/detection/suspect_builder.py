@@ -134,8 +134,10 @@ def normalize_suspects(suspects):
 def add_status_modifier(suspects, analysis_results):
     """
     Add a modifier for the special status conditions.
-    2 points for termination of all processes
+    1 point for termination of all processes
     1 point for sleep on all processes
+    1 point for termination of all processes without having written
+    at least one file
 
     :param suspects:
     :param analysis_results:
@@ -143,10 +145,14 @@ def add_status_modifier(suspects, analysis_results):
     """
     terminating_dict = analysis_results[4]
     sleeping_dict = analysis_results[5]
+    filewrite_dict = analysis_results[8]
     for filename in suspects:
         if terminating_dict.get(filename, False):
             for proc in suspects[filename]:
                 suspects[filename][proc] += 2
         if sleeping_dict.get(filename, False):
+            for proc in suspects[filename]:
+                suspects[filename][proc] += 1
+        if terminating_dict.get(filename, False) and filewrite_dict.get(filename, False):
             for proc in suspects[filename]:
                 suspects[filename][proc] += 1

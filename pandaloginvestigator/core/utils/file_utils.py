@@ -177,6 +177,7 @@ def output_clues(dir_results_path, clues_dict, out_file_name):
 
     :param dir_results_path:
     :param clues_dict:
+    :param out_file_name:
     :return:
     """
     with open(dir_results_path + '/' + out_file_name, 'w', encoding='utf-8', errors='replace') as clues_file:
@@ -247,7 +248,8 @@ def status_from_analysis(line):
     return [ast.literal_eval(line[1]),
             ast.literal_eval(line[3]),
             ast.literal_eval(line[5]),
-            ast.literal_eval(line[7])]
+            ast.literal_eval(line[7]),
+            ast.literal_eval(line[9])]
 
 
 def values_from_syscalls(line):

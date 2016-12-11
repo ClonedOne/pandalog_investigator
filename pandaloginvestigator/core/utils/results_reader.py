@@ -8,7 +8,6 @@ import os
 logger = logging.getLogger(__name__)
 
 
-
 def read_data(dir_results_path, target):
     """
     Wrapper used to provide the correct data to both plotter methods.
@@ -39,6 +38,7 @@ def read_result_instr(dir_results_path):
     sleeping_dict = {}
     crashing_dict = {}
     error_dict = {}
+    writefile_dict = {}
     file_path = dir_results_path + '/analysis.txt'
     with open(file_path, 'r', encoding='utf-8', errors='replace') as resfile:
         last_file_name = ''
@@ -60,6 +60,7 @@ def read_result_instr(dir_results_path):
                 sleeping_dict[last_file_name] = status[1]
                 crashing_dict[last_file_name] = status[2]
                 error_dict[last_file_name] = status[3]
+                writefile_dict[last_file_name] = status[4]
     return [
         instr_totals_dict,
         instr_from_db_dict,
@@ -68,7 +69,8 @@ def read_result_instr(dir_results_path):
         terminating_dict,
         sleeping_dict,
         crashing_dict,
-        error_dict
+        error_dict,
+        writefile_dict
     ]
 
 
@@ -153,5 +155,4 @@ def read_clues_regkey(dir_results_path):
                 last_file_name = file_utils.filename_from_analysis(line)
             else:
                 lines.append(line)
-
     return clues_dict
