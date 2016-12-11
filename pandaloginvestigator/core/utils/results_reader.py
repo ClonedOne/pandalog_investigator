@@ -49,10 +49,8 @@ def read_result_instr(dir_results_path):
                 if line != string_utils.no_instructions:
                     values = file_utils.values_from_analysis(line)
                     instr_from_db_dict[last_file_name] = int(values[0])
-                    if int(values[1]) > 0:
-                        created_dict[last_file_name] = int(values[1])
-                    if int(values[2]) > 0:
-                        written_dict[last_file_name] = int(values[2])
+                    created_dict[last_file_name] = int(values[1])
+                    written_dict[last_file_name] = int(values[2])
                     instr_totals_dict[last_file_name] = int(values[3])
             elif string_utils.instruction_terminating in line:
                 status = file_utils.status_from_analysis(line)

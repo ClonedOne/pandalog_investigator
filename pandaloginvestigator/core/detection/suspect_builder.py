@@ -45,7 +45,7 @@ def build_suspects(dir_results_path, dir_clues_path, core_num):
     file_utils.output_clues(dir_results_path, clues, 'total_clues_corrupted_only.txt')
     analysis_results = results_reader.read_data(dir_results_path, string_utils.target_i)
     add_status_modifier(suspects, analysis_results)
-    normalize_suspects(suspects)
+    #normalize_suspects(suspects)
 
     file_utils.output_suspects(dir_results_path, suspects)
 
@@ -138,21 +138,28 @@ def add_status_modifier(suspects, analysis_results):
     1 point for sleep on all processes
     1 point for termination of all processes without having written
     at least one file
+    1 point for termination of all processes without having executed
+    any instructions with spawned/memory written processes
 
     :param suspects:
     :param analysis_results:
     :return:
     """
+    created_dict = analysis_results[2]
+    written_dict = analysis_results[3]
     terminating_dict = analysis_results[4]
     sleeping_dict = analysis_results[5]
     filewrite_dict = analysis_results[8]
     for filename in suspects:
+        modifier = 0
         if terminating_dict.get(filename, False):
-            for proc in suspects[filename]:
-                suspects[filename][proc] += 2
+            modifier += 1
+            if not filewrite_dict.get(filename, False):
+                modifier += 1
+            if created_dict.get(filename, 0) + written_dict.get(filename, 0) == 0:
+                modifier += 1
         if sleeping_dict.get(filename, False):
-            for proc in suspects[filename]:
-                suspects[filename][proc] += 1
-        if terminating_dict.get(filename, False) and filewrite_dict.get(filename, False):
-            for proc in suspects[filename]:
-                suspects[filename][proc] += 1
+            modifier += 1
+
+        for proc in suspects[filename]:
+            suspects[filename][proc] += modifier
