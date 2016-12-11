@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def build_suspects(dir_results_path, dir_clues_path, core_num):
     corrupted_dict = results_reader.read_result_corrupted(dir_results_path)
-    clues = initalize_clues(corrupted_dict)
+    clues = initialize_clues(corrupted_dict)
 
     clues_regkey_dict = results_reader.read_clues_regkey(dir_results_path)
     add_clues(clues, clues_regkey_dict)
@@ -45,12 +45,12 @@ def build_suspects(dir_results_path, dir_clues_path, core_num):
     file_utils.output_clues(dir_results_path, clues, 'total_clues_corrupted_only.txt')
     analysis_results = results_reader.read_data(dir_results_path, string_utils.target_i)
     add_status_modifier(suspects, analysis_results)
-    #normalize_suspects(suspects)
+    normalize_suspects(suspects)
 
     file_utils.output_suspects(dir_results_path, suspects)
 
 
-def initalize_clues(corrupted_dict):
+def initialize_clues(corrupted_dict):
     """
     Initialize the clue dictionary to empty clues.
 
@@ -156,7 +156,7 @@ def add_status_modifier(suspects, analysis_results):
             modifier += 1
             if not filewrite_dict.get(filename, False):
                 modifier += 1
-            if created_dict.get(filename, 0) + written_dict.get(filename, 0) == 0:
+            if (created_dict.get(filename, 0) + written_dict.get(filename, 0)) == 0:
                 modifier += 1
         if sleeping_dict.get(filename, False):
             modifier += 1
