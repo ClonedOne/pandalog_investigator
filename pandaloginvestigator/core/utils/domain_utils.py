@@ -89,19 +89,17 @@ def repr_malware(malware):
                 result += '| {:20s} '.format(str(sub_entry))
             result += '|\n'
 
-        result += '\n{}\n'.format(string_utils.text_written_file)
-        result += '| {:20s} | {:20s} |\n'.format(
-            'Instruction',
-            'File path'
-        )
-        for entry in malware.get_written_files(pid):
-            for sub_entry in entry:
-                result += '| {:20s} '.format(str(sub_entry))
-            result += '|\n'
-
         result += '\n{}\n'.format(string_utils.text_spec_status)
-        result += '| {:20s} | {:20s} |\n'.format(string_utils.text_crash, string_utils.text_raise_err)
-        result += '| {:20s} | {:20s} |\n\n'.format(str(malware.get_crash(pid)), str(malware.get_error(pid)))
+        result += '| {:20s} | {:20s} | {:20s} |\n'.format(
+            string_utils.text_crash,
+            string_utils.text_raise_err,
+            string_utils.text_written_file
+        )
+        result += '| {:20s} | {:20s} | {:20s} |\n\n'.format(
+            str(malware.get_crash(pid)),
+            str(malware.get_error(pid)),
+            str(malware.get_written_files(pid))
+        )
 
     executed = malware.get_total_executed_instructions()
     result += string_utils.text_executed + '\n'

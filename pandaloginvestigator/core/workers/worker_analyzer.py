@@ -214,7 +214,7 @@ def writes_at_least_one_file(filename):
         malware = db_file_malware_dict[filename]
         pid_list = malware.get_pid_list()
         for pid in pid_list:
-            if len(malware.get_written_files(pid)) > 0:
+            if malware.get_written_files(pid):
                 file_writefile_dict[filename] = True
                 return True
     if filename in file_corrupted_processes_dict:
@@ -222,7 +222,7 @@ def writes_at_least_one_file(filename):
         for malware in malwares:
             pid_list = malware.get_pid_list()
             for pid in pid_list:
-                if len(malware.get_written_files(pid)) > 0:
+                if malware.get_written_files(pid):
                     file_writefile_dict[filename] = True
                     return True
 
@@ -617,5 +617,4 @@ def is_writing_file(line, filename):
         malware = is_corrupted_process(subject_name, subject_pid, filename)
 
     if malware and malware.has_active_pid() and malware.is_active_pid(subject_pid):
-        file_path = panda_utils.get_written_file_path(line)
-        malware.add_written_file(subject_pid, current_instruction, file_path)
+        malware.add_written_file(subject_pid)

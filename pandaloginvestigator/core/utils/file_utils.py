@@ -25,6 +25,7 @@ def output_on_file_instructions(filename, process_dict, inverted_process_dict, d
     :param sleeping_all:
     :param crashing_all:
     :param error_all:
+    :param writes_file:
     :return:
     """
     with open(dir_analyzed_logs + '/' + filename, 'w', encoding='utf-8', errors='replace') as outfile:
@@ -98,6 +99,7 @@ def final_output_instructions(dir_results_path, filenames, db_file_malware_dict,
     :param file_sleep_dict:
     :param file_crash_dict:
     :param file_error_dict:
+    :param file_writefile_dict:
     :return:
     """
     with open(dir_results_path + '/corrupted_processes.txt', 'w', encoding='utf-8', errors='replace') as cp_file:

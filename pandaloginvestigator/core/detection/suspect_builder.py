@@ -121,7 +121,7 @@ def normalize_suspects(suspects):
     :param suspects:
     :return:
     """
-    max_val = 0.0
+    max_val = 1.0
     for filename, processes in suspects.items():
         for process, cur_val in processes.items():
             if cur_val > max_val:

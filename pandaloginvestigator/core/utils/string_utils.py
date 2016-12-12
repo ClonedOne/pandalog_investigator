@@ -48,10 +48,10 @@ text_sleep = 'NtDelayExecution occurrences:'
 text_spec_status = 'Special status conditions:'
 text_crash = 'Crashing'
 text_raise_err = 'Raising hard error'
+text_written_file = 'Written files'
 text_spawned = 'Spawned processes:'
 text_terminated = 'Terminated processes:'
 text_written = 'Memory written processes:'
-text_written_file = 'Written files:'
 text_executed = 'Instructions executed by all pids:'
 
 
