@@ -29,3 +29,10 @@
  * 005b80688b5904   |   90  |   Terminated  |   Sleep
  * second.exe       |   2   |   Terminated
  * fifth.exe        |   5   |   Terminated  |   Sleep
+
+####Written files:
+
+ * 005b80688b5904   |   20  |
+ * 005b80688b5904   |   90  |
+ * second.exe       |   2   |
+ * fifth.exe        |   5   |   \Windows\system32\mssitlb.dll
