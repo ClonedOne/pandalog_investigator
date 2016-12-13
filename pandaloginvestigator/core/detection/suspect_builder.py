@@ -115,20 +115,16 @@ def sum_suspects(clues, corrupted_dict):
 
 def normalize_suspects(suspects):
     """
-    Normalize the values in suspects dictionary to obtain an
-    index between 0 and 1
+    Normalize the values in suspects dictionary. As reference use
+    the suspect value of PaFish, a known sandbox evasion test.
 
     :param suspects:
     :return:
     """
-    max_val = 1.0
+    pafish_val = 11.0
     for filename, processes in suspects.items():
         for process, cur_val in processes.items():
-            if cur_val > max_val:
-                max_val = cur_val
-    for filename, processes in suspects.items():
-        for process, cur_val in processes.items():
-            processes[process] = cur_val / max_val
+            processes[process] = cur_val / pafish_val
 
 
 def add_status_modifier(suspects, analysis_results):

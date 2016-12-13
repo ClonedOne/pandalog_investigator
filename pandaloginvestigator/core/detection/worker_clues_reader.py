@@ -27,7 +27,7 @@ def work(data_pack):
 
     for filename in filenames:
         with open(dir_clues_path + '/' + filename, encoding='utf-8', errors='replace') as clue_file:
-            filename = filename[:-10]
+            filename = filename[:-7]
             new_clue = Clue(filename)
             cur_features = [None] * 7
 
