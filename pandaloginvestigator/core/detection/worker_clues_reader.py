@@ -38,7 +38,7 @@ def work(data_pack):
 
                     if is_corrupted(filename, cur_proc, corrupted_dict):
                         if int(cur_features[5]) >= 15:
-                            tag_inst = 'oversize'
+                            tag_inst = string_utils.dangerous_instruction[0]
                         else:
                             tag_inst = cur_features[3]
                         new_clue.add_dangerous_instructions(cur_proc, tag_inst)

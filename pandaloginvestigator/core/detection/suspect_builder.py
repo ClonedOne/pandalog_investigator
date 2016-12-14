@@ -86,6 +86,8 @@ def sum_suspects(clues, corrupted_dict):
     :return: dictionary mapping file names to int
     """
     suspects = {}
+    # Used to reflect the danger related to those instructions
+    danger = string_utils.dangerous_instruction
     for filename in clues:
         if filename in corrupted_dict:
             original_proc = None
@@ -108,6 +110,8 @@ def sum_suspects(clues, corrupted_dict):
                     for key in sub_dict:
                         if key not in already_considered:
                             acc_value += 1
+                            if key in danger:
+                                acc_value += 5
                             already_considered.add(key)
             suspects[filename] = {original_proc: acc_value}
     return suspects

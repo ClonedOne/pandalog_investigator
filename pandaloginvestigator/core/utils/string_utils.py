@@ -68,13 +68,12 @@ instruction_bytes = 'Instruction bytes'
 target_i = 'instructions'
 target_s = 'syscalls'
 
-
 # System calls used to access registry keys
 tag_open_key = 'nt_open_key'
 tag_query_key = 'nt_query_value_key'
 
 # Interesting registry keys
-tag_keys = [
+tag_keys = (
     'HARDWARE\\DEVICEMAP\\Scsi\\Scsi Port 0\\Scsi Bus 0\\Target Id 0\\Logical Unit Id 0',
     'HARDWARE\\Description\\System',
     'HARDWARE\\ACPI\\DSDT\\VBOX__',
@@ -82,7 +81,10 @@ tag_keys = [
     'HARDWARE\\ACPI\\RSDT\\VBOX__',
     'SOFTWARE\\Oracle\\VirtualBox Guest Additions',
     'HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Services\\Disk\\Enum'
-]
+)
 
 # Values to be checked inside the keys
-tag_values = ['SystemBiosDate', 'SystemBiosVersion', 'VideoBiosVersion', 'QEMU', 'VMWARE', 'VBOX']
+tag_values = ('SystemBiosDate', 'SystemBiosVersion', 'VideoBiosVersion', 'QEMU', 'VMWARE', 'VBOX')
+
+# Particularly dangerous instruction tags
+tag_dangerous = ('oversize', 'int1')
