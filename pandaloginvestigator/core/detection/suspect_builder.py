@@ -87,7 +87,7 @@ def sum_suspects(clues, corrupted_dict):
     """
     suspects = {}
     # Used to reflect the danger related to those instructions
-    danger = string_utils.dangerous_instruction
+    danger = string_utils.tag_dangerous
     for filename in clues:
         if filename in corrupted_dict:
             original_proc = None
