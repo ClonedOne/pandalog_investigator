@@ -140,11 +140,15 @@ def add_status_modifier(suspects, analysis_results):
     at least one file
     1 point for termination of all processes without having executed
     any instructions with spawned/memory written processes
+    1 point for termination with an instruction count below the
+    second population of the 25th percentile
 
     :param suspects:
     :param analysis_results:
     :return:
     """
+    inside_first_population = 40000000
+    totals_dict = analysis_results[0]
     created_dict = analysis_results[2]
     written_dict = analysis_results[3]
     terminating_dict = analysis_results[4]
@@ -158,6 +162,9 @@ def add_status_modifier(suspects, analysis_results):
                 modifier += 1
             if (created_dict.get(filename, 0) + written_dict.get(filename, 0)) == 0:
                 modifier += 1
+            if totals_dict.get(filename, 0) < inside_first_population:
+                modifier += 1
+
         if sleeping_dict.get(filename, False):
             modifier += 1
 
