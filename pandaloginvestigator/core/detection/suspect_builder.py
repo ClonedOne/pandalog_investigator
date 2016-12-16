@@ -42,8 +42,9 @@ def build_suspects(dir_results_path, dir_clues_path, core_num):
     add_clues(clues, clues_from_panda)
     file_utils.output_clues(dir_results_path, clues, 'total_clues.txt')
     suspects = sum_suspects(clues, corrupted_dict)
-    file_utils.output_clues(dir_results_path, clues, 'total_clues_corrupted_only.txt')
     analysis_results = results_reader.read_data(dir_results_path, string_utils.target_i)
+    suspects = remove_crashed(suspects, analysis_results[6], analysis_results[7])
+    file_utils.output_clues(dir_results_path, clues, 'total_clues_corrupted_only.txt')
     add_status_modifier(suspects, analysis_results)
     normalize_suspects(suspects)
 
@@ -170,3 +171,21 @@ def add_status_modifier(suspects, analysis_results):
 
         for proc in suspects[filename]:
             suspects[filename][proc] += modifier
+
+
+def remove_crashed(suspects, crashing_dict, error_dict):
+    """
+    Remove crashed and error rising samples from the suspects.
+
+    :param suspects:
+    :param crashing_dict:
+    :param error_dict:
+    :return:
+    """
+    clean_suspects = {}
+    for key, value in suspects.items():
+        if crashing_dict.get(key, False) or error_dict.get(key, False):
+            continue
+        else:
+            clean_suspects[key] = value
+    return clean_suspects
