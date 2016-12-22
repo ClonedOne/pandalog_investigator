@@ -148,7 +148,7 @@ def add_status_modifier(suspects, analysis_results):
     :param analysis_results:
     :return:
     """
-    inside_first_population = 40000000
+    inside_first_population = 80000000
     totals_dict = analysis_results[0]
     created_dict = analysis_results[2]
     written_dict = analysis_results[3]
