@@ -6,7 +6,9 @@ import ast
 
 # ## OUTPUT UTILITY METHODS ##
 
-def output_on_file_instructions(filename, process_dict, inverted_process_dict, dir_analyzed_logs, db_file_malware_dict, file_corrupted_processes_dict, terminating_all, sleeping_all, crashing_all, error_all, writes_file):
+def output_on_file_instructions(filename, process_dict, inverted_process_dict, dir_analyzed_logs, db_file_malware_dict,
+                                file_corrupted_processes_dict, terminating_all, sleeping_all, crashing_all,
+                                error_all, writes_file):
     """
     Output on file the analyzed content of one log file. For each malware object
     related to the specified file name it prints the content of each malware pid
@@ -84,7 +86,9 @@ def output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, sys
         outfile.write('{} {}\n'.format(string_utils.syscall_final, total_syscall))
 
 
-def final_output_instructions(dir_results_path, filenames, db_file_malware_dict, file_corrupted_processes_dict, file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict, file_writefile_dict):
+def final_output_instructions(dir_results_path, filenames, db_file_malware_dict, file_corrupted_processes_dict,
+                              file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict,
+                              file_writefile_dict):
     """
     Prints the final output on file. The final output contains aggregate data
     regarding the totality of the analyzed logs. For each filename and each

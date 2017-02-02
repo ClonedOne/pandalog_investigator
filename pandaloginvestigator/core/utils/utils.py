@@ -131,3 +131,25 @@ def invert_dictionary(chosen_dict):
             inverted_dict[count] = []
             inverted_dict[count].append(malware_name)
     return inverted_dict
+
+
+def input_with_modifiers(small_disk, max_num, dir_pandalogs_path, dir_unpacked_path):
+    """
+    Given the small_disk and max_num modifiers, returns the appropriate
+    values for the max_num and filenames to be used by the workers.
+
+    :param small_disk:
+    :param max_num:
+    :param dir_pandalogs_path:
+    :param dir_unpacked_path:
+    :return:
+    """
+    if small_disk:
+        filenames = sorted(strip_filename_ext(os.listdir(dir_pandalogs_path)))
+    else:
+        filenames = sorted(os.listdir(dir_unpacked_path))
+    if max_num:
+        max_num = int(max_num)
+    else:
+        max_num = len(filenames)
+    return filenames, max_num

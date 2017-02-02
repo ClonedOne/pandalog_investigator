@@ -1,5 +1,9 @@
 #Expected results
 
+All the following results are in the format:
+
+ * process name     |   pid |   Value
+
 ###Test file 4fc89505-75a0-4734-ac6d-1ebbdca28caa:
 
 ####Corrupted Processes:
