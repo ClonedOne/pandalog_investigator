@@ -43,12 +43,11 @@ class PandalogInvestigatorController(ArgparseController):
     want to operate, or provide a list of log files or leave blank for all.''',
             arguments=[
                 (['-n', '--num'], dict(help=help_n, action='store')),
-                (['-u', '--unpack'], dict(help=help_u, action='store_true')),
                 (['-f', '--file'], dict(help=help_f, action='store'))
             ])
     def unpack(self):
         logger.info(
-            'Unpacking logs. Received num option with value {} and file option with value {}'.format(
+            'Unpacking logs. Received num option with value {} and file list option with value {}'.format(
                 self.app.pargs.num,
                 self.app.pargs.file
             )
@@ -66,20 +65,33 @@ class PandalogInvestigatorController(ArgparseController):
     leave blank for all.''',
             arguments=[
                 (['-n', '--num'], dict(help=help_n, action='store')),
-                (['-u', '--unpack'], dict(help=help_u, action='store_true'))
+                (['-u', '--unpack'], dict(help=help_u, action='store_true')),
+                (['--small-disk'], dict(help=help_sd, action='store_true'))
             ])
     def translate(self):
         logger.info(
-            'Translating logs. Received num option with value {}'.format(
-                    self.app.pargs.num
+            'Translating logs. Received num option with value {} {} {}'.format(
+                self.app.pargs.unpack,
+                self.app.pargs.num,
+                self.app.pargs.small_disk
             )
         )
+        unpack = False
+        max_num = None
+        small_disk = False
         if self.app.pargs.unpack:
-            self.unpack()
+            unpack = True
         if self.app.pargs.num:
-            translate_command(self.app, int(self.app.pargs.num))
-        else:
-            translate_command(self.app)
+            max_num = self.app.pargs.num
+        if self.app.pargs.small_disk:
+            small_disk = True
+            if unpack:
+                unpack = False
+        if unpack:
+            self.unpack()
+
+        translate_command(self.app, max_num, small_disk)
+
 
     @expose(help='''Analysis command: identify malwares and corrupted processes
     and counts the instruction executed. Then outputs the results on file,

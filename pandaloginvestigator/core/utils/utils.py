@@ -2,7 +2,6 @@ from collections import defaultdict
 import os
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -65,7 +64,7 @@ def merge_dict_dict(dict1, dict2):
     return dict_res
 
 
-def divide_workload(item_list, core_num, max_num=None):
+def divide_workload(item_list, core_num, max_num):
     """
     Given a list of items and the number of processing cores available compute
     a list of items lists of equal dimension, one for each core.
@@ -79,15 +78,14 @@ def divide_workload(item_list, core_num, max_num=None):
     j = 0
     c = 0
     item_sublists = defaultdict(list)
-    if max_num:
-        max_num = int(max_num)
+
     for item in item_list:
         item_sublists[j].append(item)
         j = (j + 1) % core_num
         c += 1
         if c == max_num:
             break
-    if len(item_list) < core_num:
+    if len(item_list) < core_num or max_num < core_num:
         while j < core_num:
             item_sublists[j] = []
             j += 1
@@ -133,22 +131,36 @@ def invert_dictionary(chosen_dict):
     return inverted_dict
 
 
-def input_with_modifiers(small_disk, max_num, dir_pandalogs_path, dir_unpacked_path):
+def input_with_modifiers(dir_unpacked_path, dir_pandalogs_path, small_disk=None, max_num=None, file_list=None,
+                         unpacking=False):
     """
     Given the small_disk and max_num modifiers, returns the appropriate
     values for the max_num and filenames to be used by the workers.
 
+    :param dir_unpacked_path:
+    :param dir_pandalogs_path:
     :param small_disk:
     :param max_num:
-    :param dir_pandalogs_path:
-    :param dir_unpacked_path:
+    :param file_list:
+    :param unpacking:
     :return:
     """
-    if small_disk:
+    filenames = []
+    if file_list:
+        logger.info('Input modifier: file_list')
+        with open(file_list, 'r', encoding='utf-8', errors='replace') as list_file:
+            for line in list_file:
+                filenames.append(line.strip())
+    elif small_disk:
+        logger.info('Input modifier: small_disk')
+        filenames = sorted(strip_filename_ext(os.listdir(dir_pandalogs_path)))
+    elif unpacking:
+        logger.info('Input modifier: unpacking')
         filenames = sorted(strip_filename_ext(os.listdir(dir_pandalogs_path)))
     else:
         filenames = sorted(os.listdir(dir_unpacked_path))
     if max_num:
+        logger.info('Input modifier: max_num')
         max_num = int(max_num)
     else:
         max_num = len(filenames)

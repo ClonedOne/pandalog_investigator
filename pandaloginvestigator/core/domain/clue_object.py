@@ -65,8 +65,8 @@ class Clue:
 
     def get_processes(self):
         processes = set(self.opened_keys.keys())
-        processes = processes | set(self.queried_key_values.keys())
-        processes = processes | set(self.dangerous_instructions.keys())
+        processes |= set(self.queried_key_values.keys())
+        processes |= set(self.dangerous_instructions.keys())
         return processes
 
     def get_everything_proc(self, process):

@@ -6,7 +6,6 @@ from pandaloginvestigator.core.utils import db_manager
 import time
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -35,8 +34,8 @@ def analyze_logs(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_anal
     t1 = time.time()
 
     db_file_malware_name_map = db_manager.acquire_malware_file_dict(dir_database_path)
-    filenames, max_num = utils.input_with_modifiers(small_disk, max_num, dir_pandalogs_path, dir_unpacked_path)
-
+    filenames, max_num = utils.input_with_modifiers(dir_unpacked_path, dir_pandalogs_path, small_disk=small_disk,
+                                                    max_num=max_num)
     file_names_sublists = utils.divide_workload(filenames, core_num, max_num)
     formatted_input = utils.format_worker_input(
         core_num,

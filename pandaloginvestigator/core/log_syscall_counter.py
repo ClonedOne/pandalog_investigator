@@ -1,4 +1,4 @@
-from pandaloginvestigator.core.utils import  domain_utils
+from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import db_manager
 from pandaloginvestigator.core.utils import utils
 from pandaloginvestigator.core.utils import file_utils
@@ -36,7 +36,8 @@ def count_syscalls(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_da
 
     sys_call_dict = domain_utils.get_syscalls()
     db_file_malware_name_map = db_manager.acquire_malware_file_dict(dir_database_path)
-    filenames, max_num = utils.input_with_modifiers(small_disk, max_num, dir_pandalogs_path, dir_unpacked_path)
+    filenames, max_num = utils.input_with_modifiers(dir_unpacked_path, dir_pandalogs_path, small_disk=small_disk,
+                                                    max_num=max_num)
 
     file_names_sublists = utils.divide_workload(filenames, core_num, max_num)
     formatted_input = utils.format_worker_input(

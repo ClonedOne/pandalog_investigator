@@ -5,7 +5,6 @@ import os
 import time
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -26,20 +25,18 @@ def unpack_logs(dir_pandalogs_path, dir_panda_path, dir_unpacked_path, core_num,
     """
     logger.info('Starting unpacking operation with max_num = ' + str(max_num))
     t1 = time.time()
-    if file_list:
-        filenames = []
-        with open(file_list, 'r', encoding='utf-8', errors='replace') as list_file:
-            for line in list_file:
-                filenames.append(line.strip())
-    else:
-        filenames = sorted(os.listdir(dir_pandalogs_path))
-    if max_num:
-        max_num = int(max_num)
-    else:
-        max_num = len(filenames)
+    filenames, max_num = utils.input_with_modifiers(dir_unpacked_path, dir_pandalogs_path, file_list=file_list,
+                                                    max_num=max_num, unpacking=True)
     file_names_sublists = utils.divide_workload(filenames, core_num, max_num)
-    formatted_input = utils.format_worker_input(core_num, file_names_sublists,
-                    (dir_pandalogs_path, dir_unpacked_path, dir_panda_path))
+    formatted_input = utils.format_worker_input(
+        core_num,
+        file_names_sublists,
+        (
+            dir_pandalogs_path,
+            dir_unpacked_path,
+            dir_panda_path
+        )
+    )
     pool = Pool(processes=core_num)
     pool.map(worker_unpacker.work, formatted_input)
     pool.close()

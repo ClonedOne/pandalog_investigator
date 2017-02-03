@@ -8,7 +8,7 @@ import os
 logger = logging.getLogger(__name__)
 
 
-def translate_command(app, max_num=None):
+def translate_command(app, file_list=None, max_num=None):
     try:
         dir_pandalogs_path = app.config.get('pandaloginvestigator', 'dir_pandalogs_path')
     except:
@@ -34,12 +34,13 @@ def translate_command(app, max_num=None):
         os.makedirs(dir_translated_path)
 
     logger.debug(
-        'Translate command with parameters: {}, {}, {}, {}, {}'.format(
+        'Translate command with parameters: {}, {}, {}, {}, {}, {}'.format(
             dir_pandalogs_path,
             dir_unpacked_path,
             dir_translated_path,
             core_num,
-            str(max_num)
+            file_list,
+            str(max_num),
         )
     )
     syscall_dict = domain_utils.get_syscalls()
@@ -49,5 +50,6 @@ def translate_command(app, max_num=None):
         syscall_dict,
         dir_translated_path,
         core_num,
+        file_list,
         max_num
     )

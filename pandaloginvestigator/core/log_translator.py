@@ -5,11 +5,11 @@ import os
 import time
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
-def translate_logs(dir_pandalogs_path, dir_unpacked_path, syscall_dict, dir_translated_path, core_num, max_num=None):
+def translate_logs(dir_pandalogs_path, dir_unpacked_path, syscall_dict, dir_translated_path, core_num, max_num=None,
+                   file_list=None):
     """
     Convert system call numbers into explicit system call names.
     Iterate through all the log files in the folder specified in the configuration. Generate equal lists of files to
@@ -22,11 +22,13 @@ def translate_logs(dir_pandalogs_path, dir_unpacked_path, syscall_dict, dir_tran
     :param dir_translated_path:
     :param core_num:
     :param max_num:
+    :param file_list:
     :return:
     """
     logger.info('Starting translating operation with max_num = ' + str(max_num))
     t1 = time.time()
-    filenames = sorted(utils.strip_filename_ext(os.listdir(dir_pandalogs_path)))
+    filenames, max_num = utils.input_with_modifiers(dir_unpacked_path, dir_pandalogs_path, file_list=file_list,
+                                                    max_num=max_num, unpacking=True)
     file_names_sublists = utils.divide_workload(filenames, core_num, max_num)
     formatted_input = utils.format_worker_input(
         core_num,
