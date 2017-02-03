@@ -20,8 +20,8 @@
             "level": "DEBUG",
             "formatter": "default",
             "filename": "debug.log",
-            "maxBytes": 10485760,
-            "backupCount": 9,
+            "max_bytes": 10485760,
+            "backup_count": 9,
             "encoding": "utf8"
         },
 
@@ -30,8 +30,8 @@
             "level": "ERROR",
             "formatter": "default",
             "filename": "errors.log",
-            "maxBytes": 10485760,
-            "backupCount": 9,
+            "max_bytes": 10485760,
+            "backup_count": 9,
             "encoding": "utf8"
         }
     },

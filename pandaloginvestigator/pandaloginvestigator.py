@@ -1,6 +1,6 @@
+from pandaloginvestigator.cli.PandalogInvestigatorController import PandalogInvestigatorController
 from cement.core.foundation import CementApp
 from .core.utils import multi_logging
-from .cli.PandalogInvestigatorController import PandalogInvestigatorController
 
 
 class PandalogInvestigatorApp(CementApp):
@@ -9,6 +9,7 @@ class PandalogInvestigatorApp(CementApp):
         extensions = ['json']
         config_handler = 'json'
         base_controller = PandalogInvestigatorController
+        catch_signals = None
 
 
 def main():

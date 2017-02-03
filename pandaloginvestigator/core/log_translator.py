@@ -1,9 +1,8 @@
-from multiprocessing import Pool
 from pandaloginvestigator.core.workers import worker_translator
 from pandaloginvestigator.core.utils import utils
-import os
-import time
+from multiprocessing import Pool
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
