@@ -6,7 +6,7 @@ setup(
     version='0.1',
     author='Giorgio Severi',
     description='Panda logs analysis tool',
-    url='https://ClonedOne@bitbucket.org/ClonedOne/seminar.git',
+    url='https://github.com/ClonedOne/pandalog_investigator',
     install_requires=['numpy', 'cement', 'networkx'],
     packages=find_packages(),
     include_package_data=True,
