@@ -4,7 +4,6 @@ from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import utils
 from multiprocessing import Pool
 import logging
-import os
 import time
 
 logger = logging.getLogger(__name__)
@@ -46,6 +45,7 @@ def detect_reg_key(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_re
     pool = Pool(processes=core_num)
     results = pool.map(worker_regkey_detector.work, formatted_input)
     pool.close()
+    pool.join()
     utils.update_results(results, [suspect_dict, ])
     file_utils.output_clues(dir_results_path, suspect_dict, 'clues_regkey.txt')
     t2 = time.time()

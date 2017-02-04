@@ -1,8 +1,8 @@
+from pandaloginvestigator.core.workers import worker_syscall_counter
 from pandaloginvestigator.core.utils import domain_utils
+from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.utils import db_manager
 from pandaloginvestigator.core.utils import utils
-from pandaloginvestigator.core.utils import file_utils
-from pandaloginvestigator.core.workers import worker_syscall_counter
 from multiprocessing import Pool
 import logging
 import time
@@ -56,7 +56,7 @@ def count_syscalls(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_da
     pool = Pool(processes=core_num)
     results = pool.map(worker_syscall_counter.work, formatted_input)
     pool.close()
-
+    pool.join()
     filename_syscall_dict = {}
     dict_list = [filename_syscall_dict, ]
     utils.update_results(results, dict_list)

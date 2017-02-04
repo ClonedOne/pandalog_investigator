@@ -1,5 +1,5 @@
-from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core import log_syscall_counter
+from pandaloginvestigator.core.utils import string_utils
 import logging
 import os
 

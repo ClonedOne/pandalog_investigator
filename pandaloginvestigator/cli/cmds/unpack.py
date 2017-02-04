@@ -1,8 +1,7 @@
-from pandaloginvestigator.core import log_unpacker
 from pandaloginvestigator.core.utils import string_utils
+from pandaloginvestigator.core import log_unpacker
 import logging
 import os
-import traceback
 
 
 logger = logging.getLogger(__name__)

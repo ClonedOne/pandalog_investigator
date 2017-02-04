@@ -8,8 +8,8 @@ from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.utils import utils
 from multiprocessing import Pool
 import logging
-import os
 import time
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +37,7 @@ def build_suspects(dir_results_path, dir_clues_path, core_num):
         pool = Pool(processes=core_num)
         results = pool.map(worker_clues_reader.work, formatted_input)
         pool.close()
+        pool.join()
         logger.info('Total clue reading time: ' + str(time.time() - t1))
         utils.update_results(results, [clues_from_panda, ])
     add_clues(clues, clues_from_panda)

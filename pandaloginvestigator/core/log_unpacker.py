@@ -1,9 +1,8 @@
-from multiprocessing import Pool
 from pandaloginvestigator.core.workers import worker_unpacker
 from pandaloginvestigator.core.utils import utils
-import os
-import time
+from multiprocessing import Pool
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -40,5 +39,6 @@ def unpack_logs(dir_pandalogs_path, dir_panda_path, dir_unpacked_path, core_num,
     pool = Pool(processes=core_num)
     pool.map(worker_unpacker.work, formatted_input)
     pool.close()
+    pool.join()
     t2 = time.time()
     logger.info('Total unpacking time: ' + str(t2 - t1))

@@ -1,9 +1,9 @@
-from cement.ext.ext_argparse import ArgparseController, expose
-from pandaloginvestigator.cli.cmds.unpack import unpack_command
 from pandaloginvestigator.cli.cmds.translate import translate_command
-from pandaloginvestigator.cli.cmds.analyze import analyze_command
 from pandaloginvestigator.cli.cmds.syscalls import syscall_command
+from pandaloginvestigator.cli.cmds.analyze import analyze_command
+from pandaloginvestigator.cli.cmds.unpack import unpack_command
 from pandaloginvestigator.cli.cmds.detect import detect_command
+from cement.ext.ext_argparse import ArgparseController, expose
 from pandaloginvestigator.cli.cmds.graph import graph_command
 import logging
 

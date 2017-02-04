@@ -1,10 +1,10 @@
-from multiprocessing import Pool
-from pandaloginvestigator.core.utils import utils
-from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.workers import worker_analyzer
+from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.utils import db_manager
-import time
+from pandaloginvestigator.core.utils import utils
+from multiprocessing import Pool
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ def analyze_logs(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_anal
     pool = Pool(processes=core_num)
     results = pool.map(worker_analyzer.work, formatted_input)
     pool.close()
-
+    pool.join()
     db_file_malware_dict = {}
     file_corrupted_processes_dict = {}
     file_terminate_dict = {}

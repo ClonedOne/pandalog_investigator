@@ -9,7 +9,6 @@ class PandalogInvestigatorApp(CementApp):
         extensions = ['json']
         config_handler = 'json'
         base_controller = PandalogInvestigatorController
-        catch_signals = None
 
 
 def main():

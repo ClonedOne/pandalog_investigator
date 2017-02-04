@@ -41,5 +41,6 @@ def translate_logs(dir_pandalogs_path, dir_unpacked_path, syscall_dict, dir_tran
     pool = Pool(processes=core_num)
     pool.map(worker_translator.work, formatted_input)
     pool.close()
+    pool.join()
     t2 = time.time()
     logger.info('Total translating time: ' + str(t2 - t1))
