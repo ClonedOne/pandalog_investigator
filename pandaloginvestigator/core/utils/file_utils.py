@@ -200,7 +200,8 @@ def output_suspects(dir_results_path, suspects):
     :return:
     """
     with open(dir_results_path + '/suspects.txt', 'w', encoding='utf-8', errors='replace') as suspects_file:
-        for filename in suspects:
+        sorted_filenames = sorted(list(suspects.keys()))
+        for filename in sorted_filenames:
             suspects_file.write(
                 '{}\t{}\n'.format(string_utils.filename, filename)
             )

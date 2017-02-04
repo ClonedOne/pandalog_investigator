@@ -79,4 +79,4 @@ def detect_command(app, max_num=None, small_disk=False):
             max_num
         )
 
-    suspect_builder.build_suspects(dir_results_path, dir_clues_path, core_num, max_num)
+    suspect_builder.build_suspects(dir_results_path, dir_clues_path, core_num)

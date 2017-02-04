@@ -25,7 +25,7 @@ def build_suspects(dir_results_path, dir_clues_path, core_num):
     t1 = time.time()
     if os.path.exists(dir_clues_path):
         filenames = sorted(os.listdir(dir_clues_path))
-        file_names_sublists = utils.divide_workload(filenames, core_num)
+        file_names_sublists = utils.divide_workload(filenames, core_num, len(filenames))
         formatted_input = utils.format_worker_input(
             core_num,
             file_names_sublists,

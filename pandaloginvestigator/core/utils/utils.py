@@ -64,7 +64,7 @@ def merge_dict_dict(dict1, dict2):
     return dict_res
 
 
-def divide_workload(item_list, core_num, max_num):
+def divide_workload(item_list, core_num, max_num=None):
     """
     Given a list of items and the number of processing cores available compute
     a list of items lists of equal dimension, one for each core.
