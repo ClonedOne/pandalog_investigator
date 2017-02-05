@@ -24,8 +24,8 @@ def read_data(dir_results_path, target):
 
 def read_result_instr(dir_results_path):
     """
-    Read the instruction counting analysis result file in order to generate a
-    list of dictionaries containing the values from the file.
+    Read the instruction counting analysis result file in order to generate a list of dictionaries containing the
+    values from the file.
 
     :param dir_results_path:
     :return: list of dictionaries
@@ -74,8 +74,7 @@ def read_result_instr(dir_results_path):
 
 def read_result_syscall(dir_results_path):
     """
-    Read the system call counting result file in order to generate a dictionary
-    containing the values from the file.
+    Read the system call counting result file in order to generate a dictionary containing the values from the file.
 
     :param dir_results_path:
     :return: list of dictionaries
@@ -94,11 +93,13 @@ def read_result_syscall(dir_results_path):
     return [syscalls_totals_dict, ]
 
 
-def read_result_corrupted(dir_results_path):
+def read_result_corrupted(dir_results_path: str) -> dict:
     """
-    Read the corrupted processes list and return a dictionary containing
-    as key the log file name and as value the structure of related processes.
-    :param dir_results_path:
+    Reads the corrupted processes list form the results file in the specified directory. Returns a dictionary
+    containing as key the log file name. The value of each key is given by a list of tuples in the form (malware,
+    origin, parent). Both malware and parent are tuples of the form (malware_name, malware_pid).
+
+    :param dir_results_path: path to the result folder
     :return: dictionary of corrupted processes by file name
     """
     corrupted_dict = {}
@@ -125,12 +126,14 @@ def read_result_corrupted(dir_results_path):
     return corrupted_dict
 
 
-def read_clues_regkey(dir_results_path):
+def read_clues_regkey(dir_results_path: str) -> dict:
     """
-    Read the registry key clues output file and generate a dictionary of clues
+    Reads the registry key clues output file in the specified folder. Buffers all the lines related to clues of a
+    single log file into a list. Pass the list to the clue_object builder function. Generates a dictionary of clues
+    having as key the log file name and as value the clue_object.
 
-    :param dir_results_path:
-    :return: dictionary of clues by file name
+    :param dir_results_path: path to the result folder
+    :return: dictionary of clue_objects by file name
     """
     clues_dict = {}
     clues_file_path = dir_results_path + '/clues_regkey.txt'

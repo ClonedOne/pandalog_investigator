@@ -19,9 +19,8 @@ def strip_filename_ext(filenames):
 
 def update_results(results, dict_list):
     """
-    Given the results form the workers updates a list of dictionaries with
-    the corresponding partial dictionaries contained in each of
-    the worker sub result.
+    Given the results form the workers updates a list of dictionaries with the corresponding partial dictionaries
+    contained in each of the worker sub result.
 
     :param results:
     :param dict_list:
@@ -37,9 +36,8 @@ def update_results(results, dict_list):
 
 def merge_dict_dict(dict1, dict2):
     """
-    Merge two dictionaries of dictionaries  of int values into
-    a new dictionary of dictionaries of int values where each
-    value is the sum of the values in the original dictionaries.
+    Merge two dictionaries of dictionaries  of int values into a new dictionary of dictionaries of int values where
+    each value is the sum of the values in the original dictionaries.
 
     :param dict1:
     :param dict2:
@@ -66,9 +64,8 @@ def merge_dict_dict(dict1, dict2):
 
 def divide_workload(item_list, core_num, max_num=None):
     """
-    Given a list of items and the number of processing cores available compute
-    a list of items lists of equal dimension, one for each core.
-    'max_num' is a parameter bounding the maximum number of items to divide.
+    Given a list of items and the number of processing cores available compute a list of items lists of equal
+    dimension, one for each core. 'max_num' is a parameter bounding the maximum number of items to divide.
 
     :param item_list:
     :param core_num:
@@ -98,8 +95,7 @@ def divide_workload(item_list, core_num, max_num=None):
 
 def format_worker_input(core_num, item_sublists, fixed_params_list):
     """
-    Generate a list of tuples containing the parameters to pass to worker
-    sub processes.
+    Generate a list of tuples containing the parameters to pass to worker sub processes.
 
     :param core_num:
     :param item_sublists:
@@ -115,8 +111,7 @@ def format_worker_input(core_num, item_sublists, fixed_params_list):
 
 def invert_dictionary(chosen_dict):
     """
-    Given a dictionary returns the inverted dictionary, where each value is
-    considered as a the new key.
+    Given a dictionary returns the inverted dictionary, where each value is considered as a the new key.
 
     :param chosen_dict:
     :return: dictionary containing reverse of passed dictionary
@@ -134,8 +129,8 @@ def invert_dictionary(chosen_dict):
 def input_with_modifiers(dir_unpacked_path, dir_pandalogs_path, small_disk=None, max_num=None, file_list=None,
                          unpacking=False):
     """
-    Given the small_disk and max_num modifiers, returns the appropriate
-    values for the max_num and filenames to be used by the workers.
+    Given the small_disk and max_num modifiers, returns the appropriate values for the max_num and filenames to be
+    used by the workers.
 
     :param dir_unpacked_path:
     :param dir_pandalogs_path:
@@ -151,6 +146,7 @@ def input_with_modifiers(dir_unpacked_path, dir_pandalogs_path, small_disk=None,
         with open(file_list, 'r', encoding='utf-8', errors='replace') as list_file:
             for line in list_file:
                 filenames.append(line.strip())
+                filenames = sorted(filenames)
     elif small_disk:
         logger.info('Input modifier: small_disk')
         filenames = sorted(strip_filename_ext(os.listdir(dir_pandalogs_path)))

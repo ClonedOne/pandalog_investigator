@@ -14,7 +14,16 @@ import os
 logger = logging.getLogger(__name__)
 
 
-def build_suspects(dir_results_path, dir_clues_path, core_num):
+def build_suspects(dir_results_path: str, dir_clues_path: str, core_num: int):
+    """
+    Builds the final list of suspect processes. The outcome is based on the analysis output and the red-pills
+    discovered. It ends by passsing the computed list to the on file output handler.
+
+    :param dir_results_path: path to the result folder
+    :param dir_clues_path: path to the dir containing Investigator plugin results
+    :param core_num: number of cores available
+    :return:
+    """
     corrupted_dict = results_reader.read_result_corrupted(dir_results_path)
     clues = initialize_clues(corrupted_dict)
 
@@ -135,15 +144,10 @@ def normalize_suspects(suspects):
 
 def add_status_modifier(suspects, analysis_results):
     """
-    Add a modifier for the special status conditions.
-    1 point for termination of all processes
-    1 point for sleep on all processes
-    1 point for termination of all processes without having written
-    at least one file
-    1 point for termination of all processes without having executed
-    any instructions with spawned/memory written processes
-    1 point for termination with an instruction count below the
-    second population of the 25th percentile
+    Add a modifier for the special status conditions. 1 point for termination of all processes. 1 point for sleep on
+    all processes. 1 point for termination of all processes without having written at least one file. 1 point for
+    termination of all processes without having executed any instructions in spawned/memory written processes. 1
+    point for termination with an instruction count below the lowest instruction count population.
 
     :param suspects:
     :param analysis_results:

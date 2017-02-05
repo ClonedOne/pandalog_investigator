@@ -10,12 +10,10 @@ def output_on_file_instructions(filename, process_dict, inverted_process_dict, d
                                 file_corrupted_processes_dict, terminating_all, sleeping_all, crashing_all,
                                 error_all, writes_file):
     """
-    Output on file the analyzed content of one log file. For each malware object
-    related to the specified file name it prints the content of each malware pid
-    and sums up the executed instructions. The instruction count is divided into
-    4 separated parts: from_db, created, memory_written and total. Each of these
-    counters consider only the instructions executed by pids whose origin
-    corresponds to the specified one.
+    Output on file the analyzed content of one log file. For each malware object related to the specified file name
+    it prints the content of each malware pid and sums up the executed instructions. The instruction count is divided
+    into 4 separated parts: from_db, created, memory_written and total. Each of these counters consider only the
+    instructions executed by pids whose origin corresponds to the specified one.
 
     :param filename:
     :param process_dict:
@@ -44,7 +42,8 @@ def output_on_file_instructions(filename, process_dict, inverted_process_dict, d
 
         if filename in file_corrupted_processes_dict:
             for malware in file_corrupted_processes_dict[filename]:
-                total_instructions = [sum(x) for x in zip(total_instructions, malware.get_total_executed_instructions())]
+                total_instructions = [sum(x) for x in
+                                      zip(total_instructions, malware.get_total_executed_instructions())]
                 outfile.write(domain_utils.repr_malware(malware) + '\n\n')
 
         outfile.write('{} {}\n'.format(string_utils.instruction_final, total_instructions))
@@ -90,10 +89,9 @@ def final_output_instructions(dir_results_path, filenames, db_file_malware_dict,
                               file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict,
                               file_writefile_dict):
     """
-    Prints the final output on file. The final output contains aggregate data
-    regarding the totality of the analyzed logs. For each filename and each
-    malware_object associated sums up the instruction for each pid, checks if
-    each pid has been terminated and if each pid has called the sleep function.
+    Prints the final output on file. The final output contains aggregate data regarding the totality of the analyzed
+    logs. For each filename and each malware_object associated sums up the instruction for each pid, checks if each
+    pid has been terminated and if each pid has called the sleep function.
 
     :param dir_results_path:
     :param filenames:
@@ -116,12 +114,14 @@ def final_output_instructions(dir_results_path, filenames, db_file_malware_dict,
 
                 if filename in db_file_malware_dict:
                     entry = db_file_malware_dict[filename]
-                    total_instructions = [sum(x) for x in zip(total_instructions, entry.get_total_executed_instructions())]
+                    total_instructions = [sum(x) for x in
+                                          zip(total_instructions, entry.get_total_executed_instructions())]
                     cp_file.write(domain_utils.repr_malware_processes(entry))
 
                 if filename in file_corrupted_processes_dict:
                     for entry in file_corrupted_processes_dict[filename]:
-                        total_instructions = [sum(x) for x in zip(total_instructions, entry.get_total_executed_instructions())]
+                        total_instructions = [sum(x) for x in
+                                              zip(total_instructions, entry.get_total_executed_instructions())]
                         cp_file.write(domain_utils.repr_malware_processes(entry))
 
                 res_file.write(
@@ -177,9 +177,9 @@ def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
             res_file.write('{} {}\n\n'.format(string_utils.syscall_final, total_syscall))
 
 
-def output_clues(dir_results_path, clues_dict, out_file_name):
+def output_clues(dir_results_path: str, clues_dict: dict, out_file_name: str):
     """
-    Prints the list of suspect log files with the suspect elements to a file.
+    Prints the list of suspect log files with the clue elements to a file.
 
     :param dir_results_path:
     :param clues_dict:
@@ -187,7 +187,9 @@ def output_clues(dir_results_path, clues_dict, out_file_name):
     :return:
     """
     with open(dir_results_path + '/' + out_file_name, 'w', encoding='utf-8', errors='replace') as clues_file:
-        for filename, clue in clues_dict.items():
+        filenames = sorted(list(clues_dict.keys()))
+        for filename in filenames:
+            clue = clues_dict[filename]
             clues_file.write(domain_utils.repr_clue(clue) + '\n\n')
 
 
@@ -221,8 +223,8 @@ def output_suspects(dir_results_path, suspects):
 
 def values_from_analysis(line):
     """
-    Utility method to obtain the instruction count values from the relative
-    line in the final analysis output text file.
+    Utility method to obtain the instruction count values from the relative line in the final analysis output text
+    file.
 
     :param line:
     :return: list of values
@@ -234,8 +236,7 @@ def values_from_analysis(line):
 
 def filename_from_analysis(line):
     """
-    Utility method to obtain the file name value from the relative line
-    in the final analysis output text file.
+    Utility method to obtain the file name value from the relative line in the final analysis output text file.
 
     :param line:
     :return: string containing file name
@@ -245,8 +246,8 @@ def filename_from_analysis(line):
 
 def status_from_analysis(line):
     """
-    Utility method to obtain the process status boolean flags from the relative
-    line in the final analysis output text file.
+    Utility method to obtain the process status boolean flags from the relative line in the final analysis output
+    text file.
 
     :param line:
     :return: list of boolean status flags
@@ -261,12 +262,10 @@ def status_from_analysis(line):
 
 def values_from_syscalls(line):
     """
-    Utility method to obtain the system call count values from the relative line
-    in the final analysis output text file.
+    Utility method to obtain the system call count values from the relative line in the final analysis output text
+    file.
 
     :param line:
     :return: int corresponding to system call frequency
     """
     return int(line.strip().split('\t')[1])
-
-
