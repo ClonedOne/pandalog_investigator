@@ -1,6 +1,7 @@
+from pandaloginvestigator.core.utils import string_utils
 import subprocess
-import os
 import logging
+import os
 
 
 # This module handles utility methods which are inherently related to Panda or
@@ -23,7 +24,7 @@ def unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path):
     :return:
     """
     unpack_command = '/pandalog_reader'
-    reduced_filename = filename[:-9] if '.txz.plog' in filename else filename
+    reduced_filename = filename[:-9] if string_utils.ext_pandalog_file in filename else filename
     logger.debug('unpacking = ' + str(filename))
     return_code = subprocess.call(dir_panda_path + unpack_command + " " + dir_pandalogs_path + '/' + filename + " > " +
                                   dir_unpacked_path + '/' + reduced_filename, shell=True)

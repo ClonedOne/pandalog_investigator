@@ -2,6 +2,11 @@
 # inside the application.
 
 
+# File extensions
+ext_investigator_clue = '_ss.txt'
+ext_pandalog_file = '.txz.plog'
+
+
 # Paths relevant to the application.
 dir_unpacked_path = 'dir_unpacked'
 dir_translated_path = 'dir_translated'

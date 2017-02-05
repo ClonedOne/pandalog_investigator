@@ -1,6 +1,6 @@
 from pandaloginvestigator.core.domain.malware_object import Malware
-from pandaloginvestigator.core.domain.clue_object import Clue
 from pandaloginvestigator.core.detection import worker_clues_reader
+from pandaloginvestigator.core.domain.clue_object import Clue
 from pandaloginvestigator.core.utils import results_reader
 from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import string_utils
@@ -205,4 +205,4 @@ def file_names_from_corrupted(corrupted_dict: dict) -> list:
     :return: list of file names containing corrupted processes
     """
     file_names = sorted(list(corrupted_dict.keys()))
-    return [file_name + '_ss.txt' for file_name in file_names]
+    return [file_name + string_utils.ext_investigator_clue for file_name in file_names]
