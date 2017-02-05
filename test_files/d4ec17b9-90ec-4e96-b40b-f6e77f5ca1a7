@@ -1,0 +1,34 @@
+instr=100 pc=0x75d41282 :(process, new_pid, 1, first.exe)
+instr=200 pc=0x75d41282 :(process, new_pid, 20, 0e1d93833d3909)
+instr=210 pc=0x77bb5784 : nt_create_user_process  [ (process, cur, 20, 0e1d93833d3909) ] [ (process, new, 90, 0e1d93833d3909) ] name=[C:\Users\qemu\Desktop\0e1d93833d3909.exe] 
+instr=250 pc=0x75d41282 :(process, new_pid, 90, 0e1d93833d3909)
+instr=255 pc=0x77bb70b2 : nt_any_syscall (num=91)
+instr=260 pc=0x77bb5784 : nt_create_user_process  [ (process, cur, 90, 0e1d93833d3909) ] [ (process, new, 2, second.exe) ] name=[C:\Users\qemu\Desktop\second.exe] 
+instr=270 pc=0x77bb70b2 : nt_terminate_process  [ (process, cur, 90, 0e1d93833d3909) ] [ (process, term, 1, first.exe) ]
+instr=400 pc=0x75d41282 :(process, new_pid, 3, third.exe)
+instr=410 pc=0x77bb5784 : nt_create_user_process  [ (process, cur, 3, third.exe) ] [ (process, new, 4, fourth.exe) ] name=[C:\Users\qemu\Desktop\fourth.exe] 
+instr=500 pc=0x75d41282 :(process, new_pid, 4, fourth.exe)
+instr=550 pc=0x77bb70b2 : nt_terminate_process  [ (process, cur, 4, fourth.exe) ] [ (process, term, 3, third.exe) ]
+instr=600 pc=0x75d41282 :(process, new_pid, 5, fifth.exe)
+instr=650 pc=0x75d41282 :(process, new_pid, 90, 0e1d93833d3909)
+instr=660 pc=0x77bb70b2 : nt_any_syscall (num=98)
+instr=700 pc=0x75d41282 :(process, new_pid, 5, fifth.exe)
+instr=760 pc=0x77bb70b2 : nt_any_syscall (num=98)
+instr=800 pc=0x75d41282 :(process, new_pid, 20, 0e1d93833d3909)
+instr=830 pc=0x77bb6aa4 : nt_write_virtual_memory (process, proc, 20, 0e1d93833d3909)(process, target, 5, fifth.exe)
+instr=900 pc=0x75d41282 :(process, new_pid, 5, fifth.exe)
+instr=950 pc=0x77bb70b2 : nt_any_syscall (num=98)
+instr=1000 pc=0x75d41282 :(process, new_pid, 3, explorer.exe)
+instr=1200 pc=0x77bb70b2 : nt_any_syscall (num=91)
+instr=1300 pc=0x75d41282 :(process, new_pid, 20, 0e1d93833d3909)
+instr=1305 pc=0x77bb70b2 : nt_any_syscall (num=98)
+instr=1310 pc=0x77bb6aa4 : nt_write_virtual_memory (process, proc, 20, 0e1d93833d3909)(process, target, 2, second.exe)
+instr=1350 pc=0x75d41282 :(process, new_pid, 1, first.exe)
+instr=1660 pc=0x77bb70b2 : nt_any_syscall (num=98)
+instr=1600 pc=0x75d41282 :(process, new_pid, 2, second.exe)
+instr=1650 pc=0x77bb70b2 : nt_terminate_process  [ (process, cur, 2, second.exe) ] [ (process, term, 90, 0e1d93833d3909) ]
+instr=1655 pc=0x77bb70b2 : nt_any_syscall (num=98)
+instr=1660 pc=0x77bb70b2 : nt_terminate_process  [ (process, cur, 2, second.exe) ] [ (process, term, 5, fifth.exe) ]
+instr=1670 pc=0x77bb6aa4 : nt_write_virtual_memory (process, proc, 2, second.exe)(process, target, 90, 0e1d93833d3909)
+instr=1680 pc=0x77bb70b2 : nt_terminate_process  [ (process, cur, 2, second.exe) ] [ (process, term, 2, second.exe) ]
+instr=1700 pc=0x75d41282 :(process, new_pid, 4, fourth.exe)
