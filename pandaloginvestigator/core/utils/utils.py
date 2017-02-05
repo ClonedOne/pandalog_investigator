@@ -1,4 +1,3 @@
-from typing import List, Dict, Tuple
 from collections import defaultdict
 import logging
 import os
@@ -8,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 # ## OTHER UTILITY METHODS ##
 
-def strip_filename_ext(file_names: List[str]) -> List[str]:
+def strip_filename_ext(file_names: list) -> list:
     """
     Strip log file names from the extension.
 
@@ -18,7 +17,7 @@ def strip_filename_ext(file_names: List[str]) -> List[str]:
     return [filename[:-9] for filename in file_names]
 
 
-def update_results(results: List[dict], dict_list: List[dict]) -> None:
+def update_results(results: list, dict_list: list) -> None:
     """
     Given the results form the workers updates a list of dictionaries with the corresponding partial dictionaries
     contained in each of the worker sub result.
@@ -35,7 +34,7 @@ def update_results(results: List[dict], dict_list: List[dict]) -> None:
             dict_list[i].update(sub_res[i])
 
 
-def merge_dict_dict(dict1: Dict[object, Dict[object, int]], dict2: Dict[object, Dict[object, int]]) -> Dict[object, Dict[object, int]]:
+def merge_dict_dict(dict1: dict, dict2: dict) -> dict:
     """
     Merge two dictionaries of dictionaries of int values into a new dictionary of dictionaries of int values where
     each value is the sum of the values in the original dictionaries (if available).
@@ -126,8 +125,9 @@ def invert_dictionary(chosen_dict: dict) -> dict:
     return inverted_dict
 
 
-def input_with_modifiers(dir_unpacked_path: str, dir_pandalogs_path: str, small_disk: bool = None, max_num: object = None, file_list: list = None,
-                         unpacking: bool = False) -> Tuple[list, int]:
+def input_with_modifiers(dir_unpacked_path: str, dir_pandalogs_path: str, small_disk: bool = None,
+                         max_num: object = None, file_list: list = None,
+                         unpacking: bool = False) -> tuple:
     """
     Given the small_disk and max_num modifiers, returns the appropriate values for the max_num and filenames to be
     used by the workers.

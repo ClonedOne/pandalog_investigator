@@ -1,6 +1,5 @@
 from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import domain_utils
-from typing import List
 import pprint
 import ast
 
@@ -222,7 +221,7 @@ def output_suspects(dir_results_path, suspects):
 
 # ## INPUT UTILITY METHODS ##
 
-def values_from_analysis(line: str) -> List[int]:
+def values_from_analysis(line: str) -> list:
     """
     Utility method to obtain the instruction count values from the relative line in the final analysis output text
     file.
@@ -245,7 +244,7 @@ def filename_from_analysis(line: str) -> str:
     return line.split()[2].strip()
 
 
-def status_from_analysis(line: str) -> List[bool]:
+def status_from_analysis(line: str) -> list:
     """
     Utility method to obtain the process status boolean flags from the relative line in the final analysis output
     text file.
