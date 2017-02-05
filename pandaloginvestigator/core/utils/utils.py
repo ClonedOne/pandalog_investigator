@@ -1,23 +1,24 @@
+from typing import List, Dict, Tuple
 from collections import defaultdict
-import os
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
 
 # ## OTHER UTILITY METHODS ##
 
-def strip_filename_ext(filenames):
+def strip_filename_ext(file_names: List[str]) -> List[str]:
     """
     Strip log file names from the extension.
 
-    :param filenames:
-    :return: string filename without extension
+    :param file_names: list of log file names as strings
+    :return: list of log file names without the extension
     """
-    return [filename[:-9] for filename in filenames]
+    return [filename[:-9] for filename in file_names]
 
 
-def update_results(results, dict_list):
+def update_results(results: List[dict], dict_list: List[dict]) -> None:
     """
     Given the results form the workers updates a list of dictionaries with the corresponding partial dictionaries
     contained in each of the worker sub result.
@@ -34,14 +35,14 @@ def update_results(results, dict_list):
             dict_list[i].update(sub_res[i])
 
 
-def merge_dict_dict(dict1, dict2):
+def merge_dict_dict(dict1: Dict[object, Dict[object, int]], dict2: Dict[object, Dict[object, int]]) -> Dict[object, Dict[object, int]]:
     """
-    Merge two dictionaries of dictionaries  of int values into a new dictionary of dictionaries of int values where
-    each value is the sum of the values in the original dictionaries.
+    Merge two dictionaries of dictionaries of int values into a new dictionary of dictionaries of int values where
+    each value is the sum of the values in the original dictionaries (if available).
 
-    :param dict1:
-    :param dict2:
-    :return: dict
+    :param dict1: Dictionary of dictionaries with int values
+    :param dict2: Dictionary of dictionaries with int values
+    :return: Dictionary of dictionaries with int values resulting from merge
     """
     dict_res = {}
     keys1 = list(dict1.keys())
@@ -62,7 +63,7 @@ def merge_dict_dict(dict1, dict2):
     return dict_res
 
 
-def divide_workload(item_list, core_num, max_num=None):
+def divide_workload(item_list: list, core_num: int, max_num: int = None) -> defaultdict:
     """
     Given a list of items and the number of processing cores available compute a list of items lists of equal
     dimension, one for each core. 'max_num' is a parameter bounding the maximum number of items to divide.
@@ -93,27 +94,26 @@ def divide_workload(item_list, core_num, max_num=None):
     return item_sublists
 
 
-def format_worker_input(core_num, item_sublists, fixed_params_list):
+def format_worker_input(core_num: int, item_sublists: defaultdict, fixed_params: tuple) -> list:
     """
     Generate a list of tuples containing the parameters to pass to worker sub processes.
 
-    :param core_num:
-    :param item_sublists:
-    :param fixed_params_list:
-    :return: list of input formatted accordingly to worker modules specs
+    :param core_num: number of available cores
+    :param item_sublists: dictionary containing the sublist of files for each worker
+    :param fixed_params: list of parameters to be added to workers input
+    :return: formatted list of worker input parameters
     """
     formatted_input = []
     for i in range(core_num):
-        formatted_input.append(
-            (i, item_sublists[i]) + tuple(fixed_params_list))
+        formatted_input.append((i, item_sublists[i]) + tuple(fixed_params))
     return formatted_input
 
 
-def invert_dictionary(chosen_dict):
+def invert_dictionary(chosen_dict: dict) -> dict:
     """
     Given a dictionary returns the inverted dictionary, where each value is considered as a the new key.
 
-    :param chosen_dict:
+    :param chosen_dict: dictionary of base types
     :return: dictionary containing reverse of passed dictionary
     """
     inverted_dict = {}
@@ -126,8 +126,8 @@ def invert_dictionary(chosen_dict):
     return inverted_dict
 
 
-def input_with_modifiers(dir_unpacked_path, dir_pandalogs_path, small_disk=None, max_num=None, file_list=None,
-                         unpacking=False):
+def input_with_modifiers(dir_unpacked_path: str, dir_pandalogs_path: str, small_disk: bool = None, max_num: object = None, file_list: list = None,
+                         unpacking: bool = False) -> Tuple[list, int]:
     """
     Given the small_disk and max_num modifiers, returns the appropriate values for the max_num and filenames to be
     used by the workers.

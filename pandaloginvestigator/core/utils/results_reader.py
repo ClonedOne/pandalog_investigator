@@ -1,6 +1,7 @@
 from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.utils import domain_utils
+from typing import List, Dict, Tuple
 import logging
 import os
 
@@ -27,7 +28,7 @@ def read_result_instr(dir_results_path):
     Read the instruction counting analysis result file in order to generate a list of dictionaries containing the
     values from the file.
 
-    :param dir_results_path:
+    :param dir_results_path: path to the result folder
     :return: list of dictionaries
     """
     instr_totals_dict = {}
@@ -76,7 +77,7 @@ def read_result_syscall(dir_results_path):
     """
     Read the system call counting result file in order to generate a dictionary containing the values from the file.
 
-    :param dir_results_path:
+    :param dir_results_path: path to the result folder
     :return: list of dictionaries
     """
     syscalls_totals_dict = {}
@@ -93,7 +94,7 @@ def read_result_syscall(dir_results_path):
     return [syscalls_totals_dict, ]
 
 
-def read_result_corrupted(dir_results_path: str) -> dict:
+def read_result_corrupted(dir_results_path: str) -> Dict[str, List[Tuple[Tuple[str, int], str, Tuple[str, int]]]]:
     """
     Reads the corrupted processes list form the results file in the specified directory. Returns a dictionary
     containing as key the log file name. The value of each key is given by a list of tuples in the form (malware,
@@ -126,7 +127,7 @@ def read_result_corrupted(dir_results_path: str) -> dict:
     return corrupted_dict
 
 
-def read_clues_regkey(dir_results_path: str) -> dict:
+def read_clues_regkey(dir_results_path: str) -> Dict[str, object]:
     """
     Reads the registry key clues output file in the specified folder. Buffers all the lines related to clues of a
     single log file into a list. Pass the list to the clue_object builder function. Generates a dictionary of clues

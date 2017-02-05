@@ -44,39 +44,26 @@ def detect_command(app, max_num=None, small_disk=False):
         os.makedirs(dir_results_path)
 
     logger.debug(
-        'Detect command with parameters: {}, {}, {}, {}, {}, {}, {}, {}, {}'.format(
+        'Detect command with parameters: {}, {}, {}, {}, {}, {}, {}, {}'.format(
             dir_panda_path,
             dir_pandalogs_path,
             dir_unpacked_path,
             dir_results_path,
             dir_clues_path,
             core_num,
-            app.pargs.regkey,
             small_disk,
             max_num
         )
     )
 
-    if app.pargs.regkey:
-        detector_regkey.detect_reg_key(
-            dir_panda_path,
-            dir_pandalogs_path,
-            dir_unpacked_path,
-            dir_results_path,
-            core_num,
-            small_disk,
-            max_num
-        )
-    else:
-        # Possibly other detectors will be called here
-        detector_regkey.detect_reg_key(
-            dir_panda_path,
-            dir_pandalogs_path,
-            dir_unpacked_path,
-            dir_results_path,
-            core_num,
-            small_disk,
-            max_num
-        )
+    detector_regkey.detect_reg_key(
+        dir_panda_path,
+        dir_pandalogs_path,
+        dir_unpacked_path,
+        dir_results_path,
+        core_num,
+        small_disk,
+        max_num
+    )
 
     suspect_builder.build_suspects(dir_results_path, dir_clues_path, core_num)

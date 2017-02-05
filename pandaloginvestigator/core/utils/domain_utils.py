@@ -7,18 +7,16 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# This module handles utility methods which are inherently related to the
-# domain of the application. Therefore this module has explicit knowledge
-# of domain's structure.
+# This module handles utility methods which are inherently related to the domain of the application. Therefore this
+# module has explicit knowledge of domain's structure.
 
 
 # Utilities related to Malware class.
 
 def initialize_malware_object(filename, malware_name, db_file_malware_dict, file_corrupted_processes_dict, from_db=False):
     """
-    Utility method to initialize a new malware object given the relative process
-    name and file name. Checks whether the new process would be the db_malware
-    or a corrupted process.
+    Utility method to initialize a new malware object given the relative process name and file name. Checks whether
+    the new process would be the db_malware or a corrupted process.
 
     :param filename:
     :param malware_name:
@@ -110,8 +108,7 @@ def repr_malware(malware):
 
 def repr_malware_processes(malware):
     """
-    Returns a list of the processes names and ids of the specified malware as
-    a string.
+    Returns a list of the processes names and ids of the specified malware as a string.
 
     :param malware:
     :return: string representing the malware processes
@@ -130,8 +127,8 @@ def repr_malware_processes(malware):
 
 def get_syscalls():
     """
-    Use the provided table of system calls to generate a system call number -> system call name dictionary.
-    Reference system is Windows 7 SP 01.
+    Use the provided table of system calls to generate a system call number -> system call name dictionary. Reference
+    system is Windows 7 SP 01.
 
     :return: dictionary of system calls
     """
@@ -235,8 +232,7 @@ def values_from_clues_regkey(line):
 
 def merge_clues(clue1, clue2):
     """
-    Merge two clues object returning a new clue object containing all
-    the elements present in the original objects
+    Merge two clues object returning a new clue object containing all the elements present in the original objects
 
     :param clue1:
     :param clue2:

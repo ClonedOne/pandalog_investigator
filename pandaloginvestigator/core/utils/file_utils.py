@@ -1,5 +1,6 @@
 from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import domain_utils
+from typing import List
 import pprint
 import ast
 
@@ -93,7 +94,7 @@ def final_output_instructions(dir_results_path, filenames, db_file_malware_dict,
     logs. For each filename and each malware_object associated sums up the instruction for each pid, checks if each
     pid has been terminated and if each pid has called the sleep function.
 
-    :param dir_results_path:
+    :param dir_results_path: path to the result folder
     :param filenames:
     :param db_file_malware_dict:
     :param file_corrupted_processes_dict:
@@ -160,7 +161,7 @@ def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
     """
     Prints the final output on file. Modified for system call counting output.
 
-    :param dir_results_path:
+    :param dir_results_path: path to the result folder
     :param filenames:
     :param filename_syscall_dict:
     :return:
@@ -181,7 +182,7 @@ def output_clues(dir_results_path: str, clues_dict: dict, out_file_name: str):
     """
     Prints the list of suspect log files with the clue elements to a file.
 
-    :param dir_results_path:
+    :param dir_results_path: path to the result folder
     :param clues_dict:
     :param out_file_name:
     :return:
@@ -197,7 +198,7 @@ def output_suspects(dir_results_path, suspects):
     """
     Prints the suspects dictionary into a human readable file.
 
-    :param dir_results_path:
+    :param dir_results_path: path to the result folder
     :param suspects:
     :return:
     """
@@ -221,12 +222,12 @@ def output_suspects(dir_results_path, suspects):
 
 # ## INPUT UTILITY METHODS ##
 
-def values_from_analysis(line):
+def values_from_analysis(line: str) -> List[int]:
     """
     Utility method to obtain the instruction count values from the relative line in the final analysis output text
     file.
 
-    :param line:
+    :param line: string from log file
     :return: list of values
     """
     values = line.strip().split('\t')[1]
@@ -234,22 +235,22 @@ def values_from_analysis(line):
     return [int(val) for val in values]
 
 
-def filename_from_analysis(line):
+def filename_from_analysis(line: str) -> str:
     """
     Utility method to obtain the file name value from the relative line in the final analysis output text file.
 
-    :param line:
+    :param line: string from log file
     :return: string containing file name
     """
     return line.split()[2].strip()
 
 
-def status_from_analysis(line):
+def status_from_analysis(line: str) -> List[bool]:
     """
     Utility method to obtain the process status boolean flags from the relative line in the final analysis output
     text file.
 
-    :param line:
+    :param line: string from log file
     :return: list of boolean status flags
     """
     line = line.strip().split('\t')
@@ -260,12 +261,12 @@ def status_from_analysis(line):
             ast.literal_eval(line[9])]
 
 
-def values_from_syscalls(line):
+def values_from_syscalls(line: str) -> int:
     """
     Utility method to obtain the system call count values from the relative line in the final analysis output text
     file.
 
-    :param line:
+    :param line: string from log file
     :return: int corresponding to system call frequency
     """
     return int(line.strip().split('\t')[1])

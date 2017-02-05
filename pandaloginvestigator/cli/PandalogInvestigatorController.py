@@ -29,7 +29,6 @@ class PandalogInvestigatorController(ArgparseController):
             (['-i', '--instr'], dict(help=help_i, action='store_true')),
             (['-s', '--syscall'], dict(help=help_s, action='store_true')),
             (['-f', '--file'], dict(help=help_f, action='store')),
-            (['-r', '--regkey'], dict(help=help_f, action='store_true')),
             (['--small-disk'], dict(help=help_sd, action='store_true'))
 
         ]
@@ -163,13 +162,11 @@ class PandalogInvestigatorController(ArgparseController):
             arguments=[
                 (['-n', '--num'], dict(help=help_n, action='store')),
                 (['--small-disk'], dict(help=help_sd, action='store_true')),
-                (['-u', '--unpack'], dict(help=help_u, action='store_true')),
-                (['-r', '--regkey'], dict(help=help_f, action='store_true'))
+                (['-u', '--unpack'], dict(help=help_u, action='store_true'))
             ])
     def detect(self):
         logger.info(
-            'Detecting sandbox detection techniques. Received options regkey:{} num:{}'.format(
-                self.app.pargs.regkey,
+            'Detecting sandbox detection techniques. Received options num:{}'.format(
                 self.app.pargs.num
             )
         )

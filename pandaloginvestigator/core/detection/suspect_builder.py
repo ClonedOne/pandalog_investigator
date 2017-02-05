@@ -33,7 +33,7 @@ def build_suspects(dir_results_path: str, dir_clues_path: str, core_num: int):
     clues_from_panda = {}
     t1 = time.time()
     if os.path.exists(dir_clues_path):
-        filenames = sorted(os.listdir(dir_clues_path))
+        filenames = filenames_from_corruted(corrupted_dict)
         file_names_sublists = utils.divide_workload(filenames, core_num, len(filenames))
         formatted_input = utils.format_worker_input(
             core_num,
@@ -194,3 +194,15 @@ def remove_crashed(suspects, crashing_dict, error_dict):
         else:
             clean_suspects[key] = value
     return clean_suspects
+
+
+def filenames_from_corruted(corrupted_dict: dict) -> list:
+    """
+    Acquires the list of file names containing corrupted processes. This list is used to open only relevant clues
+    files.
+
+    :param corrupted_dict: dictionary of corrupted processes per file name
+    :return: list of file names containing corrupted processes
+    """
+    file_names = sorted(list(corrupted_dict.keys()))
+    return [file_name + '_ss.txt' for file_name in file_names]

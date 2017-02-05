@@ -12,18 +12,16 @@ logger = logging.getLogger(__name__)
 def analyze_logs(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_analyzed_path,
                  dir_results_path, dir_database_path, core_num, max_num, small_disk):
     """
-    Analyze each unpacked log file counting the number of instruction executed
-    and identifying corrupted sub processes. Iterate through all the log files
-    in the folder specified in the configuration. Generate equal lists of
-    files to pass to worker_analyzer workers. The number of logs to analyze
-    is passed as argument, analyze all logs file if max_num = None.
-    Logs time spent in the process.
+    Analyze each unpacked log file counting the number of instruction executed and identifying corrupted sub
+    processes. Iterate through all the log files in the folder specified in the configuration. Generate equal lists
+    of files to pass to worker_analyzer workers. The number of logs to analyze is passed as argument, analyze all
+    logs file if max_num = None. Logs time spent in the process.
 
     :param dir_panda_path:
     :param dir_pandalogs_path:
     :param dir_unpacked_path:
     :param dir_analyzed_path:
-    :param dir_results_path:
+    :param dir_results_path: path to the result folder
     :param dir_database_path:
     :param core_num:
     :param max_num:
