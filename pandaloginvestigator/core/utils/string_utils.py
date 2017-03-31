@@ -93,3 +93,9 @@ tag_values = ('SystemBiosDate', 'SystemBiosVersion', 'VideoBiosVersion', 'QEMU',
 
 # Particularly dangerous instruction tags
 tag_dangerous = ('oversize', 'int1')
+
+# Origins of corrupted processes
+FROM_DB = 'database'
+CREATED = 'created'
+WRITTEN = 'mem_written'
+origins = [FROM_DB, CREATED, WRITTEN]

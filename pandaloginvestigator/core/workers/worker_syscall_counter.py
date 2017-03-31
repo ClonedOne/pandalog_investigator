@@ -2,7 +2,7 @@ from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import file_utils
 from pandaloginvestigator.core.utils import panda_utils
-from pandaloginvestigator.core.domain.malware_object import Malware
+from pandaloginvestigator.core.domain.corrupted_process_object import CorruptedProcess
 import logging
 import time
 import traceback
@@ -144,7 +144,7 @@ def is_malware(malware, pid):
     global active_malware
     pid_list = malware.get_pid_list()
     if pid not in pid_list:
-        malware.add_pid(pid, Malware.FROM_DB, (malware.get_name(), pid))
+        malware.add_pid(pid, CorruptedProcess.FROM_DB, (malware.get_name(), pid))
     malware.activate_pid(pid)
     active_malware = malware
 
@@ -177,7 +177,7 @@ def is_writing_memory(line, filename):
 
         if target:
             if not target.is_valid_pid(written_pid):
-                target.add_pid(written_pid, Malware.WRITTEN, (writing_name, writing_pid))
+                target.add_pid(written_pid, CorruptedProcess.WRITTEN, (writing_name, writing_pid))
             return
         new_malware = domain_utils.initialize_malware_object(
             filename,
@@ -185,7 +185,7 @@ def is_writing_memory(line, filename):
             db_file_malware_dict,
             file_corrupted_processes_dict
         )
-        new_malware.add_pid(written_pid, Malware.WRITTEN, (writing_name, writing_pid))
+        new_malware.add_pid(written_pid, CorruptedProcess.WRITTEN, (writing_name, writing_pid))
 
 
 def is_creating_process(line, filename):
@@ -216,7 +216,7 @@ def is_creating_process(line, filename):
 
         if target:
             if not target.is_valid_pid(created_pid):
-                target.add_pid(created_pid, Malware.CREATED, (creating_name, creating_pid))
+                target.add_pid(created_pid, CorruptedProcess.CREATED, (creating_name, creating_pid))
             return
 
         new_malware = domain_utils.initialize_malware_object(
@@ -225,7 +225,7 @@ def is_creating_process(line, filename):
             db_file_malware_dict,
             file_corrupted_processes_dict
         )
-        new_malware.add_pid(created_pid, Malware.CREATED, (creating_name, creating_pid))
+        new_malware.add_pid(created_pid, CorruptedProcess.CREATED, (creating_name, creating_pid))
 
 
 def is_db_malware(proc_name, filename):

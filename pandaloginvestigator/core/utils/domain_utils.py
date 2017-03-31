@@ -1,4 +1,5 @@
-from pandaloginvestigator.core.domain.malware_object import Malware
+from pandaloginvestigator.core.domain.corrupted_process_object import CorruptedProcess
+from pandaloginvestigator.core.domain.sample_object import Sample
 from pandaloginvestigator.core.domain.clue_object import Clue
 from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import utils
@@ -25,7 +26,7 @@ def initialize_malware_object(filename, malware_name, db_file_malware_dict, file
     :param from_db:
     :return: new Malware object
     """
-    malware = Malware(malware_name)
+    malware = CorruptedProcess(malware_name)
     if from_db:
         db_file_malware_dict[filename] = malware
         return malware

@@ -3,9 +3,9 @@ import subprocess
 import logging
 import os
 
-
-# This module handles utility methods which are inherently related to Panda or
-# the panda logs structure.
+"""
+    This module handles utility methods which are inherently related to Panda or the pandalogs structure.
+"""
 
 
 logger = logging.getLogger(__name__)
@@ -26,8 +26,8 @@ def unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path):
     unpack_command = '/pandalog_reader'
     reduced_filename = filename[:-9] if string_utils.ext_pandalog_file in filename else filename
     logger.debug('unpacking = ' + str(filename))
-    return_code = subprocess.call(dir_panda_path + unpack_command + " " + dir_pandalogs_path + '/' + filename + " > " +
-                                  dir_unpacked_path + '/' + reduced_filename, shell=True)
+    return_code = subprocess.call(dir_panda_path + unpack_command + " " + os.path.join(dir_pandalogs_path, filename) +
+                                  " > " + os.path.join(dir_unpacked_path, reduced_filename), shell=True)
     if return_code != 0:
         logger.debug('Unpack log: ' + reduced_filename + 'return code: ' + str(return_code))
 
@@ -72,38 +72,6 @@ def get_written_file_path(line):
     return os.path.normpath(line.strip().split(',')[1].split(')')[0])
 
 
-def update_dictionaries(pid, process_dict, proc_name, inverted_process_dict):
-    """
-    Updates the process id <-> process name dictionaries (direct and
-    inverted). At each context switch the new couple (pid, process_name)
-    is either added or its frequency is updated inside the dictionaries.
-
-    :param pid:
-    :param process_dict:
-    :param proc_name:
-    :param inverted_process_dict:
-    :return:
-    """
-    if pid in process_dict:
-        if proc_name in process_dict[pid]:
-            process_dict[pid][proc_name] += 1
-        else:
-            process_dict[pid][proc_name] = 1
-    else:
-        process_dict[pid] = {}
-        process_dict[pid][proc_name] = 1
-
-    # the same values will also be added to the inverted dictionary
-    if proc_name in inverted_process_dict:
-        if pid in inverted_process_dict[proc_name]:
-            inverted_process_dict[proc_name][pid] += 1
-        else:
-            inverted_process_dict[proc_name][pid] = 1
-    else:
-        inverted_process_dict[proc_name] = {}
-        inverted_process_dict[proc_name][pid] = 1
-
-
 def data_from_line(line, creating=False):
     """
     Given a line of the log file returns the instruction counter, pid of
@@ -137,6 +105,6 @@ def data_from_line_basic(line):
     """
     commas = line.strip().split(',')
     current_instruction = int((commas[0].split()[0].split('='))[1])
-    subject_pid = int(commas[2].strip())
-    subject_name = commas[3].split(')')[0].strip()
-    return current_instruction, subject_pid, subject_name
+    pid = int(commas[2].strip())
+    process_name = commas[3].split(')')[0].strip()
+    return current_instruction, pid, process_name

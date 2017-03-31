@@ -1,4 +1,4 @@
-from pandaloginvestigator.core.domain.malware_object import Malware
+from pandaloginvestigator.core.domain.corrupted_process_object import CorruptedProcess
 from pandaloginvestigator.core.detection import worker_clues_reader
 from pandaloginvestigator.core.domain.clue_object import Clue
 from pandaloginvestigator.core.utils import results_reader
@@ -104,7 +104,7 @@ def sum_suspects(clues, corrupted_dict):
             original_proc = None
             corrupted_procs = []
             for process in corrupted_dict[filename]:
-                if Malware.FROM_DB in process:
+                if CorruptedProcess.FROM_DB in process:
                     original_proc = process[0]
                 corrupted_procs.append(process[0])
             acc_value = 0.0
