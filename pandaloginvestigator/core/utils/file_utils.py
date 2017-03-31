@@ -1,10 +1,13 @@
-from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import domain_utils
+from pandaloginvestigator.core.utils import string_utils
+from os import path
 import pprint
-import ast
 
 
-# ## OUTPUT UTILITY METHODS ##
+"""
+    This file contains methods used to output partial and global results on file. 
+"""
+
 
 def output_on_file_instructions(filename, process_dict, inverted_process_dict, dir_analyzed_logs, db_file_malware_dict,
                                 file_corrupted_processes_dict, terminating_all, sleeping_all, crashing_all,
@@ -28,7 +31,7 @@ def output_on_file_instructions(filename, process_dict, inverted_process_dict, d
     :param writes_file:
     :return:
     """
-    with open(dir_analyzed_logs + '/' + filename, 'w', encoding='utf-8', errors='replace') as outfile:
+    with open(path.join(dir_analyzed_logs, filename), 'w', encoding='utf-8', errors='replace') as outfile:
         total_instructions = [0, 0, 0, 0]
         pprint.pprint(process_dict, outfile)
         outfile.write('\n')
@@ -217,55 +220,3 @@ def output_suspects(dir_results_path, suspects):
                     )
                 else:
                     suspects_file.write('\n\n\n')
-
-
-# ## INPUT UTILITY METHODS ##
-
-def values_from_analysis(line: str) -> list:
-    """
-    Utility method to obtain the instruction count values from the relative line in the final analysis output text
-    file.
-
-    :param line: string from log file
-    :return: list of values
-    """
-    values = line.strip().split('\t')[1]
-    values = values.translate({ord(c): None for c in '[],'}).split()
-    return [int(val) for val in values]
-
-
-def filename_from_analysis(line: str) -> str:
-    """
-    Utility method to obtain the file name value from the relative line in the final analysis output text file.
-
-    :param line: string from log file
-    :return: string containing file name
-    """
-    return line.split()[2].strip()
-
-
-def status_from_analysis(line: str) -> list:
-    """
-    Utility method to obtain the process status boolean flags from the relative line in the final analysis output
-    text file.
-
-    :param line: string from log file
-    :return: list of boolean status flags
-    """
-    line = line.strip().split('\t')
-    return [ast.literal_eval(line[1]),
-            ast.literal_eval(line[3]),
-            ast.literal_eval(line[5]),
-            ast.literal_eval(line[7]),
-            ast.literal_eval(line[9])]
-
-
-def values_from_syscalls(line: str) -> int:
-    """
-    Utility method to obtain the system call count values from the relative line in the final analysis output text
-    file.
-
-    :param line: string from log file
-    :return: int corresponding to system call frequency
-    """
-    return int(line.strip().split('\t')[1])
