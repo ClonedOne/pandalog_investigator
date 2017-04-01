@@ -60,7 +60,7 @@ def work(data_pack):
     dir_panda_path = data_pack[6]
     dir_pandalogs_path = data_pack[7]
 
-    analyzed_samples = set()
+    analyzed_samples = {}
     number_pandalogs = len(filenames)
     logger.info('WorkerId {} analyzing {} log files'.format(worker_id, number_pandalogs))
 
@@ -70,7 +70,7 @@ def work(data_pack):
 
         if filename in db_file_malware_name_map:
             current_sample = Sample(filename, db_file_malware_name_map[filename])
-            analyzed_samples.add(current_sample)
+            analyzed_samples[filename] = current_sample
             analyze_log(filename)
         else:
             logger.error(str(worker_id) + ' ERROR filename not in db: ' + str(filename))
@@ -101,39 +101,39 @@ def analyze_log(filename):
                 if tag_context_switch in line:
                     context_switch(line)
                 elif tag_process_creation in line:
-                    creating_process(line, filename)
+                    creating_process(line)
                 elif tag_write_memory in line:
-                    is_writing_memory(line, filename)
+                    writing_memory(line)
                 elif tag_write_file in line:
-                    is_writing_file(line, filename)
-                elif tag_sleep in line and active_malware:
-                    is_calling_sleep()
+                    writing_file(line)
+                elif tag_sleep in line:
+                    calling_sleep()
                 elif tag_termination in line:
-                    is_terminating(line, filename)
+                    terminating_process(line)
                 elif tag_read_memory in line and error_manager in line:
-                    is_crashing(line, filename)
-                elif tag_raise_error in line and active_malware:
-                    is_raising_error()
+                    crashing(line)
+                elif tag_raise_error in line:
+                    raising_error()
             except:
                 traceback.print_exc()
-                # terminating_all = terminates_all(filename)
-                # sleeping_all = calls_sleep_on_all(filename)
-                # crashing_all = is_crashing_all(filename)
-                # error_all = is_raising_error_all(filename)
-                # writes_file = writes_at_least_one_file(filename)
-                # file_utils.output_on_file_instructions(
-                #     filename,
-                #     process_dict,
-                #     inverted_process_dict,
-                #     dir_analyzed_logs,
-                #     db_file_malware_dict,
-                #     file_corrupted_processes_dict,
-                #     terminating_all,
-                #     sleeping_all,
-                #     crashing_all,
-                #     error_all,
-                #     writes_file
-                # )
+    # terminating_all = terminates_all(filename)
+    # sleeping_all = calls_sleep_on_all(filename)
+    # crashing_all = is_crashing_all(filename)
+    # error_all = is_raising_error_all(filename)
+    # writes_file = writes_at_least_one_file(filename)
+    # file_utils.output_on_file_instructions(
+    #     filename,
+    #     process_dict,
+    #     inverted_process_dict,
+    #     dir_analyzed_logs,
+    #     db_file_malware_dict,
+    #     file_corrupted_processes_dict,
+    #     terminating_all,
+    #     sleeping_all,
+    #     crashing_all,
+    #     error_all,
+    #     writes_file
+    # )
 
 
 def calls_sleep_on_all(filename):
@@ -334,6 +334,8 @@ def is_corrupted_process(process_name, pid):
     :return: Malware object if found, else None
     """
 
+    global current_sample
+
     entering_process_info = (process_name, pid)
 
     # If the process is already known to be corrupted return the related object
@@ -362,6 +364,8 @@ def context_switch(line):
     :param line: current line in the log file
     :return:
     """
+
+    global current_sample
 
     current_instruction, pid, process_name = panda_utils.data_from_line_basic(line)
 
@@ -394,89 +398,87 @@ def update_process_instruction_count(current_instruction):
     current_sample.active_corrupted_process = None
 
 
-def is_terminating(line, filename):
+def terminating_process(line):
     """
-    Handles termination system calls. Analyze the log to find out process name
-    and id of the terminating and terminated processes. Checks if terminating
-    process is a malware and if so updates malware's termination information.
+    Handles termination system calls.
+    Finds out process name and id of the terminating and terminated processes.
+    Checks if terminating process is corrupted and if so updates its termination information.
+    Note: a corrupted process may terminate any process in the system (not only corrupted ones).
 
-    :param line:
-    :param filename:
+    :param line: the current pandalog line
     :return:
     """
+
+    global current_sample
+
     current_instruction, terminating_pid, terminating_name, terminated_pid, terminated_name = panda_utils.data_from_line(
         line)
 
-    malware = is_db_malware(terminating_name, filename)
-    if not malware:
-        malware = is_corrupted_process(terminating_name, terminating_pid, filename)
-    if malware and malware.is_valid_pid(terminating_pid) and malware.has_active_pid() and malware.is_active_pid(
-            terminating_pid):
-        malware.add_terminated_process(
-            terminating_pid,
-            terminated_pid,
-            terminated_name,
-            current_instruction
-        )
+    corrupted_process = is_corrupted_process(terminating_name, terminating_pid)
+
+    if corrupted_process:
+        terminated_process_info = (terminated_name, terminated_pid)
+        corrupted_process.terminated_processes.append(terminated_process_info)
 
 
-def is_calling_sleep():
+def calling_sleep():
     """
-    Handles NtDelayExecution system calls. The purpose is to understand if the
-    malicious process is trying to hide itself by calling the sleep function for
+    Handles NtDelayExecution system calls. 
+    The purpose is to understand if the malicious process is trying to hide itself by calling the sleep function for
     enough time to avoid examination.
 
     :return:
     """
-    global active_malware
-    if active_malware:
-        malware = active_malware
-        if malware:
-            active_pid = malware.get_active_pid()
-            malware.add_sleep(active_pid)
+
+    global current_sample
+
+    corrupted_process = current_sample.active_corrupted_process
+    if corrupted_process:
+        corrupted_process.sleep += 1
 
 
-def is_raising_error():
+def raising_error():
     """
-    Handles NtRaiseHardError system calls. It is used to understand if a malware
-    process is raising an unrecoverable error due for instance to the missing of
+    Handles NtRaiseHardError system calls.
+    It is used to understand if a malware process is raising an unrecoverable error due for instance to the missing of
     a required dll.
 
     :return:
     """
-    global active_malware
-    if active_malware:
-        malware = active_malware
-        if malware:
-            active_pid = malware.get_active_pid()
-            malware.add_error(active_pid)
+
+    global current_sample
+
+    corrupted_process = current_sample.active_corrupted_process
+    if corrupted_process:
+        corrupted_process.error = True
 
 
-def is_crashing(line, filename):
+def crashing(line):
     """
-    Checks if the error manager WerFault.exe is reading memory of one of the
-    malware's processes. If so it may mean the process has crashed.+
+    Checks if the error manager WerFault.exe is reading memory of one of a corrupted process.
+    If so it means that the process has crashed.
 
-    :param line:
-    :param filename:
+    :param line: the current pandalog line
     :return:
     """
+
+    global current_sample
+
+    # Acquire information on process being read by WerFault.exe
     commas = line.strip().split(',')
     read_pid = int(commas[5].strip())
     read_name = commas[6].split(')')[0].strip()
-    malware = is_db_malware(read_name, filename)
-    if not malware:
-        malware = is_corrupted_process(read_name, read_pid, filename)
 
-    if malware and malware.is_valid_pid(read_pid):
-        if not malware.get_crash(read_pid):
-            malware.add_crash(read_pid)
+    corrupted_process = is_corrupted_process(read_name, read_pid)
+
+    if corrupted_process:
+        corrupted_process.crashing = True
 
 
 def creating_process(line):
     """
     Handles process creation system calls.
-    Finds out process name and id of the creating and created processes. 
+    Finds out process name and id of the creating and created processes.
     Checks if the creating process is corrupted, if so:
      * updates its creation information
      * the created process will also be considered as corrupted
@@ -487,6 +489,8 @@ def creating_process(line):
     :return:
     """
 
+    global current_sample
+
     current_instruction, creating_pid, creating_name, created_pid, created_name, new_path = panda_utils.data_from_line(
         line, creating=True)
 
@@ -495,95 +499,63 @@ def creating_process(line):
 
     if corrupted_process:
         created_process_info = (created_name, created_pid)
-        corrupted_process.created_processes.append(created_process_info)
-        malware.add_spawned_process(
-            creating_pid,
-            created_pid,
-            created_name,
-            current_instruction,
-            new_path
-        )
 
-        target = is_db_malware(created_name, filename)
-        if not target:
-            target = is_corrupted_process(created_name, created_pid, filename)
-
-        if target:
-            if not target.is_valid_pid(created_pid):
-                target.add_pid(created_pid, CorruptedProcess.CREATED, (creating_name, creating_pid))
+        if created_process_info in current_sample.corrupted_processes:
+            logger.error('ERROR created process already found in sample')
             return
 
-        new_malware = domain_utils.initialize_malware_object(
-            filename,
-            created_name,
-            db_file_malware_dict,
-            file_corrupted_processes_dict
-        )
-        new_malware.add_pid(created_pid, CorruptedProcess.CREATED, (creating_name, creating_pid))
+        created_process = CorruptedProcess(created_process_info, string_utils.CREATED, creating_process_info)
+        corrupted_process.created_processes.append((created_process_info, new_path))
+        current_sample.corrupted_processes[created_process_info] = created_process
 
 
-def is_writing_memory(line, filename):
+def writing_memory(line):
     """
-    Handles the write on virtual memory system calls. Analyze the log to find
-    out process name and id of the writing and written processes. Checks if the
-    writing process is a malware and, if so, updates the malware memory writing
-    information. If the writing process is a malicious one, the written process
-    will also be considered as corrupted. If the new malware is already known
-    adds the written pid to that object after having checked that the written
-    pid is not already a valid pid for that malicious process. Else create a new
-    malware object and initialize it with the written pid.
+    Handles the write on virtual memory system calls.
+    Finds out process name and id of the writing and written processes.
+    Checks if the writing process is a corrupted, if so:
+     * updates its memory writing information
+     * the written process will also be considered as corrupted
+     * creates a new corrupted process object.
 
-    :param line:
-    :param filename:
+    :param line: the current pandalog line
     :return:
     """
+
+    global current_sample
+
     current_instruction, writing_pid, writing_name, written_pid, written_name = panda_utils.data_from_line(line)
 
-    malware = is_db_malware(writing_name, filename)
-    if not malware:
-        malware = is_corrupted_process(writing_name, writing_pid, filename)
+    writing_process_info = (writing_name, writing_pid)
+    corrupted_process = is_corrupted_process(writing_name, writing_pid)
 
-    if malware and malware.is_valid_pid(writing_pid) and malware.has_active_pid() and malware.is_active_pid(
-            writing_pid):
-        malware.add_written_memory(
-            writing_pid,
-            written_pid,
-            written_name,
-            current_instruction
-        )
+    if corrupted_process:
+        written_process_info = (written_name, written_pid)
 
-        target = is_db_malware(written_name, filename)
-        if not target:
-            target = is_corrupted_process(written_name, written_pid, filename)
-
-        if target:
-            if not target.is_valid_pid(written_pid):
-                target.add_pid(written_pid, CorruptedProcess.WRITTEN, (writing_name, writing_pid))
+        # Corrupted processes may write multiple times on the memory of another process
+        if written_process_info in current_sample.corrupted_processes:
             return
-        new_malware = domain_utils.initialize_malware_object(
-            filename,
-            written_name,
-            db_file_malware_dict,
-            file_corrupted_processes_dict
-        )
-        new_malware.add_pid(written_pid, CorruptedProcess.WRITTEN, (writing_name, writing_pid))
+
+        written_process = CorruptedProcess(written_process_info, string_utils.WRITTEN, writing_process_info)
+        corrupted_process.written_memory(written_process_info)
+        current_sample.corrupted_processes[written_process_info] = written_process
 
 
-def is_writing_file(line, filename):
+def writing_file(line):
     """
-    Handles the write on file system calls. Finds out the writers id and
-    process name. Checks if the writing process is a malware and, if so,
-    updates the malware file writing information.
+    Handles the write on file system calls. 
+    Finds out the writers id and process name. 
+    Checks if the writing process is corrupted and, if so, updates its file writing information.
 
     :param line:
-    :param filename:
     :return:
     """
-    current_instruction, subject_pid, subject_name = panda_utils.data_from_line_basic(line)
 
-    malware = is_db_malware(subject_name, filename)
-    if not malware:
-        malware = is_corrupted_process(subject_name, subject_pid, filename)
+    global current_sample
 
-    if malware and malware.has_active_pid() and malware.is_active_pid(subject_pid):
-        malware.add_written_file(subject_pid)
+    current_instruction, pid, process_name, written_file_path = panda_utils.data_from_line_basic(line, writing=True)
+
+    corrupted_process = is_corrupted_process(process_name, pid)
+
+    if corrupted_process:
+        corrupted_process.written_file.append(written_file_path)

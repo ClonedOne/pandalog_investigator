@@ -47,7 +47,7 @@ def remove_log_file(filename, dir_unpacked_path):
 def get_new_path(line):
     """
     Handles the acquisition of the path string for a created process.
-    It is used to handle linux problems with windows style path strings.
+    Handles linux problems with windows style path strings.
 
     :param line:
     :return: path to the created process executable
@@ -74,12 +74,16 @@ def get_written_file_path(line):
 
 def data_from_line(line, creating=False):
     """
-    Given a line of the log file returns the instruction counter, pid of
-    the caller, process name of the caller, pid of the callee, process name
-     of the callee and optionally the path to the executable if present.
+    Given a line of the log file returns:
+     * instruction counter
+     * pid of the caller
+     * process name of the caller
+     * pid of the callee
+     * process name of the callee 
+     * optionally path to the executable if present
 
-    :param line:
-    :param creating:
+    :param line: current line of the pandalog
+    :param creating: flag retrieve path of executable
     :return: list of elements of the panda log file line
     """
     commas = line.strip().split(',')
@@ -95,16 +99,24 @@ def data_from_line(line, creating=False):
         return current_instruction, subject_pid, subject_name, object_pid, object_name
 
 
-def data_from_line_basic(line):
+def data_from_line_basic(line, writing=False):
     """
-    Basic version of get_data_from_line. Returns the instruction counter,
-    pid of the caller, process name of the caller.
+    Given a line of the log file returns:
+     * instruction counter
+     * pid of the caller
+     * process name of the caller
+     * optionally path to the written file if present
 
-    :param line:
+    :param line: current line of the pandalog
+    :param writing: flag retrieve path written file
     :return: list of elements of the panda log file line
     """
     commas = line.strip().split(',')
     current_instruction = int((commas[0].split()[0].split('='))[1])
     pid = int(commas[2].strip())
     process_name = commas[3].split(')')[0].strip()
-    return current_instruction, pid, process_name
+    if writing:
+        file_path = get_written_file_path(line)
+        return current_instruction, pid, process_name, file_path
+    else:
+        return current_instruction, pid, process_name

@@ -18,6 +18,7 @@ class CorruptedProcess:
         self.instruction_executed = 0
         self.starting_instruction = 0
         self.terminated_processes = []
+        # Created processes consists of tuples (new process info, path to the executable)
         self.created_processes = []
         self.written_memory = []
         self.written_file = []
