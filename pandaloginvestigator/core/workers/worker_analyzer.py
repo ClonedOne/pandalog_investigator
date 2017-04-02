@@ -1,8 +1,8 @@
 from pandaloginvestigator.core.domain.corrupted_process_object import CorruptedProcess
 from pandaloginvestigator.core.domain.sample_object import Sample
-from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import panda_utils
+from pandaloginvestigator.core.utils import file_output
 import traceback
 import logging
 import time
@@ -60,6 +60,7 @@ def work(data_pack):
     dir_panda_path = data_pack[6]
     dir_pandalogs_path = data_pack[7]
 
+    # the analyzed samples dictionary maps pandalog uuids with the related Sample object
     analyzed_samples = {}
     number_pandalogs = len(filenames)
     logger.info('WorkerId {} analyzing {} log files'.format(worker_id, number_pandalogs))
@@ -72,6 +73,8 @@ def work(data_pack):
             current_sample = Sample(filename, db_file_malware_name_map[filename])
             analyzed_samples[filename] = current_sample
             analyze_log(filename)
+            current_sample.active_corrupted_process = None
+            file_output.output_json(filename, current_sample, dir_analyzed_logs)
         else:
             logger.error(str(worker_id) + ' ERROR filename not in db: ' + str(filename))
 
@@ -88,8 +91,16 @@ def work(data_pack):
 
 def analyze_log(filename):
     """
-    Analyze the log file line by line. Checks if each line contains a context switch, a process creation, 
-    a memory write or a process termination. At the end output a file with the results for the single pandalog.
+    Analyze the log file line by line. Checks if each line contains:
+     * context switch
+     * process creation
+     * memory write
+     * file write
+     * process sleep
+     * process termination
+     * crashes
+     * error raising    
+    At the end output a file with the results for the single pandalog.
  
     :param filename: uuid of the pandalog to analyze
     :return:
@@ -116,215 +127,9 @@ def analyze_log(filename):
                     raising_error()
             except:
                 traceback.print_exc()
-    # terminating_all = terminates_all(filename)
-    # sleeping_all = calls_sleep_on_all(filename)
-    # crashing_all = is_crashing_all(filename)
-    # error_all = is_raising_error_all(filename)
-    # writes_file = writes_at_least_one_file(filename)
-    # file_utils.output_on_file_instructions(
-    #     filename,
-    #     process_dict,
-    #     inverted_process_dict,
-    #     dir_analyzed_logs,
-    #     db_file_malware_dict,
-    #     file_corrupted_processes_dict,
-    #     terminating_all,
-    #     sleeping_all,
-    #     crashing_all,
-    #     error_all,
-    #     writes_file
-    # )
 
 
-def calls_sleep_on_all(filename):
-    """
-    Checks if the malware_objects associated with the filename have called the
-    sleep function on all their processes.
-
-    :param filename:
-    :return: True if all processes called sleep, else False
-    """
-    all_pids = set()
-    all_sleep = set()
-    if filename in db_file_malware_dict:
-        malware = db_file_malware_dict[filename]
-        pid_list = malware.get_pid_list()
-        malware_name = malware.get_name()
-        for pid in pid_list:
-            all_pids.add((malware_name, pid))
-            sleep_count = malware.get_sleep(pid)
-            if sleep_count:
-                all_sleep.add((malware_name, pid))
-
-    if filename in file_corrupted_processes_dict:
-        malwares = file_corrupted_processes_dict[filename]
-        for malware in malwares:
-            malware_name = malware.get_name()
-            pid_list = malware.get_pid_list()
-            for pid in pid_list:
-                all_pids.add((malware_name, pid))
-                sleep_count = malware.get_sleep(pid)
-                if sleep_count:
-                    all_sleep.add((malware_name, pid))
-
-    not_empty = len(all_pids) > 0
-    if all_pids.issubset(all_sleep) and not_empty:
-        file_sleep_dict[filename] = True
-        return True
-    else:
-        file_sleep_dict[filename] = False
-        return False
-
-
-def terminates_all(filename):
-    """
-    Checks if the malware_objects associated with the filename have terminated
-    all their processes.
-
-    :param filename:
-    :return: True if all processes terminated, else False
-    """
-    all_pids = set()
-    all_term = set()
-    if filename in db_file_malware_dict:
-        malware = db_file_malware_dict[filename]
-        malware_name = malware.get_name()
-        pid_list = malware.get_pid_list()
-        for pid in pid_list:
-            all_pids.add((malware_name, pid))
-            terms = malware.get_terminated_processes(pid)
-            for term in terms:
-                all_term.add((term[1], term[0]))
-
-    if filename in file_corrupted_processes_dict:
-        malwares = file_corrupted_processes_dict[filename]
-        for malware in malwares:
-            malware_name = malware.get_name()
-            pid_list = malware.get_pid_list()
-            for pid in pid_list:
-                all_pids.add((malware_name, pid))
-                terms = malware.get_terminated_processes(pid)
-                for term in terms:
-                    all_term.add((term[1], term[0]))
-
-    not_empty = len(all_pids) > 0
-    if all_pids.issubset(all_term) and not_empty:
-        file_terminate_dict[filename] = True
-        return True
-    else:
-        file_terminate_dict[filename] = False
-        return False
-
-
-def writes_at_least_one_file(filename):
-    """
-    Checks if the malware_objects associated with the filename have written
-    at least one file in all their processes.
-
-    :param filename:
-    :return:
-    """
-    if filename in db_file_malware_dict:
-        malware = db_file_malware_dict[filename]
-        pid_list = malware.get_pid_list()
-        for pid in pid_list:
-            if malware.get_written_files(pid):
-                file_writefile_dict[filename] = True
-                return True
-    if filename in file_corrupted_processes_dict:
-        malwares = file_corrupted_processes_dict[filename]
-        for malware in malwares:
-            pid_list = malware.get_pid_list()
-            for pid in pid_list:
-                if malware.get_written_files(pid):
-                    file_writefile_dict[filename] = True
-                    return True
-
-    file_writefile_dict[filename] = False
-    return False
-
-
-def is_crashing_all(filename):
-    """
-    Checks if the malware_objects associated with the filename have crashed all
-    their processes.
-
-    :param filename:
-    :return: True if all processes have creshed, else False
-    """
-    all_pids = set()
-    all_crash = set()
-    if filename in db_file_malware_dict:
-        malware = db_file_malware_dict[filename]
-        malware_name = malware.get_name()
-        pid_list = malware.get_pid_list()
-        for pid in pid_list:
-            all_pids.add((malware_name, pid))
-            crash_count = malware.get_crash(pid)
-            if crash_count:
-                all_crash.add((malware_name, pid))
-
-    if filename in file_corrupted_processes_dict:
-        malwares = file_corrupted_processes_dict[filename]
-        for malware in malwares:
-            malware_name = malware.get_name()
-            pid_list = malware.get_pid_list()
-            for pid in pid_list:
-                all_pids.add((malware_name, pid))
-                crash_count = malware.get_crash(pid)
-                if crash_count:
-                    all_crash.add((malware_name, pid))
-
-    not_empty = len(all_pids) > 0
-    if all_pids.issubset(all_crash) and not_empty:
-        file_crash_dict[filename] = True
-        return True
-    else:
-        file_crash_dict[filename] = False
-        return False
-
-
-def is_raising_error_all(filename):
-    """
-    Checks if the malware_objects associated with the filename have raised hard
-    errors for all their processes.
-
-    :param filename:
-    :return: True if all processes have raised errors, else False
-    """
-    all_pids = set()
-    all_error = set()
-    if filename in db_file_malware_dict:
-        malware = db_file_malware_dict[filename]
-        malware_name = malware.get_name()
-        pid_list = malware.get_pid_list()
-        for pid in pid_list:
-            all_pids.add((malware_name, pid))
-            error_count = malware.get_error(pid)
-            if error_count:
-                all_error.add((malware_name, pid))
-
-    if filename in file_corrupted_processes_dict:
-        malwares = file_corrupted_processes_dict[filename]
-        for malware in malwares:
-            malware_name = malware.get_name()
-            pid_list = malware.get_pid_list()
-            for pid in pid_list:
-                all_pids.add((malware_name, pid))
-                error_count = malware.get_error(pid)
-                if error_count:
-                    all_error.add((malware_name, pid))
-
-    not_empty = len(all_pids) > 0
-    if all_pids.issubset(all_error) and not_empty:
-        file_error_dict[filename] = True
-        return True
-    else:
-        file_error_dict[filename] = False
-        return False
-
-
-def is_corrupted_process(process_name, pid):
+def get_corrupted_process(process_name, pid):
     """
     Checks if the process name and pid retrieved correspond to a corrupted process in the current sample.
     If found returns the corrupted process object.
@@ -369,7 +174,7 @@ def context_switch(line):
 
     current_instruction, pid, process_name = panda_utils.data_from_line_basic(line)
 
-    corrupted_process = is_corrupted_process(process_name, pid)
+    corrupted_process = get_corrupted_process(process_name, pid)
 
     if current_sample.active_corrupted_process:
         update_process_instruction_count(current_instruction)
@@ -385,9 +190,11 @@ def update_process_instruction_count(current_instruction):
     It is called only if the current sample has an active corrupted process.
     After the update, set the active corrupted process to None.
 
-    :param current_instruction:
+    :param current_instruction: current instruction number
     :return:
     """
+
+    global current_sample
 
     corrupted_process = current_sample.active_corrupted_process
 
@@ -414,7 +221,7 @@ def terminating_process(line):
     current_instruction, terminating_pid, terminating_name, terminated_pid, terminated_name = panda_utils.data_from_line(
         line)
 
-    corrupted_process = is_corrupted_process(terminating_name, terminating_pid)
+    corrupted_process = get_corrupted_process(terminating_name, terminating_pid)
 
     if corrupted_process:
         terminated_process_info = (terminated_name, terminated_pid)
@@ -469,7 +276,7 @@ def crashing(line):
     read_pid = int(commas[5].strip())
     read_name = commas[6].split(')')[0].strip()
 
-    corrupted_process = is_corrupted_process(read_name, read_pid)
+    corrupted_process = get_corrupted_process(read_name, read_pid)
 
     if corrupted_process:
         corrupted_process.crashing = True
@@ -495,7 +302,7 @@ def creating_process(line):
         line, creating=True)
 
     creating_process_info = (creating_name, creating_pid)
-    corrupted_process = is_corrupted_process(creating_name, creating_pid)
+    corrupted_process = get_corrupted_process(creating_name, creating_pid)
 
     if corrupted_process:
         created_process_info = (created_name, created_pid)
@@ -527,7 +334,7 @@ def writing_memory(line):
     current_instruction, writing_pid, writing_name, written_pid, written_name = panda_utils.data_from_line(line)
 
     writing_process_info = (writing_name, writing_pid)
-    corrupted_process = is_corrupted_process(writing_name, writing_pid)
+    corrupted_process = get_corrupted_process(writing_name, writing_pid)
 
     if corrupted_process:
         written_process_info = (written_name, written_pid)
@@ -555,7 +362,7 @@ def writing_file(line):
 
     current_instruction, pid, process_name, written_file_path = panda_utils.data_from_line_basic(line, writing=True)
 
-    corrupted_process = is_corrupted_process(process_name, pid)
+    corrupted_process = get_corrupted_process(process_name, pid)
 
     if corrupted_process:
         corrupted_process.written_file.append(written_file_path)

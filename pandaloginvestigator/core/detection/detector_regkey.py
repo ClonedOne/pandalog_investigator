@@ -1,5 +1,5 @@
 from pandaloginvestigator.core.detection import worker_regkey_detector
-from pandaloginvestigator.core.utils import file_utils
+from pandaloginvestigator.core.utils import file_output
 from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import utils
 from multiprocessing import Pool
@@ -47,6 +47,6 @@ def detect_reg_key(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_re
     pool.close()
     pool.join()
     utils.update_results(results, [suspect_dict, ])
-    file_utils.output_clues(dir_results_path, suspect_dict, 'clues_regkey.txt')
+    file_output.output_clues(dir_results_path, suspect_dict, 'clues_regkey.txt')
     t2 = time.time()
     logger.info('Total detection time: ' + str(t2 - t1))

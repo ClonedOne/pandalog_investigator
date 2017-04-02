@@ -1,6 +1,6 @@
 from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import string_utils
-from pandaloginvestigator.core.utils import file_utils
+from pandaloginvestigator.core.utils import file_output
 from pandaloginvestigator.core.utils import panda_utils
 from pandaloginvestigator.core.domain.corrupted_process_object import CorruptedProcess
 import logging
@@ -83,7 +83,7 @@ def syscall_count(filename):
                     malware_syscall_dict[system_call] = malware_syscall_dict.get(system_call, 0) + 1
             except:
                 traceback.print_exc()
-    file_utils.output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, syscall_dict)
+    file_output.output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, syscall_dict)
     return malware_syscall_dict
 
 

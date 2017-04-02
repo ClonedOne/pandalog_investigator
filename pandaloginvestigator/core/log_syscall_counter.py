@@ -1,6 +1,6 @@
 from pandaloginvestigator.core.workers import worker_syscall_counter
 from pandaloginvestigator.core.utils import domain_utils
-from pandaloginvestigator.core.utils import file_utils
+from pandaloginvestigator.core.utils import file_output
 from pandaloginvestigator.core.utils import db_manager
 from pandaloginvestigator.core.utils import utils
 from multiprocessing import Pool
@@ -61,7 +61,7 @@ def count_syscalls(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_da
     dict_list = [filename_syscall_dict, ]
     utils.update_results(results, dict_list)
 
-    file_utils.final_output_syscall(
+    file_output.final_output_syscall(
         dir_results_path,
         filenames,
         filename_syscall_dict

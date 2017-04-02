@@ -1,0 +1,307 @@
+From worker_analyzer
+
+# terminating_all = terminates_all(filename)
+# sleeping_all = calls_sleep_on_all(filename)
+# crashing_all = is_crashing_all(filename)
+# error_all = is_raising_error_all(filename)
+# writes_file = writes_at_least_one_file(filename)
+# file_utils.output_on_file_instructions(
+#     filename,
+#     process_dict,
+#     inverted_process_dict,
+#     dir_analyzed_logs,
+#     db_file_malware_dict,
+#     file_corrupted_processes_dict,
+#     terminating_all,
+#     sleeping_all,
+#     crashing_all,
+#     error_all,
+#     writes_file
+# )
+
+
+def calls_sleep_all(filename):
+    """
+    Checks if the malware_objects associated with the filename have called the
+    sleep function on all their processes.
+
+    :param filename:
+    :return: True if all processes called sleep, else False
+    """
+    all_pids = set()
+    all_sleep = set()
+    if filename in db_file_malware_dict:
+        malware = db_file_malware_dict[filename]
+        pid_list = malware.get_pid_list()
+        malware_name = malware.get_name()
+        for pid in pid_list:
+            all_pids.add((malware_name, pid))
+            sleep_count = malware.get_sleep(pid)
+            if sleep_count:
+                all_sleep.add((malware_name, pid))
+
+    if filename in file_corrupted_processes_dict:
+        malwares = file_corrupted_processes_dict[filename]
+        for malware in malwares:
+            malware_name = malware.get_name()
+            pid_list = malware.get_pid_list()
+            for pid in pid_list:
+                all_pids.add((malware_name, pid))
+                sleep_count = malware.get_sleep(pid)
+                if sleep_count:
+                    all_sleep.add((malware_name, pid))
+
+    not_empty = len(all_pids) > 0
+    if all_pids.issubset(all_sleep) and not_empty:
+        file_sleep_dict[filename] = True
+        return True
+    else:
+        file_sleep_dict[filename] = False
+        return False
+
+
+def terminates_all(filename):
+    """
+    Checks if the malware_objects associated with the filename have terminated
+    all their processes.
+
+    :param filename:
+    :return: True if all processes terminated, else False
+    """
+    all_pids = set()
+    all_term = set()
+    if filename in db_file_malware_dict:
+        malware = db_file_malware_dict[filename]
+        malware_name = malware.get_name()
+        pid_list = malware.get_pid_list()
+        for pid in pid_list:
+            all_pids.add((malware_name, pid))
+            terms = malware.get_terminated_processes(pid)
+            for term in terms:
+                all_term.add((term[1], term[0]))
+
+    if filename in file_corrupted_processes_dict:
+        malwares = file_corrupted_processes_dict[filename]
+        for malware in malwares:
+            malware_name = malware.get_name()
+            pid_list = malware.get_pid_list()
+            for pid in pid_list:
+                all_pids.add((malware_name, pid))
+                terms = malware.get_terminated_processes(pid)
+                for term in terms:
+                    all_term.add((term[1], term[0]))
+
+    not_empty = len(all_pids) > 0
+    if all_pids.issubset(all_term) and not_empty:
+        file_terminate_dict[filename] = True
+        return True
+    else:
+        file_terminate_dict[filename] = False
+        return False
+
+
+def writes_at_least_one_file(filename):
+    """
+    Checks if the malware_objects associated with the filename have written
+    at least one file in all their processes.
+
+    :param filename:
+    :return:
+    """
+    if filename in db_file_malware_dict:
+        malware = db_file_malware_dict[filename]
+        pid_list = malware.get_pid_list()
+        for pid in pid_list:
+            if malware.get_written_files(pid):
+                file_writefile_dict[filename] = True
+                return True
+    if filename in file_corrupted_processes_dict:
+        malwares = file_corrupted_processes_dict[filename]
+        for malware in malwares:
+            pid_list = malware.get_pid_list()
+            for pid in pid_list:
+                if malware.get_written_files(pid):
+                    file_writefile_dict[filename] = True
+                    return True
+
+    file_writefile_dict[filename] = False
+    return False
+
+
+def is_crashing_all(filename):
+    """
+    Checks if the malware_objects associated with the filename have crashed all
+    their processes.
+
+    :param filename:
+    :return: True if all processes have creshed, else False
+    """
+    all_pids = set()
+    all_crash = set()
+    if filename in db_file_malware_dict:
+        malware = db_file_malware_dict[filename]
+        malware_name = malware.get_name()
+        pid_list = malware.get_pid_list()
+        for pid in pid_list:
+            all_pids.add((malware_name, pid))
+            crash_count = malware.get_crash(pid)
+            if crash_count:
+                all_crash.add((malware_name, pid))
+
+    if filename in file_corrupted_processes_dict:
+        malwares = file_corrupted_processes_dict[filename]
+        for malware in malwares:
+            malware_name = malware.get_name()
+            pid_list = malware.get_pid_list()
+            for pid in pid_list:
+                all_pids.add((malware_name, pid))
+                crash_count = malware.get_crash(pid)
+                if crash_count:
+                    all_crash.add((malware_name, pid))
+
+    not_empty = len(all_pids) > 0
+    if all_pids.issubset(all_crash) and not_empty:
+        file_crash_dict[filename] = True
+        return True
+    else:
+        file_crash_dict[filename] = False
+        return False
+
+
+def is_raising_error_all(filename):
+    """
+    Checks if the malware_objects associated with the filename have raised hard
+    errors for all their processes.
+
+    :param filename:
+    :return: True if all processes have raised errors, else False
+    """
+    all_pids = set()
+    all_error = set()
+    if filename in db_file_malware_dict:
+        malware = db_file_malware_dict[filename]
+        malware_name = malware.get_name()
+        pid_list = malware.get_pid_list()
+        for pid in pid_list:
+            all_pids.add((malware_name, pid))
+            error_count = malware.get_error(pid)
+            if error_count:
+                all_error.add((malware_name, pid))
+
+    if filename in file_corrupted_processes_dict:
+        malwares = file_corrupted_processes_dict[filename]
+        for malware in malwares:
+            malware_name = malware.get_name()
+            pid_list = malware.get_pid_list()
+            for pid in pid_list:
+                all_pids.add((malware_name, pid))
+                error_count = malware.get_error(pid)
+                if error_count:
+                    all_error.add((malware_name, pid))
+
+    not_empty = len(all_pids) > 0
+    if all_pids.issubset(all_error) and not_empty:
+        file_error_dict[filename] = True
+        return True
+    else:
+        file_error_dict[filename] = False
+        return False
+
+
+
+
+
+
+From log_analyzer
+
+    db_file_malware_dict = {}
+    file_corrupted_processes_dict = {}
+    file_terminate_dict = {}
+    file_sleep_dict = {}
+    file_crash_dict = {}
+    file_error_dict = {}
+    file_writefile_dict = {}
+    dict_list = [db_file_malware_dict,
+                 file_corrupted_processes_dict,
+                 file_terminate_dict,
+                 file_sleep_dict,
+                 file_crash_dict,
+                 file_error_dict,
+                 file_writefile_dict]
+    utils.update_results(results, dict_list)
+
+    file_utils.final_output_instructions(
+        dir_results_path,
+        filenames,
+        db_file_malware_dict,
+        file_corrupted_processes_dict,
+        file_terminate_dict,
+        file_sleep_dict,
+        file_crash_dict,
+        file_error_dict,
+        file_writefile_dict
+    )
+
+
+
+
+From file_output
+
+def output_on_file_instructions(filename, process_dict, inverted_process_dict, dir_analyzed_logs, db_file_malware_dict,
+                                file_corrupted_processes_dict, terminating_all, sleeping_all, crashing_all,
+                                error_all, writes_file):
+    """
+    Output on file the analyzed content of one log file. For each malware object related to the specified file name
+    it prints the content of each malware pid and sums up the executed instructions. The instruction count is divided
+    into 4 separated parts: from_db, created, memory_written and total. Each of these counters consider only the
+    instructions executed by pids whose origin corresponds to the specified one.
+
+    :param filename:
+    :param process_dict:
+    :param inverted_process_dict:
+    :param dir_analyzed_logs:
+    :param db_file_malware_dict:
+    :param file_corrupted_processes_dict:
+    :param terminating_all:
+    :param sleeping_all:
+    :param crashing_all:
+    :param error_all:
+    :param writes_file:
+    :return:
+    """
+    with open(path.join(dir_analyzed_logs, filename), 'w', encoding='utf-8', errors='replace') as outfile:
+        total_instructions = [0, 0, 0, 0]
+        pprint.pprint(process_dict, outfile)
+        outfile.write('\n')
+        pprint.pprint(inverted_process_dict, outfile)
+        outfile.write('\n')
+
+        if filename in db_file_malware_dict:
+            malware = db_file_malware_dict[filename]
+            total_instructions = [sum(x) for x in zip(total_instructions, malware.get_total_executed_instructions())]
+            outfile.write(domain_utils.repr_malware(malware) + '\n\n')
+
+        if filename in file_corrupted_processes_dict:
+            for malware in file_corrupted_processes_dict[filename]:
+                total_instructions = [sum(x) for x in
+                                      zip(total_instructions, malware.get_total_executed_instructions())]
+                outfile.write(domain_utils.repr_malware(malware) + '\n\n')
+
+        outfile.write('{} {}\n'.format(string_utils.instruction_final, total_instructions))
+
+        outfile.write('{} {} {} {} {} {} {} {} {} {}\n'.format(
+            string_utils.instruction_terminating,
+            terminating_all,
+            string_utils.instruction_sleeping,
+            sleeping_all,
+            string_utils.instruction_crashing,
+            crashing_all,
+            string_utils.instruction_raising_error,
+            error_all,
+            string_utils.instruction_writes_file,
+            writes_file
+        ))
+
+
+
+

@@ -4,7 +4,7 @@ from pandaloginvestigator.core.domain.clue_object import Clue
 from pandaloginvestigator.core.utils import results_reader
 from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import string_utils
-from pandaloginvestigator.core.utils import file_utils
+from pandaloginvestigator.core.utils import file_output
 from pandaloginvestigator.core.utils import utils
 from multiprocessing import Pool
 import logging
@@ -50,15 +50,15 @@ def build_suspects(dir_results_path: str, dir_clues_path: str, core_num: int):
         logger.info('Total clue reading time: ' + str(time.time() - t1))
         utils.update_results(results, [clues_from_panda, ])
     add_clues(clues, clues_from_panda)
-    file_utils.output_clues(dir_results_path, clues, 'total_clues.txt')
+    file_output.output_clues(dir_results_path, clues, 'total_clues.txt')
     suspects = sum_suspects(clues, corrupted_dict)
     analysis_results = results_reader.read_data(dir_results_path, string_utils.target_i)
     suspects = remove_crashed(suspects, analysis_results[6], analysis_results[7])
-    file_utils.output_clues(dir_results_path, clues, 'total_clues_corrupted_only.txt')
+    file_output.output_clues(dir_results_path, clues, 'total_clues_corrupted_only.txt')
     add_status_modifier(suspects, analysis_results)
     normalize_suspects(suspects)
 
-    file_utils.output_suspects(dir_results_path, suspects)
+    file_output.output_suspects(dir_results_path, suspects)
 
 
 def initialize_clues(corrupted_dict):

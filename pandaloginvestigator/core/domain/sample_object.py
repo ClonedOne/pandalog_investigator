@@ -7,6 +7,8 @@ class Sample:
     def __init__(self, sample_uuid, malware_name):
         """
         Creates a new sample object with an empty set of corrupted processes and no currently active processes.
+        The corrupted_processes dictionary maps (process name, process id) tuples with the related CorruptedProcess
+        objects.
         
         :param sample_uuid: the md5 hash of the file
         :param malware_name: name of the malware sample obtained from the database

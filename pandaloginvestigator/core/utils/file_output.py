@@ -1,68 +1,12 @@
 from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import string_utils
 from os import path
-import pprint
+import jsonpickle
 
 
 """
     This file contains methods used to output partial and global results on file. 
 """
-
-
-def output_on_file_instructions(filename, process_dict, inverted_process_dict, dir_analyzed_logs, db_file_malware_dict,
-                                file_corrupted_processes_dict, terminating_all, sleeping_all, crashing_all,
-                                error_all, writes_file):
-    """
-    Output on file the analyzed content of one log file. For each malware object related to the specified file name
-    it prints the content of each malware pid and sums up the executed instructions. The instruction count is divided
-    into 4 separated parts: from_db, created, memory_written and total. Each of these counters consider only the
-    instructions executed by pids whose origin corresponds to the specified one.
-
-    :param filename:
-    :param process_dict:
-    :param inverted_process_dict:
-    :param dir_analyzed_logs:
-    :param db_file_malware_dict:
-    :param file_corrupted_processes_dict:
-    :param terminating_all:
-    :param sleeping_all:
-    :param crashing_all:
-    :param error_all:
-    :param writes_file:
-    :return:
-    """
-    with open(path.join(dir_analyzed_logs, filename), 'w', encoding='utf-8', errors='replace') as outfile:
-        total_instructions = [0, 0, 0, 0]
-        pprint.pprint(process_dict, outfile)
-        outfile.write('\n')
-        pprint.pprint(inverted_process_dict, outfile)
-        outfile.write('\n')
-
-        if filename in db_file_malware_dict:
-            malware = db_file_malware_dict[filename]
-            total_instructions = [sum(x) for x in zip(total_instructions, malware.get_total_executed_instructions())]
-            outfile.write(domain_utils.repr_malware(malware) + '\n\n')
-
-        if filename in file_corrupted_processes_dict:
-            for malware in file_corrupted_processes_dict[filename]:
-                total_instructions = [sum(x) for x in
-                                      zip(total_instructions, malware.get_total_executed_instructions())]
-                outfile.write(domain_utils.repr_malware(malware) + '\n\n')
-
-        outfile.write('{} {}\n'.format(string_utils.instruction_final, total_instructions))
-
-        outfile.write('{} {} {} {} {} {} {} {} {} {}\n'.format(
-            string_utils.instruction_terminating,
-            terminating_all,
-            string_utils.instruction_sleeping,
-            sleeping_all,
-            string_utils.instruction_crashing,
-            crashing_all,
-            string_utils.instruction_raising_error,
-            error_all,
-            string_utils.instruction_writes_file,
-            writes_file
-        ))
 
 
 def output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, syscall_dict):
@@ -220,3 +164,20 @@ def output_suspects(dir_results_path, suspects):
                     )
                 else:
                     suspects_file.write('\n\n\n')
+
+
+def output_json(file_name, domain_object, output_dir):
+    """
+    Output the specified domain object on a file in json format using the JsonPickle library.
+    The object can later be loaded form the file directly into a memory object.
+    
+    :param file_name: output file name 
+    :param domain_object: the object to output
+    :param output_dir: path to the output directory
+    :return: 
+    """
+
+    with open(path.join(output_dir, file_name + '.json'), 'w', encoding='utf-8', errors='replace') as out_file:
+        json_object = jsonpickle.encode(domain_object)
+        out_file.write(json_object)
+        out_file.write('\n')
