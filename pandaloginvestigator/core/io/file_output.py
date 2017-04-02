@@ -5,7 +5,7 @@ import jsonpickle
 
 
 """
-    This file contains methods used to output partial and global results on file. 
+This file contains methods used to output partial and global results on file. 
 """
 
 
@@ -30,77 +30,6 @@ def output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, sys
                               str(malware_syscall_dict[system_call]) + '\n')
 
         outfile.write('{} {}\n'.format(string_utils.syscall_final, total_syscall))
-
-
-def final_output_instructions(dir_results_path, filenames, db_file_malware_dict, file_corrupted_processes_dict,
-                              file_terminate_dict, file_sleep_dict, file_crash_dict, file_error_dict,
-                              file_writefile_dict):
-    """
-    Prints the final output on file. The final output contains aggregate data regarding the totality of the analyzed
-    logs. For each filename and each malware_object associated sums up the instruction for each pid, checks if each
-    pid has been terminated and if each pid has called the sleep function.
-
-    :param dir_results_path: path to the result folder
-    :param filenames:
-    :param db_file_malware_dict:
-    :param file_corrupted_processes_dict:
-    :param file_terminate_dict:
-    :param file_sleep_dict:
-    :param file_crash_dict:
-    :param file_error_dict:
-    :param file_writefile_dict:
-    :return:
-    """
-    with open(dir_results_path + '/corrupted_processes.txt', 'w', encoding='utf-8', errors='replace') as cp_file:
-        with open(dir_results_path + '/analysis.txt', 'w', encoding='utf-8', errors='replace') as res_file:
-            for filename in filenames:
-                total_instructions = [0, 0, 0, 0]
-
-                res_file.write('{} {}\n'.format(string_utils.filename, filename))
-                cp_file.write('{} {}\n'.format(string_utils.filename, filename))
-
-                if filename in db_file_malware_dict:
-                    entry = db_file_malware_dict[filename]
-                    total_instructions = [sum(x) for x in
-                                          zip(total_instructions, entry.get_total_executed_instructions())]
-                    cp_file.write(domain_utils.repr_malware_processes(entry))
-
-                if filename in file_corrupted_processes_dict:
-                    for entry in file_corrupted_processes_dict[filename]:
-                        total_instructions = [sum(x) for x in
-                                              zip(total_instructions, entry.get_total_executed_instructions())]
-                        cp_file.write(domain_utils.repr_malware_processes(entry))
-
-                res_file.write(
-                    string_utils.instruction_final + '\t' +
-                    str(total_instructions) + '\n'
-                )
-                res_file.write(
-                    string_utils.instruction_terminating + '\t' +
-                    (str(file_terminate_dict[filename]) if filename in file_terminate_dict else str(False)) +
-                    '\t'
-                )
-                res_file.write(
-                    string_utils.instruction_sleeping + '\t' +
-                    (str(file_sleep_dict[filename]) if filename in file_sleep_dict else str(False)) +
-                    '\t'
-                )
-                res_file.write(
-                    string_utils.instruction_crashing + '\t' +
-                    (str(file_crash_dict[filename]) if filename in file_crash_dict else str(False)) +
-                    '\t'
-                )
-                res_file.write(
-                    string_utils.instruction_raising_error + '\t' +
-                    (str(file_error_dict[filename]) if filename in file_error_dict else str(False)) +
-                    '\t'
-                )
-                res_file.write(
-                    string_utils.instruction_writes_file + '\t' +
-                    (str(file_writefile_dict[filename]) if filename in file_writefile_dict else str(False)) +
-                    '\n\n'
-                )
-                cp_file.write('\n\n')
 
 
 def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
@@ -181,3 +110,42 @@ def output_json(file_name, domain_object, output_dir):
         json_object = jsonpickle.encode(domain_object)
         out_file.write(json_object)
         out_file.write('\n')
+
+
+def final_output_analysis(samples_dict, dir_results_path):
+    """
+    Outputs the final analysis results on file.
+    It creates 2 files:
+     * for each sample it shows the numeric values collected
+     * for each sample it shows the structure of corrupted processes observed
+    
+    :param samples_dict: dictionary of Sample objects 
+    :param dir_results_path: path to results directory
+    :return: 
+    """
+    with open(path.join(dir_results_path, 'corrupted_processes.txt'), 'w', encoding='utf-8', errors='replace') as c_out:
+        with open(path.join(dir_results_path, 'analysis.txt'), 'w', encoding='utf-8', errors='replace') as a_out:
+            for uuid in sorted(samples_dict.keys()):
+                current_sample = samples_dict[uuid]
+
+                a_out.write('{} {}\n'.format(string_utils.filename, uuid))
+                c_out.write('{} {}\n'.format(string_utils.filename, uuid))
+
+                process_repr = '\t\t{:15s}\t{:10d}\t{:15s}\tby:\t{:15s}\t{:10d}\n'
+
+                for process_info, process in current_sample.corrupted_processes.items():
+                    c_out.write(process_repr.format(process_info[0],
+                                                    process_info[1],
+                                                    process.origin,
+                                                    process.parent[0],
+                                                    process.parent[1]))
+
+                a_out.write(string_utils.out_final + '\t' + str(current_sample.total_instruction()) + '\n')
+                a_out.write(string_utils.out_terminating + '\t' + str(current_sample.terminate_all()) + '\t')
+                a_out.write(string_utils.out_sleeping + '\t' + str(current_sample.sleep_all()) + '\t')
+                a_out.write(string_utils.out_crashing + '\t' + str(current_sample.crash_all()) + '\t')
+                a_out.write(string_utils.out_raising_error + '\t' + str(current_sample.error_all()) + '\t')
+                a_out.write(string_utils.out_writes_file + '\t' + str(current_sample.write_file()) + '\n')
+
+                a_out.write('\n')
+                c_out.write('\n')

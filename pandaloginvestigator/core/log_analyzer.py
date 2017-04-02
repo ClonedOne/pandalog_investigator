@@ -1,10 +1,11 @@
 from pandaloginvestigator.core.workers import worker_analyzer
-from pandaloginvestigator.core.utils import file_output
 from pandaloginvestigator.core.utils import db_manager
+from pandaloginvestigator.core.io import file_output
 from pandaloginvestigator.core.utils import utils
 from multiprocessing import Pool
 import logging
 import time
+
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,12 @@ def analyze_logs(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_anal
     results = pool.map(worker_analyzer.work, formatted_input)
     pool.close()
     pool.join()
+
+    sample_dict = {}
+    dict_list = [sample_dict]
+    utils.update_results(results, dict_list)
+
+    file_output.final_output_analysis(sample_dict, dir_results_path)
 
     t2 = time.time()
     logger.info('Total analysis time: ' + str(t2 - t1))

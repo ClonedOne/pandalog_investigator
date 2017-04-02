@@ -1,9 +1,9 @@
-import pandaloginvestigator.core.utils.file_input
-from pandaloginvestigator.core.utils import string_utils
-from pandaloginvestigator.core.utils import domain_utils
 import logging
 import os
 
+import pandaloginvestigator.core.io.file_input
+from pandaloginvestigator.core.utils import domain_utils
+from pandaloginvestigator.core.utils import string_utils
 
 logger = logging.getLogger(__name__)
 
@@ -44,16 +44,16 @@ def read_result_instr(dir_results_path):
         last_file_name = ''
         for line in resfile:
             if string_utils.filename in line:
-                last_file_name = pandaloginvestigator.core.utils.file_input.filename_from_analysis(line)
-            elif string_utils.instruction_final in line:
+                last_file_name = pandaloginvestigator.core.io.file_input.filename_from_analysis(line)
+            elif string_utils.out_final in line:
                 if line != string_utils.no_instructions:
-                    values = pandaloginvestigator.core.utils.file_input.values_from_analysis(line)
+                    values = pandaloginvestigator.core.io.file_input.values_from_analysis(line)
                     instr_from_db_dict[last_file_name] = int(values[0])
                     created_dict[last_file_name] = int(values[1])
                     written_dict[last_file_name] = int(values[2])
                     instr_totals_dict[last_file_name] = int(values[3])
-            elif string_utils.instruction_terminating in line:
-                status = pandaloginvestigator.core.utils.file_input.status_from_analysis(line)
+            elif string_utils.out_terminating in line:
+                status = pandaloginvestigator.core.io.file_input.status_from_analysis(line)
                 terminating_dict[last_file_name] = status[0]
                 sleeping_dict[last_file_name] = status[1]
                 crashing_dict[last_file_name] = status[2]
@@ -85,10 +85,10 @@ def read_result_syscall(dir_results_path):
         last_file_name = ''
         for line in resfile:
             if string_utils.filename in line:
-                last_file_name = pandaloginvestigator.core.utils.file_input.filename_from_analysis(line)
+                last_file_name = pandaloginvestigator.core.io.file_input.filename_from_analysis(line)
             elif string_utils.syscall_final in line:
                 if line != string_utils.no_syscalls:
-                    value = pandaloginvestigator.core.utils.file_input.values_from_syscalls(line)
+                    value = pandaloginvestigator.core.io.file_input.values_from_syscalls(line)
                     syscalls_totals_dict[last_file_name] = value
     return [syscalls_totals_dict, ]
 
@@ -114,7 +114,7 @@ def read_result_corrupted(dir_results_path: str) -> dict:
 
         for line in resfile:
             if string_utils.filename in line:
-                last_file_name = pandaloginvestigator.core.utils.file_input.filename_from_analysis(line)
+                last_file_name = pandaloginvestigator.core.io.file_input.filename_from_analysis(line)
                 corrupted_dict[last_file_name] = []
             elif line.strip():
                 line = line.split('\t')
@@ -153,7 +153,7 @@ def read_clues_regkey(dir_results_path: str) -> dict:
                     last_file_name = ''
                     lines = []
             elif string_utils.filename in line:
-                last_file_name = pandaloginvestigator.core.utils.file_input.filename_from_analysis(line)
+                last_file_name = pandaloginvestigator.core.io.file_input.filename_from_analysis(line)
             else:
                 lines.append(line)
     return clues_dict

@@ -17,17 +17,20 @@ def unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path):
     The content of the log will be saved in a file with the same name in a
     folder under the created_dirs_path specified in the configuration.
 
-    :param dir_panda_path:
-    :param filename:
-    :param dir_pandalogs_path:
-    :param dir_unpacked_path:
+    :param dir_panda_path: path to the pandalog unpacker utility
+    :param filename: pandalog file to unpack
+    :param dir_pandalogs_path: path to the pandalogs directory
+    :param dir_unpacked_path: path to the unpacked pandalogs directory
     :return:
     """
-    unpack_command = '/pandalog_reader'
+
+    unpack_command = 'pandalog_reader'
     reduced_filename = filename[:-9] if string_utils.ext_pandalog_file in filename else filename
     logger.debug('unpacking = ' + str(filename))
-    return_code = subprocess.call(dir_panda_path + unpack_command + " " + os.path.join(dir_pandalogs_path, filename) +
-                                  " > " + os.path.join(dir_unpacked_path, reduced_filename), shell=True)
+    return_code = subprocess.call(os.path.join(dir_panda_path, unpack_command) + " " +
+                                  os.path.join(dir_pandalogs_path, filename) + " > " +
+                                  os.path.join(dir_unpacked_path, reduced_filename),
+                                  shell=True)
     if return_code != 0:
         logger.debug('Unpack log: ' + reduced_filename + 'return code: ' + str(return_code))
 
@@ -41,6 +44,7 @@ def remove_log_file(filename, dir_unpacked_path):
     :param dir_unpacked_path:
     :return:
     """
+
     os.remove(dir_unpacked_path + '/' + filename)
 
 
@@ -49,9 +53,10 @@ def get_new_path(line):
     Handles the acquisition of the path string for a created process.
     Handles linux problems with windows style path strings.
 
-    :param line:
+    :param line: current line of the pandalog
     :return: path to the created process executable
     """
+
     fixed_substring = u'name=['
     index = line.find(fixed_substring)
     line = line[index:]
@@ -63,9 +68,10 @@ def get_written_file_path(line):
     Handles the acquisition of the path string for a written file.
     It is used to handle linux problems with windows style path strings.
 
-    :param line:
-    :return:
+    :param line: current line of the pandalog
+    :return: path to the written file
     """
+
     fixed_substring = u'filename,'
     index = line.find(fixed_substring)
     line = line[index:]

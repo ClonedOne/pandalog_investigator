@@ -1,15 +1,15 @@
-from pandaloginvestigator.core.domain.corrupted_process_object import CorruptedProcess
+import logging
+import os
+import time
+from multiprocessing import Pool
+
 from pandaloginvestigator.core.detection import worker_clues_reader
 from pandaloginvestigator.core.domain.clue_object import Clue
-from pandaloginvestigator.core.utils import results_reader
+from pandaloginvestigator.core.domain.corrupted_process_object import CorruptedProcess
+from pandaloginvestigator.core.io import file_output, results_reader
 from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import string_utils
-from pandaloginvestigator.core.utils import file_output
 from pandaloginvestigator.core.utils import utils
-from multiprocessing import Pool
-import logging
-import time
-import os
 
 logger = logging.getLogger(__name__)
 

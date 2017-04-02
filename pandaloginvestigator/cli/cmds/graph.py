@@ -1,5 +1,5 @@
 from pandaloginvestigator.core.utils import string_utils
-from pandaloginvestigator.core.plotting import graph_output
+from pandaloginvestigator.core.graph import graph_output
 import logging
 import os
 

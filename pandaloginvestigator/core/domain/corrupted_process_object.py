@@ -1,10 +1,16 @@
+
 class CorruptedProcess:
     """
-    This class represents a single corrupted process. A process is considered corrupted if:
-     * is the original software samples being analyzed - FROM_DB
-     * is directly created by a corrupted process - CREATED 
-     * it's memory is written by a corrupted process - WRITTEN
+        This class represents a single corrupted process. A process is considered corrupted if:
+         * is the original software samples being analyzed - FROM_DB
+         * is directly created by a corrupted process - CREATED 
+         * it's memory is written by a corrupted process - WRITTEN
     """
+
+    FROM_DB = 'database'
+    CREATED = 'created'
+    WRITTEN = 'mem_written'
+    origins = [FROM_DB, CREATED, WRITTEN]
 
     def __init__(self, process_info, origin, parent_process):
         """
@@ -16,15 +22,16 @@ class CorruptedProcess:
         """
         self.process_info = process_info
         self.instruction_executed = 0
-        self.starting_instruction = 0
-        self.terminated_processes = []
-        # Created processes consists of tuples (new process info, path to the executable)
-        self.created_processes = []
-        self.written_memory = []
-        self.written_file = []
+        self.last_starting_instruction = 0
+        # Terminated, created and written processes consists of tuples (new process info, path to the executable)
+        self.terminated_processes = set()
+        self.created_processes = set()
+        self.written_memory = set()
+        self.written_file = set()
         self.sleep = 0
-        self.crashing = False
+        self.crashed = False
         self.error = False
+        self.terminated = False
         self.origin = origin
         self.parent = parent_process
 
@@ -33,3 +40,5 @@ class CorruptedProcess:
 
     def __hash__(self):
         return hash(self.process_info)
+
+

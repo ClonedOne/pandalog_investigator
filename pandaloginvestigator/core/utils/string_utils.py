@@ -40,12 +40,12 @@ queried = 'Queried value:'
 dangerous_instruction = 'Dangerous instruction:'
 original_mal = 'Original malware:'
 suspect_ind = 'Suspect index:'
-instruction_terminating = 'Terminating all:'
-instruction_sleeping = 'Sleeping all:'
-instruction_crashing = 'Crashing all:'
-instruction_raising_error = 'Raising hard error all:'
-instruction_writes_file = 'Writes files:'
-instruction_final = 'Final instruction count:'
+out_terminating = 'Terminating all:'
+out_sleeping = 'Sleeping all:'
+out_crashing = 'Crashing all:'
+out_raising_error = 'Raising hard error all:'
+out_writes_file = 'Writes files:'
+out_final = 'Final instruction count:'
 syscall_final = 'Final system call count:'
 last_inst = 'Last starting instruction:'
 exec_inst = 'Instruction executed:'
@@ -69,7 +69,7 @@ instruction_operands = 'Instruction operands'
 instruction_size = 'Instruction size'
 instruction_bytes = 'Instruction bytes'
 
-# Strings used in plotting modules
+# Strings used in graph modules
 target_i = 'instructions'
 target_s = 'syscalls'
 
@@ -94,8 +94,3 @@ tag_values = ('SystemBiosDate', 'SystemBiosVersion', 'VideoBiosVersion', 'QEMU',
 # Particularly dangerous instruction tags
 tag_dangerous = ('oversize', 'int1')
 
-# Origins of corrupted processes
-FROM_DB = 'database'
-CREATED = 'created'
-WRITTEN = 'mem_written'
-origins = [FROM_DB, CREATED, WRITTEN]

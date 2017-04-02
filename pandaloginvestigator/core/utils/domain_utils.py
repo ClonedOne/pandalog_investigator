@@ -5,14 +5,13 @@ from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import utils
 import logging
 
+"""
+This module handles utility methods which are inherently related to the domain of the application. Therefore this
+module has explicit knowledge of domain's structure.
+"""
 
 logger = logging.getLogger(__name__)
 
-# This module handles utility methods which are inherently related to the domain of the application. Therefore this
-# module has explicit knowledge of domain's structure.
-
-
-# Utilities related to Malware class.
 
 def initialize_malware_object(filename, malware_name, db_file_malware_dict, file_corrupted_processes_dict, from_db=False):
     """
@@ -38,75 +37,6 @@ def initialize_malware_object(filename, malware_name, db_file_malware_dict, file
     return malware
 
 
-def repr_malware(malware):
-    """
-    Returns a string representation of the specified malware object.
-
-    :param malware:
-    :return: string representing the whole malware
-    """
-    result = ''
-    for pid in malware.get_pid_list():
-        result += '{}\t{}\n'.format(string_utils.proc_name, malware.name)
-        result += '{}\t{}\n'.format(string_utils.proc_pid, pid)
-        result += '{}\t{}\n'.format(string_utils.proc_orig, malware.get_origin(pid))
-        result += '{}\t{}\n'.format(string_utils.last_inst, malware.get_starting_instruction(pid))
-        result += '{}\t{}\n'.format(string_utils.exec_inst, malware.get_instruction_executed(pid))
-        result += '{}\t{}\n'.format(string_utils.text_sleep, malware.get_sleep(pid))
-
-        result += '\n{}\n'.format(string_utils.text_spawned)
-        result += '| {:20s} | {:20s} | {:20s} | {:20s} |\n'.format(
-            'New pid',
-            'Process name',
-            'Instruction',
-            'Executable path'
-        )
-        for entry in malware.get_spawned_processes(pid):
-            for sub_entry in entry:
-                result += '| {:20s} '.format(str(sub_entry))
-            result += '|\n'
-
-        result += '\n{}\n'.format(string_utils.text_terminated)
-        result += '| {:20s} | {:20s} | {:20s} |\n'.format(
-            'Terminated pid',
-            'Process name',
-            'Instruction'
-        )
-        for entry in malware.get_terminated_processes(pid):
-            for sub_entry in entry:
-                result += '| {:20s} '.format(str(sub_entry))
-            result += '|\n'
-
-        result += '\n{}\n'.format(string_utils.text_written)
-        result += '| {:20s} | {:20s} | {:20s} |\n'.format(
-            'Written pid',
-            'Process name',
-            'Instruction'
-        )
-        for entry in malware.get_written_memories(pid):
-            for sub_entry in entry:
-                result += '| {:20s} '.format(str(sub_entry))
-            result += '|\n'
-
-        result += '\n{}\n'.format(string_utils.text_spec_status)
-        result += '| {:20s} | {:20s} | {:20s} |\n'.format(
-            string_utils.text_crash,
-            string_utils.text_raise_err,
-            string_utils.text_written_file
-        )
-        result += '| {:20s} | {:20s} | {:20s} |\n\n'.format(
-            str(malware.get_crash(pid)),
-            str(malware.get_error(pid)),
-            str(malware.get_written_files(pid))
-        )
-
-    executed = malware.get_total_executed_instructions()
-    result += string_utils.text_executed + '\n'
-    result += '| {:15s} | {:15s} | {:15s} | {:15s} |\n'.format('DB', 'created', 'memory written', 'total')
-    result += '| {:15d} | {:15d} | {:15d} | {:15d} |\n\n\n'.format(executed[0], executed[1], executed[2], executed[3])
-    return result
-
-
 def repr_malware_processes(malware):
     """
     Returns a list of the processes names and ids of the specified malware as a string.
@@ -124,7 +54,6 @@ def repr_malware_processes(malware):
 
 
 # Utilities related to system calls.
-
 
 def get_syscalls():
     """

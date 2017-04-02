@@ -1,12 +1,12 @@
 from pandaloginvestigator.core.domain.corrupted_process_object import CorruptedProcess
 from pandaloginvestigator.core.domain.sample_object import Sample
-from pandaloginvestigator.core.utils import string_utils
+from pandaloginvestigator.core.io import file_output
 from pandaloginvestigator.core.utils import panda_utils
-from pandaloginvestigator.core.utils import file_output
+from pandaloginvestigator.core.utils import string_utils
 import traceback
 import logging
-import time
 import os
+import time
 
 """
 Worker process in charge of analyzing the pandalog files. 
@@ -86,7 +86,7 @@ def work(data_pack):
 
     total_time = time.time() - starting_time
     logger.info('WorkerId ' + str(worker_id) + ' Total time: ' + str(total_time))
-    return analyzed_samples
+    return [analyzed_samples, ]
 
 
 def analyze_log(filename):
@@ -149,7 +149,7 @@ def get_corrupted_process(process_name, pid):
 
     # Otherwise checks if it is the original analyzed process and creates a new corrupted process object
     elif process_name == current_sample.malware_name:
-        corrupted_process = CorruptedProcess(entering_process_info, string_utils.FROM_DB, entering_process_info)
+        corrupted_process = CorruptedProcess(entering_process_info, CorruptedProcess.FROM_DB, entering_process_info)
         current_sample.corrupted_processes[entering_process_info] = corrupted_process
         return corrupted_process
 
@@ -180,7 +180,7 @@ def context_switch(line):
         update_process_instruction_count(current_instruction)
 
     if corrupted_process:
-        corrupted_process.starting_instruction = current_instruction
+        corrupted_process.last_starting_instruction = current_instruction
         current_sample.active_corrupted_process = corrupted_process
 
 
@@ -198,7 +198,7 @@ def update_process_instruction_count(current_instruction):
 
     corrupted_process = current_sample.active_corrupted_process
 
-    starting_instruction = corrupted_process.starting_instruction
+    starting_instruction = corrupted_process.last_starting_instruction
     instruction_delta = current_instruction - starting_instruction
     corrupted_process.instruction_executed += instruction_delta
 
@@ -210,7 +210,8 @@ def terminating_process(line):
     Handles termination system calls.
     Finds out process name and id of the terminating and terminated processes.
     Checks if terminating process is corrupted and if so updates its termination information.
-    Note: a corrupted process may terminate any process in the system (not only corrupted ones).
+    A corrupted process may terminate any process in the system (not only corrupted ones), if the terminated process
+    was corrupted, updates its termination status.
 
     :param line: the current pandalog line
     :return:
@@ -225,7 +226,10 @@ def terminating_process(line):
 
     if corrupted_process:
         terminated_process_info = (terminated_name, terminated_pid)
-        corrupted_process.terminated_processes.append(terminated_process_info)
+        corrupted_process.terminated_processes.add(terminated_process_info)
+
+        if terminated_process_info in current_sample.corrupted_processes:
+            current_sample.corrupted_processes[terminated_process_info].terminated = True
 
 
 def calling_sleep():
@@ -279,7 +283,7 @@ def crashing(line):
     corrupted_process = get_corrupted_process(read_name, read_pid)
 
     if corrupted_process:
-        corrupted_process.crashing = True
+        corrupted_process.crashed = True
 
 
 def creating_process(line):
@@ -307,12 +311,12 @@ def creating_process(line):
     if corrupted_process:
         created_process_info = (created_name, created_pid)
 
+        # Some chains of creation/termination may end up generating colliding (name, pid) couples
         if created_process_info in current_sample.corrupted_processes:
-            logger.error('ERROR created process already found in sample')
             return
 
-        created_process = CorruptedProcess(created_process_info, string_utils.CREATED, creating_process_info)
-        corrupted_process.created_processes.append((created_process_info, new_path))
+        created_process = CorruptedProcess(created_process_info, CorruptedProcess.CREATED, creating_process_info)
+        corrupted_process.created_processes.add((created_process_info, new_path))
         current_sample.corrupted_processes[created_process_info] = created_process
 
 
@@ -343,8 +347,8 @@ def writing_memory(line):
         if written_process_info in current_sample.corrupted_processes:
             return
 
-        written_process = CorruptedProcess(written_process_info, string_utils.WRITTEN, writing_process_info)
-        corrupted_process.written_memory(written_process_info)
+        written_process = CorruptedProcess(written_process_info, CorruptedProcess.WRITTEN, writing_process_info)
+        corrupted_process.written_memory.add(written_process_info)
         current_sample.corrupted_processes[written_process_info] = written_process
 
 
@@ -365,4 +369,4 @@ def writing_file(line):
     corrupted_process = get_corrupted_process(process_name, pid)
 
     if corrupted_process:
-        corrupted_process.written_file.append(written_file_path)
+        corrupted_process.written_file.add(written_file_path)

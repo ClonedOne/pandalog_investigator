@@ -1,10 +1,11 @@
-from pandaloginvestigator.core.detection import worker_regkey_detector
-from pandaloginvestigator.core.utils import file_output
-from pandaloginvestigator.core.utils import string_utils
-from pandaloginvestigator.core.utils import utils
-from multiprocessing import Pool
 import logging
 import time
+from multiprocessing import Pool
+
+from pandaloginvestigator.core.detection import worker_regkey_detector
+from pandaloginvestigator.core.io import file_output
+from pandaloginvestigator.core.utils import string_utils
+from pandaloginvestigator.core.utils import utils
 
 logger = logging.getLogger(__name__)
 empty_list = string_utils.no_instructions

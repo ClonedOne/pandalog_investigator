@@ -4,10 +4,12 @@ import os
 
 logger = logging.getLogger(__name__)
 
+"""
+    General utility methods
+"""
 
-# ## OTHER UTILITY METHODS ##
 
-def strip_filename_ext(file_names: list) -> list:
+def strip_filename_ext(file_names):
     """
     Strip log file names from the extension.
 
@@ -17,7 +19,7 @@ def strip_filename_ext(file_names: list) -> list:
     return [filename[:-9] for filename in file_names]
 
 
-def update_results(results: list, dict_list: list) -> None:
+def update_results(results, dict_list):
     """
     Given the results form the workers updates a list of dictionaries with the corresponding partial dictionaries
     contained in each of the worker sub result.
@@ -34,7 +36,7 @@ def update_results(results: list, dict_list: list) -> None:
             dict_list[i].update(sub_res[i])
 
 
-def merge_dict_dict(dict1: dict, dict2: dict) -> dict:
+def merge_dict_dict(dict1, dict2):
     """
     Merge two dictionaries of dictionaries of int values into a new dictionary of dictionaries of int values where
     each value is the sum of the values in the original dictionaries (if available).
@@ -62,14 +64,14 @@ def merge_dict_dict(dict1: dict, dict2: dict) -> dict:
     return dict_res
 
 
-def divide_workload(item_list: list, core_num: int, max_num: int = None) -> defaultdict:
+def divide_workload(item_list, core_num, max_num=None):
     """
-    Given a list of items and the number of processing cores available compute a list of items lists of equal
-    dimension, one for each core. 'max_num' is a parameter bounding the maximum number of items to divide.
+    Given a list of items and the number of CPU cores available, computes equal sized lists of items for each core. 
+    'max_num' is a parameter bounding the maximum number of items to divide.
 
-    :param item_list:
-    :param core_num:
-    :param max_num:
+    :param item_list: list of items to split
+    :param core_num: number of available CPU cores (workers)
+    :param max_num: maximum number of elements to consider
     :return: defaultdict containing lists of elements divided equally
     """
     j = 0

@@ -1,11 +1,12 @@
-from pandaloginvestigator.core.workers import worker_syscall_counter
-from pandaloginvestigator.core.utils import domain_utils
-from pandaloginvestigator.core.utils import file_output
-from pandaloginvestigator.core.utils import db_manager
-from pandaloginvestigator.core.utils import utils
-from multiprocessing import Pool
 import logging
 import time
+from multiprocessing import Pool
+
+from pandaloginvestigator.core.io import file_output
+from pandaloginvestigator.core.utils import db_manager
+from pandaloginvestigator.core.utils import domain_utils
+from pandaloginvestigator.core.utils import utils
+from pandaloginvestigator.core.workers import worker_syscall_counter
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
-from pandaloginvestigator.core.utils import results_reader
 import networkx as nx
 
+from pandaloginvestigator.core.io import results_reader
 
 color_db = 'blue'
 color_created = 'red'
