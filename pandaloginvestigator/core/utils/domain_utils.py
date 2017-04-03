@@ -63,7 +63,7 @@ def get_syscalls():
     :return: dictionary of system calls
     """
     syscall_dict = {}
-    with open('syscalls.tsv') as syscall_file:
+    with open('syscalls.tsv', 'r', encoding='utf-8', errors='replace') as syscall_file:
         for line in syscall_file:
             line = line.split('\t')
             syscall_dict[int(line[0])] = line[1].strip()

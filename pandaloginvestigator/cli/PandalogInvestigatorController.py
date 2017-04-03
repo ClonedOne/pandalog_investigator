@@ -1,5 +1,4 @@
 from pandaloginvestigator.cli.cmds.translate import translate_command
-from pandaloginvestigator.cli.cmds.syscalls import syscall_command
 from pandaloginvestigator.cli.cmds.analyze import analyze_command
 from pandaloginvestigator.cli.cmds.unpack import unpack_command
 from pandaloginvestigator.cli.cmds.detect import detect_command
@@ -11,8 +10,6 @@ import logging
 logger = logging.getLogger(__name__)
 help_n = 'Specify the number of logs to operate on'
 help_u = 'Unpack log files before operation'
-help_i = 'Plot the result of the instruction anYalysis'
-help_s = 'Plot the result of the system call analysis'
 help_f = 'Unpack the log files listed in the specified file'
 help_r = 'Detect the use of specific registry key to discover Qemu emulation'
 help_sd = 'Disk size is too small to contain unpacked logs. Remove each log after analysis'
@@ -26,8 +23,6 @@ class PandalogInvestigatorController(ArgparseController):
         arguments = [
             (['-n', '--num'], dict(help=help_n, action='store')),
             (['-u', '--unpack'], dict(help=help_u, action='store_true')),
-            (['-i', '--instr'], dict(help=help_i, action='store_true')),
-            (['-s', '--syscall'], dict(help=help_s, action='store_true')),
             (['-f', '--file'], dict(help=help_f, action='store')),
             (['--small-disk'], dict(help=help_sd, action='store_true'))
 
@@ -91,7 +86,6 @@ class PandalogInvestigatorController(ArgparseController):
 
         translate_command(self.app, max_num, small_disk)
 
-
     @expose(help='''Analysis command: identify malwares and corrupted processes
     and counts the instruction executed. Then outputs the results on file,
     generating also a final report file. Please specify the number of log files
@@ -125,37 +119,6 @@ class PandalogInvestigatorController(ArgparseController):
 
         analyze_command(self.app, max_num, small_disk)
 
-    @expose(help='''System calls counting command: count system calls executed
-                 by malicious programs. Then outputs the results on file,
-                 generating also a final report file. Please specify the number
-                 of log files upon which you want to operate, or all.''',
-            arguments=[
-                (['-n', '--num'], dict(help=help_n, action='store')),
-                (['-u', '--unpack'], dict(help=help_u, action='store_true')),
-                (['--small-disk'], dict(help=help_sd, action='store_true'))
-            ])
-    def syscalls(self):
-        logger.info(
-            'Counting system calls. Received num option with value {}'.format(
-                self.app.pargs.num
-            )
-        )
-        unpack = False
-        max_num = None
-        small_disk = False
-        if self.app.pargs.unpack:
-            unpack = True
-        if self.app.pargs.num:
-            max_num = self.app.pargs.num
-        if self.app.pargs.small_disk:
-            small_disk = True
-            if unpack:
-                unpack = False
-        if unpack:
-            self.unpack()
-
-        syscall_command(self.app, max_num, small_disk)
-
     @expose(help='''Detect attempts of sandbox detection: Generates a final
     statistics file. Please specify the kind of detection method you wish to
     look for, or leave blank for all. Requires previous analysis.''',
@@ -187,10 +150,8 @@ class PandalogInvestigatorController(ArgparseController):
         detect_command(self.app, max_num, small_disk)
 
     @expose(help='''Represent corrupted processes as graphs, and output graph files
-    compatible with Gephi visualization library. Requires previous analysis.''',
-            arguments=[
-
-            ])
+    compatible with visualization libraries. Requires previous analysis.''',
+            arguments=[])
     def graph(self):
         logger.info('Generating graph output')
         graph_command(self.app)

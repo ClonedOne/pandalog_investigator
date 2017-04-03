@@ -17,17 +17,7 @@ logger = logging.getLogger(__name__)
 current_sample = None
 dir_unpacked_path = None
 dir_analyzed_logs = None
-
-# Performance optimization
-tag_context_switch = string_utils.tag_context_switch
-tag_termination = string_utils.tag_termination
-tag_process_creation = string_utils.tag_process_creation
-tag_write_memory = string_utils.tag_write_memory
-tag_read_memory = string_utils.tag_read_memory
-tag_sleep = string_utils.tag_sleep
-tag_raise_error = string_utils.tag_raise_error
-tag_write_file = string_utils.tag_write_file
-error_manager = string_utils.error_manager
+system_call_dict = {}
 
 
 def work(data_pack):
@@ -41,12 +31,13 @@ def work(data_pack):
      * flag indicating the need to delete unpacked files after analysis - 5
      * path to the pandalog unpacker utility - 6
      * path to the compressed pandalog files - 7
+     * dictionary mapping each system call code to its mnemonic value - 8
     
     :param data_pack: data needed by the worker 
     :return: set of analyzed samples
     """
 
-    global current_sample, dir_unpacked_path, dir_analyzed_logs
+    global current_sample, system_call_dict, dir_unpacked_path, dir_analyzed_logs
     starting_time = time.time()
     j = 0.0
 
@@ -59,6 +50,7 @@ def work(data_pack):
     small_disk = data_pack[5]
     dir_panda_path = data_pack[6]
     dir_pandalogs_path = data_pack[7]
+    system_call_dict = data_pack[8]
 
     # the analyzed samples dictionary maps pandalog uuids with the related Sample object
     analyzed_samples = {}
@@ -101,34 +93,23 @@ def analyze_log(filename):
      * crashes
      * error raising    
     At the end output a file with the results for the single pandalog.
+    Performance optimization: if no corrupted process is currently active there is no need to analyze the line.
  
     :param filename: uuid of the pandalog to analyze
     :return:
     """
-    #
-    # with open(os.path.join(dir_unpacked_path, filename), 'r', encoding='utf-8', errors='replace') as logfile:
-    #     for line in logfile:
-    #         try:
-    #             if tag_context_switch in line:
-    #                 context_switch(line)
-    #             elif tag_process_creation in line:
-    #                 creating_process(line)
-    #             elif tag_write_memory in line:
-    #                 writing_memory(line)
-    #             elif tag_write_file in line:
-    #                 writing_file(line)
-    #             elif tag_sleep in line:
-    #                 calling_sleep()
-    #             elif tag_termination in line:
-    #                 terminating_process(line)
-    #             elif tag_read_memory in line and error_manager in line:
-    #                 crashing(line)
-    #             elif tag_raise_error in line:
-    #                 raising_error()
-    #         except:
-    #             traceback.print_exc()
 
     global current_sample
+
+    # Performance optimization
+    tag_context_switch = string_utils.tag_context_switch
+    tag_system_call = string_utils.tag_system_call
+    tag_termination = string_utils.tag_termination
+    tag_process_creation = string_utils.tag_process_creation
+    tag_write_memory = string_utils.tag_write_memory
+    tag_read_memory = string_utils.tag_read_memory
+    tag_write_file = string_utils.tag_write_file
+    error_manager = string_utils.error_manager
 
     with open(os.path.join(dir_unpacked_path, filename), 'r', encoding='utf-8', errors='replace') as logfile:
         for line in logfile:
@@ -139,18 +120,16 @@ def analyze_log(filename):
                     crashing(line)
                 elif not current_sample.active_corrupted_process:
                     continue
+                elif tag_system_call in line:
+                    system_call(line)
                 elif tag_process_creation in line:
                     creating_process(line)
                 elif tag_write_memory in line:
                     writing_memory(line)
                 elif tag_write_file in line:
                     writing_file(line)
-                elif tag_sleep in line:
-                    calling_sleep()
                 elif tag_termination in line:
                     terminating_process(line)
-                elif tag_raise_error in line:
-                    raising_error()
             except:
                 traceback.print_exc()
 
@@ -258,38 +237,6 @@ def terminating_process(line):
             current_sample.corrupted_processes[terminated_process_info].terminated = True
 
 
-def calling_sleep():
-    """
-    Handles NtDelayExecution system calls. 
-    The purpose is to understand if the malicious process is trying to hide itself by calling the sleep function for
-    enough time to avoid examination.
-
-    :return:
-    """
-
-    global current_sample
-
-    corrupted_process = current_sample.active_corrupted_process
-    if corrupted_process:
-        corrupted_process.sleep += 1
-
-
-def raising_error():
-    """
-    Handles NtRaiseHardError system calls.
-    It is used to understand if a malware process is raising an unrecoverable error due for instance to the missing of
-    a required dll.
-
-    :return:
-    """
-
-    global current_sample
-
-    corrupted_process = current_sample.active_corrupted_process
-    if corrupted_process:
-        corrupted_process.error = True
-
-
 def crashing(line):
     """
     Checks if the error manager WerFault.exe is reading memory of one of a corrupted process.
@@ -298,8 +245,6 @@ def crashing(line):
     :param line: the current pandalog line
     :return:
     """
-
-    global current_sample
 
     # Acquire information on process being read by WerFault.exe
     commas = line.strip().split(',')
@@ -384,11 +329,9 @@ def writing_file(line):
     Finds out the writers id and process name. 
     Checks if the writing process is corrupted and, if so, updates its file writing information.
 
-    :param line:
+    :param line: the current pandalog line
     :return:
     """
-
-    global current_sample
 
     current_instruction, pid, process_name, written_file_path = panda_utils.data_from_line_basic(line, writing=True)
 
@@ -396,3 +339,30 @@ def writing_file(line):
 
     if corrupted_process:
         corrupted_process.written_file.add(written_file_path)
+
+
+def system_call(line):
+    """
+    Handles general system calls executed.
+    In particular keeps track of sleep calls and error raising.
+    
+    :param line: the current pandalog line
+    :return: 
+    """
+
+    global current_sample
+    corrupted_process = current_sample.active_corrupted_process
+
+    sleep_code = 98
+    error_code = 272
+
+    system_call_code = int(line.split('=')[3][:-2])
+
+    if system_call_code == sleep_code:
+        corrupted_process.sleep = True
+    elif system_call_code == error_code:
+        corrupted_process.error = True
+
+    corrupted_process.syscalls_executed += 1
+    syscall_mnemonic = system_call_dict.get(system_call_code, 'unknown')
+    corrupted_process.system_calls[syscall_mnemonic] = corrupted_process.system_calls.get(syscall_mnemonic, 0) + 1

@@ -1,4 +1,5 @@
 from pandaloginvestigator.core.workers import worker_analyzer
+from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import db_manager
 from pandaloginvestigator.core.io import file_output
 from pandaloginvestigator.core.utils import utils
@@ -35,6 +36,8 @@ def analyze_logs(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_anal
     t1 = time.time()
 
     db_file_malware_name_map = db_manager.acquire_malware_file_dict(dir_database_path)
+    sys_call_dict = domain_utils.get_syscalls()
+
     filenames, max_num = utils.input_with_modifiers(dir_unpacked_path, dir_pandalogs_path, small_disk=small_disk,
                                                     max_num=max_num)
     file_names_sublists = utils.divide_workload(filenames, core_num, max_num)
@@ -47,7 +50,8 @@ def analyze_logs(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_anal
             dir_analyzed_path,
             small_disk,
             dir_panda_path,
-            dir_pandalogs_path
+            dir_pandalogs_path,
+            sys_call_dict
         )
     )
     pool = Pool(processes=core_num)

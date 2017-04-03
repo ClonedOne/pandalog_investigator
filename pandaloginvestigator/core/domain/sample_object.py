@@ -42,7 +42,7 @@ class Sample:
             return False
 
         for process_info, process in self.corrupted_processes.items():
-            if process.sleep == 0:
+            if not process.sleep:
                 return False
         return True
 
@@ -126,5 +126,28 @@ class Sample:
             for i in origins_rng:
                 if process.origin == origins[i]:
                     total[i] += process.instruction_executed
+
+        return total
+
+    def total_syscalls(self):
+        """
+        Returns the total count of system calls executed by corrupted processes as a list:
+         * system calls count from processes whose origin is 'databse'
+         * system calls count from processes whose origin is 'created'
+         * system calls count from processes whose origin is 'written'
+         * total system calls count 
+        
+        :return: total count of system calls
+        """
+
+        total = [0, 0, 0, 0]
+        origins = CorruptedProcess.origins
+        origins_rng = range(len(origins))
+
+        for process_info, process in self.corrupted_processes.items():
+            total[3] += process.syscalls_executed
+            for i in origins_rng:
+                if process.origin == origins[i]:
+                    total[i] += process.syscalls_executed
 
         return total

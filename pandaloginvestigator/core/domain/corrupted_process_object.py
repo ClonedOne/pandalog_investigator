@@ -23,12 +23,14 @@ class CorruptedProcess:
         self.process_info = process_info
         self.instruction_executed = 0
         self.last_starting_instruction = 0
+        self.syscalls_executed = 0
+        self.system_calls = {}
         # Terminated, created and written processes consists of tuples (new process info, path to the executable)
         self.terminated_processes = set()
         self.created_processes = set()
         self.written_memory = set()
         self.written_file = set()
-        self.sleep = 0
+        self.sleep = False
         self.crashed = False
         self.error = False
         self.terminated = False

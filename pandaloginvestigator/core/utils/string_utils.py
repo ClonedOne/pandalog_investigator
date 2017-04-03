@@ -22,8 +22,6 @@ tag_process_creation = u'nt_create_user_process'
 tag_write_memory = u'nt_write_virtual_memory'
 tag_read_memory = u'nt_read_virtual_memory'
 tag_write_file = u'nt_write_file'
-tag_sleep = u'(num=98)'
-tag_raise_error = u'(num=272)'
 error_manager = u'WerFault.exe'
 tag_system_call = u'nt_any_syscall (num='
 

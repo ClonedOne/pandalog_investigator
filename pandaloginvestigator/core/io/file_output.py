@@ -115,8 +115,9 @@ def output_json(file_name, domain_object, output_dir):
 def final_output_analysis(samples_dict, dir_results_path):
     """
     Outputs the final analysis results on file.
-    It creates 2 files:
-     * for each sample it shows the numeric values collected
+    It creates 3 files:
+     * for each sample it shows the numeric values collected for instructions
+     * for each sample it shows the numeric values collected for system calls
      * for each sample it shows the structure of corrupted processes observed
     
     :param samples_dict: dictionary of Sample objects 
@@ -124,28 +125,36 @@ def final_output_analysis(samples_dict, dir_results_path):
     :return: 
     """
     with open(path.join(dir_results_path, 'corrupted_processes.txt'), 'w', encoding='utf-8', errors='replace') as c_out:
-        with open(path.join(dir_results_path, 'analysis.txt'), 'w', encoding='utf-8', errors='replace') as a_out:
-            for uuid in sorted(samples_dict.keys()):
-                current_sample = samples_dict[uuid]
+        with open(path.join(dir_results_path, 'analysis.txt'), 'w', encoding='utf-8', errors='replace') as i_out:
+            with open(path.join(dir_results_path, 'syscalls.txt'), 'w', encoding='utf-8', errors='replace') as s_out:
+                for uuid in sorted(samples_dict.keys()):
+                    current_sample = samples_dict[uuid]
 
-                a_out.write('{} {}\n'.format(string_utils.filename, uuid))
-                c_out.write('{} {}\n'.format(string_utils.filename, uuid))
+                    i_out.write('{} {}\n'.format(string_utils.filename, uuid))
+                    s_out.write('{} {}\n'.format(string_utils.filename, uuid))
+                    c_out.write('{} {}\n'.format(string_utils.filename, uuid))
 
-                process_repr = '\t\t{:15s}\t{:10d}\t{:15s}\tby:\t{:15s}\t{:10d}\n'
+                    process_repr = '\t\t{:15s}\t{:10d}\t{:15s}\tby:\t{:15s}\t{:10d}\n'
 
-                for process_info, process in current_sample.corrupted_processes.items():
-                    c_out.write(process_repr.format(process_info[0],
-                                                    process_info[1],
-                                                    process.origin,
-                                                    process.parent[0],
-                                                    process.parent[1]))
+                    # corrupted processes section
+                    for process_info, process in current_sample.corrupted_processes.items():
+                        c_out.write(process_repr.format(process_info[0],
+                                                        process_info[1],
+                                                        process.origin,
+                                                        process.parent[0],
+                                                        process.parent[1]))
 
-                a_out.write(string_utils.out_final + '\t' + str(current_sample.total_instruction()) + '\n')
-                a_out.write(string_utils.out_terminating + '\t' + str(current_sample.terminate_all()) + '\t')
-                a_out.write(string_utils.out_sleeping + '\t' + str(current_sample.sleep_all()) + '\t')
-                a_out.write(string_utils.out_crashing + '\t' + str(current_sample.crash_all()) + '\t')
-                a_out.write(string_utils.out_raising_error + '\t' + str(current_sample.error_all()) + '\t')
-                a_out.write(string_utils.out_writes_file + '\t' + str(current_sample.write_file()) + '\n')
+                    # instruction count section
+                    i_out.write(string_utils.out_final + '\t' + str(current_sample.total_instruction()) + '\n')
+                    i_out.write(string_utils.out_terminating + '\t' + str(current_sample.terminate_all()) + '\t')
+                    i_out.write(string_utils.out_sleeping + '\t' + str(current_sample.sleep_all()) + '\t')
+                    i_out.write(string_utils.out_crashing + '\t' + str(current_sample.crash_all()) + '\t')
+                    i_out.write(string_utils.out_raising_error + '\t' + str(current_sample.error_all()) + '\t')
+                    i_out.write(string_utils.out_writes_file + '\t' + str(current_sample.write_file()) + '\n')
 
-                a_out.write('\n')
-                c_out.write('\n')
+                    # system calls count section
+                    s_out.write(string_utils.syscall_final + '\t' + str(current_sample.total_syscalls()) + '\n')
+
+                    i_out.write('\n')
+                    s_out.write('\n')
+                    c_out.write('\n')
