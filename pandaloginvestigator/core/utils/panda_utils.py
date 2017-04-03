@@ -4,7 +4,7 @@ import logging
 import os
 
 """
-    This module handles utility methods which are inherently related to Panda or the pandalogs structure.
+This module handles utility methods which are inherently related to Panda or the pandalogs structure.
 """
 
 

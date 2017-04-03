@@ -1,7 +1,7 @@
 import ast
 
 """
-    This file contains methods used to read partial and global results from file. 
+This file contains methods used to read partial and global results from file. 
 """
 
 

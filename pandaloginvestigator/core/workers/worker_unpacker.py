@@ -1,6 +1,9 @@
 from pandaloginvestigator.core.utils import panda_utils
 import logging
 
+"""
+Worker process in charge of unpacking the pandalog files.
+"""
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +22,7 @@ def work(params_pack):
     dir_unpacked_path = params_pack[3]
     dir_panda_path = params_pack[4]
     j = 0.0
-    total_files = len(filenames) if len(filenames) > 0 else -1
+    total_files = len(filenames)
     logger.info('WorkerId = ' + str(worker_id) + ' unpacking ' + str(total_files) + ' log files')
     for filename in filenames:
         filename = filename + '.txz.plog' if filename[-9:] != '.txz.plog' else filename

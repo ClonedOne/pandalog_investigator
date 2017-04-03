@@ -1,10 +1,13 @@
 from pandaloginvestigator.core.utils import string_utils
+from os import path
 import logging
 import codecs
 
+"""
+Worker process in charge of translating system calls from their numerical code to their mnemonic strings.
+"""
 
 tag_system_call = string_utils.tag_system_call
-
 logger = logging.getLogger(__name__)
 
 
@@ -23,13 +26,13 @@ def work(data_pack):
     dir_translated_path = data_pack[3]
     syscall_dict = data_pack[4]
     j = 0.0
-    total_files = len(filenames) if len(filenames) > 0 else -1
+    total_files = len(filenames)
     logger.info('WorkerId = ' + str(worker_id) + ' translating ' + str(total_files) + ' log files')
     for filename in filenames:
         j += 1
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
-        with codecs.open(dir_unpacked_path + '/' + filename, 'r', 'utf-8', errors='replace') as log_file:
-            with codecs.open(dir_translated_path + '/' + filename, 'w', 'utf-8', errors='replace') as translated_file:
+        with open(path.join(dir_translated_path, filename), 'w', encoding='utf-8', errors='replace') as translated_file:
+            with open(path.join(dir_unpacked_path, filename), 'r', encoding='utf-8', errors='replace') as log_file:
                 for line in log_file:
                     if tag_system_call in line:
                         system_call_num = int(line.split('=')[3].split(')')[0])

@@ -1,5 +1,6 @@
-# This module contains fixed string parameters used by different modules
-# inside the application.
+"""
+This module contains fixed string parameters used by different modules inside the application.
+"""
 
 
 # File extensions
