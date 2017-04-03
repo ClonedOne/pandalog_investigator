@@ -105,12 +105,40 @@ def analyze_log(filename):
     :param filename: uuid of the pandalog to analyze
     :return:
     """
+    #
+    # with open(os.path.join(dir_unpacked_path, filename), 'r', encoding='utf-8', errors='replace') as logfile:
+    #     for line in logfile:
+    #         try:
+    #             if tag_context_switch in line:
+    #                 context_switch(line)
+    #             elif tag_process_creation in line:
+    #                 creating_process(line)
+    #             elif tag_write_memory in line:
+    #                 writing_memory(line)
+    #             elif tag_write_file in line:
+    #                 writing_file(line)
+    #             elif tag_sleep in line:
+    #                 calling_sleep()
+    #             elif tag_termination in line:
+    #                 terminating_process(line)
+    #             elif tag_read_memory in line and error_manager in line:
+    #                 crashing(line)
+    #             elif tag_raise_error in line:
+    #                 raising_error()
+    #         except:
+    #             traceback.print_exc()
+
+    global current_sample
 
     with open(os.path.join(dir_unpacked_path, filename), 'r', encoding='utf-8', errors='replace') as logfile:
         for line in logfile:
             try:
                 if tag_context_switch in line:
                     context_switch(line)
+                elif tag_read_memory in line and error_manager in line:
+                    crashing(line)
+                elif not current_sample.active_corrupted_process:
+                    continue
                 elif tag_process_creation in line:
                     creating_process(line)
                 elif tag_write_memory in line:
@@ -121,8 +149,6 @@ def analyze_log(filename):
                     calling_sleep()
                 elif tag_termination in line:
                     terminating_process(line)
-                elif tag_read_memory in line and error_manager in line:
-                    crashing(line)
                 elif tag_raise_error in line:
                     raising_error()
             except:
