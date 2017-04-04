@@ -1,0 +1,19 @@
+{
+  "keys": [
+    "HARDWARE\\DEVICEMAP\\Scsi\\Scsi Port 0\\Scsi Bus 0\\Target Id 0\\Logical Unit Id 0",
+    "HARDWARE\\Description\\System",
+    "HARDWARE\\ACPI\\DSDT\\VBOX__",
+    "HARDWARE\\ACPI\\FADT\\VBOX__",
+    "HARDWARE\\ACPI\\RSDT\\VBOX__",
+    "SOFTWARE\\Oracle\\VirtualBox Guest Additions",
+    "HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Services\\Disk\\Enum"
+  ],
+  "values": [
+    "SystemBiosDate",
+    "SystemBiosVersion",
+    "VideoBiosVersion",
+    "QEMU",
+    "VMWARE",
+    "VBOX"
+  ]
+}

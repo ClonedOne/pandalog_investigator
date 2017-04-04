@@ -3,13 +3,13 @@ import os
 import time
 from multiprocessing import Pool
 
-from pandaloginvestigator.core.detection import worker_clues_reader
 from pandaloginvestigator.core.domain.clue_object import Clue
 from pandaloginvestigator.core.domain.corrupted_process_object import CorruptedProcess
 from pandaloginvestigator.core.io import file_output, results_reader
 from pandaloginvestigator.core.utils import domain_utils
 from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.utils import utils
+from pandaloginvestigator.core.workers import worker_clues_reader
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ def build_suspects(dir_results_path: str, dir_clues_path: str, core_num: int):
         pool.close()
         pool.join()
         logger.info('Total clue reading time: ' + str(time.time() - t1))
-        utils.update_results(results, [clues_from_panda, ])
+        utils.update_results(results, clues_from_panda)
     add_clues(clues, clues_from_panda)
     file_output.output_clues(dir_results_path, clues, 'total_clues.txt')
     suspects = sum_suspects(clues, corrupted_dict)

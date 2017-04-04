@@ -13,46 +13,6 @@ module has explicit knowledge of domain's structure.
 logger = logging.getLogger(__name__)
 
 
-def initialize_malware_object(filename, malware_name, db_file_malware_dict, file_corrupted_processes_dict, from_db=False):
-    """
-    Utility method to initialize a new malware object given the relative process name and file name. Checks whether
-    the new process would be the db_malware or a corrupted process.
-
-    :param filename:
-    :param malware_name:
-    :param db_file_malware_dict:
-    :param file_corrupted_processes_dict:
-    :param from_db:
-    :return: new Malware object
-    """
-    malware = CorruptedProcess(malware_name)
-    if from_db:
-        db_file_malware_dict[filename] = malware
-        return malware
-    if filename in file_corrupted_processes_dict:
-        file_corrupted_processes_dict[filename].append(malware)
-    else:
-        file_corrupted_processes_dict[filename] = []
-        file_corrupted_processes_dict[filename].append(malware)
-    return malware
-
-
-def repr_malware_processes(malware):
-    """
-    Returns a list of the processes names and ids of the specified malware as a string.
-
-    :param malware:
-    :return: string representing the malware processes
-    """
-    result = ''
-    pid_list = malware.pid_list
-    name = malware.name
-    for pid in pid_list:
-        parent = malware.get_parent_of(pid)
-        result += '\t\t{:15s}\t{:10d}\t{:15s}\tby:\t{:15s}\t{:10d}\n'.format(name, pid, malware.origin[pid], parent[0], parent[1])
-    return result
-
-
 # Utilities related to system calls.
 
 def get_syscalls():

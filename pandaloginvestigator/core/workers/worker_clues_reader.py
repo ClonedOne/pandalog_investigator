@@ -55,7 +55,7 @@ def work(data_pack):
         j += 1
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
 
-    return [clues_dict, ]
+    return clues_dict
 
 
 def is_corrupted(filename, cur_proc, corrupted_dict):

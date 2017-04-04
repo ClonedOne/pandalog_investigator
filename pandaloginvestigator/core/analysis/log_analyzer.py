@@ -1,12 +1,11 @@
-from pandaloginvestigator.core.workers import worker_analyzer
-from pandaloginvestigator.core.utils import domain_utils
-from pandaloginvestigator.core.utils import db_manager
-from pandaloginvestigator.core.io import file_output
-from pandaloginvestigator.core.utils import utils
-from multiprocessing import Pool
 import logging
 import time
+from multiprocessing import Pool
 
+from pandaloginvestigator.core.io import file_output, db_manager
+from pandaloginvestigator.core.utils import domain_utils
+from pandaloginvestigator.core.utils import utils
+from pandaloginvestigator.core.workers import worker_analyzer
 
 logger = logging.getLogger(__name__)
 
@@ -60,8 +59,7 @@ def analyze_logs(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_anal
     pool.join()
 
     sample_dict = {}
-    dict_list = [sample_dict]
-    utils.update_results(results, dict_list)
+    utils.update_results(results, sample_dict)
 
     file_output.final_output_analysis(sample_dict, dir_results_path)
 

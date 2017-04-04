@@ -5,9 +5,12 @@ logger = logging.getLogger(__name__)
 
 
 class Clue:
+    """
+    This class represents the aggregation of clues regarding sandbox evasion discovered while analyzing a sample.
+    """
 
-    def __init__(self, file_name):
-        self.file_name = file_name
+    def __init__(self, sample_uuid):
+        self.file_name = sample_uuid
         self.opened_keys = {}
         self.queried_key_values = {}
         self.dangerous_instructions = {}

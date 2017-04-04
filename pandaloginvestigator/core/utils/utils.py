@@ -11,29 +11,26 @@ General utility methods
 
 def strip_filename_ext(file_names):
     """
-    Strip log file names from the extension.
+    Strip the extension from log file names.
 
     :param file_names: list of log file names as strings
     :return: list of log file names without the extension
     """
+
     return [filename[:-9] for filename in file_names]
 
 
-def update_results(results, dict_list):
+def update_results(results, global_dict):
     """
-    Given the results form the workers updates a list of dictionaries with the corresponding partial dictionaries
-    contained in each of the worker sub result.
+    Given the list of results form the workers, updates a gloabl dictionary including all the partial results.
 
-    :param results:
-    :param dict_list:
+    :param results: list of dictionaries resulting from workers processes
+    :param global_dict: global dictionary aggregating the partial results
     :return:
     """
-    if len(results[0]) != len(dict_list):
-        logger.error('Update Results length of partial result different from length of dict_list')
-        quit()
+
     for sub_res in results:
-        for i in range(len(sub_res)):
-            dict_list[i].update(sub_res[i])
+        global_dict.update(sub_res)
 
 
 def merge_dict_dict(dict1, dict2):
@@ -45,6 +42,7 @@ def merge_dict_dict(dict1, dict2):
     :param dict2: Dictionary of dictionaries with int values
     :return: Dictionary of dictionaries with int values resulting from merge
     """
+
     dict_res = {}
     keys1 = list(dict1.keys())
     keys2 = list(dict2.keys())
@@ -74,6 +72,7 @@ def divide_workload(item_list, core_num, max_num=None):
     :param max_num: maximum number of elements to consider
     :return: defaultdict containing lists of elements divided equally
     """
+
     j = 0
     c = 0
     item_sublists = defaultdict(list)
@@ -95,7 +94,7 @@ def divide_workload(item_list, core_num, max_num=None):
     return item_sublists
 
 
-def format_worker_input(core_num: int, item_sublists: defaultdict, fixed_params: tuple) -> list:
+def format_worker_input(core_num, item_sublists, fixed_params):
     """
     Generate a list of tuples containing the parameters to pass to worker sub processes.
 
@@ -110,56 +109,38 @@ def format_worker_input(core_num: int, item_sublists: defaultdict, fixed_params:
     return formatted_input
 
 
-def invert_dictionary(chosen_dict: dict) -> dict:
+def input_with_modifiers(dir_unpacked_path, dir_pandalogs_path, small_disk=None, max_num=None, file_list=None,
+                         unpacking=False):
     """
-    Given a dictionary returns the inverted dictionary, where each value is considered as a the new key.
+    Given the modifier flags, returns the appropriate values for the max_num and file_names to be processed by workers.
 
-    :param chosen_dict: dictionary of base types
-    :return: dictionary containing reverse of passed dictionary
+    :param dir_unpacked_path: path to the unpacked pandalogs
+    :param dir_pandalogs_path: path to the pandalogs
+    :param small_disk: flag, if set unpacked pandalogs must be removed after use
+    :param max_num: the number of pandalogs to process
+    :param file_list: file containing list of pandalogs to process
+    :param unpacking: flag, if set pandalogs must be unpacked before processing
+    :return: tuple (input file names, max number value)
     """
-    inverted_dict = {}
-    for malware_name, count in chosen_dict.items():
-        if count in inverted_dict:
-            inverted_dict[count].append(malware_name)
-        else:
-            inverted_dict[count] = []
-            inverted_dict[count].append(malware_name)
-    return inverted_dict
 
-
-def input_with_modifiers(dir_unpacked_path: str, dir_pandalogs_path: str, small_disk: bool = None,
-                         max_num: object = None, file_list: list = None,
-                         unpacking: bool = False) -> tuple:
-    """
-    Given the small_disk and max_num modifiers, returns the appropriate values for the max_num and filenames to be
-    used by the workers.
-
-    :param dir_unpacked_path:
-    :param dir_pandalogs_path:
-    :param small_disk:
-    :param max_num:
-    :param file_list:
-    :param unpacking:
-    :return:
-    """
-    filenames = []
+    file_names = []
     if file_list:
         logger.info('Input modifier: file_list')
         with open(file_list, 'r', encoding='utf-8', errors='replace') as list_file:
             for line in list_file:
-                filenames.append(line.strip())
-                filenames = sorted(filenames)
+                file_names.append(line.strip())
+                file_names = sorted(file_names)
     elif small_disk:
         logger.info('Input modifier: small_disk')
-        filenames = sorted(strip_filename_ext(os.listdir(dir_pandalogs_path)))
+        file_names = sorted(strip_filename_ext(os.listdir(dir_pandalogs_path)))
     elif unpacking:
         logger.info('Input modifier: unpacking')
-        filenames = sorted(strip_filename_ext(os.listdir(dir_pandalogs_path)))
+        file_names = sorted(strip_filename_ext(os.listdir(dir_pandalogs_path)))
     else:
-        filenames = sorted(os.listdir(dir_unpacked_path))
+        file_names = sorted(os.listdir(dir_unpacked_path))
     if max_num:
         logger.info('Input modifier: max_num')
         max_num = int(max_num)
     else:
-        max_num = len(filenames)
-    return filenames, max_num
+        max_num = len(file_names)
+    return file_names, max_num

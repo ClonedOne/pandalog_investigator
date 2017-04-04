@@ -1,8 +1,8 @@
-from pandaloginvestigator.core.utils import string_utils
-from pandaloginvestigator.core import log_analyzer
 import logging
 import os
 
+from pandaloginvestigator.core.analysis import log_analyzer
+from pandaloginvestigator.core.utils import string_utils
 
 logger = logging.getLogger(__name__)
 

@@ -34,7 +34,7 @@ def work(data_pack):
      * dictionary mapping each system call code to its mnemonic value - 8
     
     :param data_pack: data needed by the worker 
-    :return: set of analyzed samples
+    :return: dictionary of analyzed samples
     """
 
     global current_sample, system_call_dict, dir_unpacked_path, dir_analyzed_logs
@@ -43,7 +43,7 @@ def work(data_pack):
 
     # Unpacking of the passed data
     worker_id = data_pack[0]
-    filenames = data_pack[1]
+    file_names = data_pack[1]
     db_file_malware_name_map = data_pack[2]
     dir_unpacked_path = data_pack[3]
     dir_analyzed_logs = data_pack[4]
@@ -54,34 +54,34 @@ def work(data_pack):
 
     # the analyzed samples dictionary maps pandalog uuids with the related Sample object
     analyzed_samples = {}
-    number_pandalogs = len(filenames)
+    number_pandalogs = len(file_names)
     logger.info('WorkerId {} analyzing {} log files'.format(worker_id, number_pandalogs))
 
-    for filename in filenames:
+    for file_name in file_names:
         if small_disk:
-            panda_utils.unpack_log(dir_panda_path, filename + '.txz.plog', dir_pandalogs_path, dir_unpacked_path)
+            panda_utils.unpack_log(dir_panda_path, file_name + '.txz.plog', dir_pandalogs_path, dir_unpacked_path)
 
-        if filename in db_file_malware_name_map:
-            current_sample = Sample(filename, db_file_malware_name_map[filename])
-            analyzed_samples[filename] = current_sample
-            analyze_log(filename)
+        if file_name in db_file_malware_name_map:
+            current_sample = Sample(file_name, db_file_malware_name_map[file_name])
+            analyzed_samples[file_name] = current_sample
+            analyze_log(file_name)
             current_sample.active_corrupted_process = None
-            file_output.output_json(filename, current_sample, dir_analyzed_logs)
+            file_output.output_json(file_name, current_sample, dir_analyzed_logs)
         else:
-            logger.error(str(worker_id) + ' ERROR filename not in db: ' + str(filename))
+            logger.error(str(worker_id) + ' ERROR file_name not in db: ' + str(file_name))
 
         if small_disk:
-            panda_utils.remove_log_file(filename, dir_unpacked_path)
+            panda_utils.remove_log_file(file_name, dir_unpacked_path)
 
         j += 1
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / number_pandalogs)))
 
     total_time = time.time() - starting_time
     logger.info('WorkerId ' + str(worker_id) + ' Total time: ' + str(total_time))
-    return [analyzed_samples, ]
+    return analyzed_samples
 
 
-def analyze_log(filename):
+def analyze_log(file_name):
     """
     Analyze the log file line by line. Checks if each line contains:
      * context switch
@@ -95,7 +95,7 @@ def analyze_log(filename):
     At the end output a file with the results for the single pandalog.
     Performance optimization: if no corrupted process is currently active there is no need to analyze the line.
  
-    :param filename: uuid of the pandalog to analyze
+    :param file_name: uuid of the pandalog to analyze
     :return:
     """
 
@@ -111,7 +111,7 @@ def analyze_log(filename):
     tag_write_file = string_utils.tag_write_file
     error_manager = string_utils.error_manager
 
-    with open(os.path.join(dir_unpacked_path, filename), 'r', encoding='utf-8', errors='replace') as logfile:
+    with open(os.path.join(dir_unpacked_path, file_name), 'r', encoding='utf-8', errors='replace') as logfile:
         for line in logfile:
             try:
                 if tag_context_switch in line:

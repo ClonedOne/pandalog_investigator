@@ -14,20 +14,20 @@ column3 = 'md5'
 
 def acquire_malware_file_dict(dir_database_path):
     """
-    Read the panda database file (sqlite) and returns a dictionary mapping of
-    panda log file names and malware process names.
+    Read the panda database file (SQLite) and returns a dictionary mapping panda log file names (uuids) to 
+    malicious process names (md5 hashes).
 
     :param dir_database_path:
     :return:
     """
     conn = sqlite3.connect(dir_database_path + '/' + db_name)
     c = conn.cursor()
-    big_file_malware_dict = {}
+    uuid_md5_dict = {}
 
     c.execute('SELECT {col1},{col2} FROM {tn}'.format(tn=table_name, col1=column1, col2=column3))
     all_rows = c.fetchall()
     for row in all_rows:
-        big_file_malware_dict[row[0]] = row[1][:14]
+        uuid_md5_dict[row[0]] = row[1][:14]
 
     conn.close()
-    return big_file_malware_dict
+    return uuid_md5_dict
