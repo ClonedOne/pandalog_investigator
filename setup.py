@@ -7,7 +7,7 @@ setup(
     author='Giorgio Severi',
     description='Panda logs analysis tool',
     url='https://github.com/ClonedOne/pandalog_investigator',
-    install_requires=['numpy', 'cement', 'networkx'],
+    install_requires=['numpy', 'cement', 'networkx', 'jsonpickle'],
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,

@@ -1,4 +1,3 @@
-from pandaloginvestigator.core.detection import detector_regkey
 from pandaloginvestigator.core.detection import suspect_builder
 from pandaloginvestigator.core.utils import string_utils
 import logging
@@ -54,16 +53,6 @@ def detect_command(app, max_num=None, small_disk=False):
             small_disk,
             max_num
         )
-    )
-
-    detector_regkey.detect_reg_key(
-        dir_panda_path,
-        dir_pandalogs_path,
-        dir_unpacked_path,
-        dir_results_path,
-        core_num,
-        small_disk,
-        max_num
     )
 
     suspect_builder.build_suspects(dir_results_path, dir_clues_path, core_num)

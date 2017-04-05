@@ -9,50 +9,6 @@ This file contains methods used to output partial and global results on file.
 """
 
 
-def output_on_file_syscall(filename, dir_syscall_path, malware_syscall_dict, syscall_dict):
-    """
-    Similar to the previous but modified to output system call counting results.
-
-    :param filename:
-    :param dir_syscall_path:
-    :param malware_syscall_dict:
-    :param syscall_dict:
-    :return:
-    """
-    with open(dir_syscall_path + '/' + filename, 'w', encoding='utf-8', errors='replace') as outfile:
-        total_syscall = 0
-
-        for system_call_num in sorted(list(syscall_dict)):
-            system_call = syscall_dict[system_call_num]
-            if system_call in malware_syscall_dict:
-                total_syscall += malware_syscall_dict[system_call]
-                outfile.write(system_call + ':\t' +
-                              str(malware_syscall_dict[system_call]) + '\n')
-
-        outfile.write('{} {}\n'.format(string_utils.syscall_final, total_syscall))
-
-
-def final_output_syscall(dir_results_path, filenames, filename_syscall_dict):
-    """
-    Prints the final output on file. Modified for system call counting output.
-
-    :param dir_results_path: path to the result folder
-    :param filenames:
-    :param filename_syscall_dict:
-    :return:
-    """
-    with open(dir_results_path + '/syscalls.txt', 'w', encoding='utf-8',
-              errors='replace') as res_file:
-        for filename in filenames:
-            total_syscall = 0
-            res_file.write('{} {}\n'.format(string_utils.filename, filename))
-            if filename in filename_syscall_dict:
-                entry = filename_syscall_dict[filename]
-                total_syscall = sum(entry.values())
-
-            res_file.write('{} {}\n\n'.format(string_utils.syscall_final, total_syscall))
-
-
 def output_clues(dir_results_path: str, clues_dict: dict, out_file_name: str):
     """
     Prints the list of suspect log files with the clue elements to a file.
@@ -97,7 +53,7 @@ def output_suspects(dir_results_path, suspects):
 
 def output_json(file_name, domain_object, output_dir):
     """
-    Output the specified domain object on a file in json format using the JsonPickle library.
+    Outputs the specified domain object on a file in json format using the JsonPickle library.
     The object can later be loaded form the file directly into a memory object.
     
     :param file_name: output file name 
