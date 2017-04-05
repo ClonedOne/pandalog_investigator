@@ -18,6 +18,7 @@ current_sample = None
 dir_unpacked_path = None
 dir_analyzed_logs = None
 system_call_dict = {}
+registry_keys = {}
 
 
 def work(data_pack):
@@ -32,12 +33,13 @@ def work(data_pack):
      * path to the pandalog unpacker utility - 6
      * path to the compressed pandalog files - 7
      * dictionary mapping each system call code to its mnemonic value - 8
+     * dictionary containing dangerous registry keys and values - 9
     
     :param data_pack: data needed by the worker 
     :return: dictionary of analyzed samples
     """
 
-    global current_sample, system_call_dict, dir_unpacked_path, dir_analyzed_logs
+    global current_sample, system_call_dict, registry_keys, dir_unpacked_path, dir_analyzed_logs
     starting_time = time.time()
     j = 0.0
 
@@ -51,6 +53,7 @@ def work(data_pack):
     dir_panda_path = data_pack[6]
     dir_pandalogs_path = data_pack[7]
     system_call_dict = data_pack[8]
+    registry_keys = data_pack[9]
 
     # the analyzed samples dictionary maps pandalog uuids with the related Sample object
     analyzed_samples = {}
@@ -102,6 +105,8 @@ def analyze_log(file_name):
     global current_sample
 
     # Performance optimization
+    tag_open_key = string_utils.tag_open_key
+    tag_query_key = string_utils.tag_query_key
     tag_context_switch = string_utils.tag_context_switch
     tag_system_call = string_utils.tag_system_call
     tag_termination = string_utils.tag_termination
@@ -128,6 +133,10 @@ def analyze_log(file_name):
                     writing_memory(line)
                 elif tag_write_file in line:
                     writing_file(line)
+                elif tag_open_key in line:
+                    open_registry_key(line)
+                elif tag_query_key in line:
+                    query_registry_key(line)
                 elif tag_termination in line:
                     terminating_process(line)
             except:
@@ -177,7 +186,7 @@ def context_switch(line):
 
     global current_sample
 
-    current_instruction, pid, process_name = panda_utils.data_from_line_basic(line)
+    current_instruction, pid, process_name = panda_utils.data_from_line(line)
 
     corrupted_process = get_corrupted_process(process_name, pid)
 
@@ -224,7 +233,7 @@ def terminating_process(line):
 
     global current_sample
 
-    current_instruction, terminating_pid, terminating_name, terminated_pid, terminated_name = panda_utils.data_from_line(
+    current_instruction, terminating_pid, terminating_name, terminated_pid, terminated_name = panda_utils.data_from_line_double(
         line)
 
     corrupted_process = get_corrupted_process(terminating_name, terminating_pid)
@@ -273,7 +282,7 @@ def creating_process(line):
 
     global current_sample
 
-    current_instruction, creating_pid, creating_name, created_pid, created_name, new_path = panda_utils.data_from_line(
+    current_instruction, creating_pid, creating_name, created_pid, created_name, new_path = panda_utils.data_from_line_double(
         line, creating=True)
 
     creating_process_info = (creating_name, creating_pid)
@@ -306,7 +315,7 @@ def writing_memory(line):
 
     global current_sample
 
-    current_instruction, writing_pid, writing_name, written_pid, written_name = panda_utils.data_from_line(line)
+    current_instruction, writing_pid, writing_name, written_pid, written_name = panda_utils.data_from_line_double(line)
 
     writing_process_info = (writing_name, writing_pid)
     corrupted_process = get_corrupted_process(writing_name, writing_pid)
@@ -333,7 +342,7 @@ def writing_file(line):
     :return:
     """
 
-    current_instruction, pid, process_name, written_file_path = panda_utils.data_from_line_basic(line, writing=True)
+    current_instruction, pid, process_name, written_file_path = panda_utils.data_from_line(line, writing=True)
 
     corrupted_process = get_corrupted_process(process_name, pid)
 
@@ -353,6 +362,7 @@ def system_call(line):
     global current_sample
     corrupted_process = current_sample.active_corrupted_process
 
+    # Numerical codes for sleep and error system calls
     sleep_code = 98
     error_code = 272
 
@@ -366,3 +376,41 @@ def system_call(line):
     corrupted_process.syscalls_executed += 1
     syscall_mnemonic = system_call_dict.get(system_call_code, 'unknown')
     corrupted_process.system_calls[syscall_mnemonic] = corrupted_process.system_calls.get(syscall_mnemonic, 0) + 1
+
+
+def open_registry_key(line):
+    """
+    Collects information about registry keys opened by corrupted processes
+    
+    :param line: the current pandalog line
+    :return: 
+    """
+
+    current_instruction, pid, process_name, registry_key = panda_utils.data_from_line(line, registry=True)
+
+    corrupted_process = get_corrupted_process(process_name, pid)
+
+    if corrupted_process:
+        if registry_key not in corrupted_process.registry_activity:
+            corrupted_process.registry_activity[registry_key] = []
+
+
+def query_registry_key(line):
+    """
+    Collects information about registry keys opened by corrupted processes
+    
+    :param line: the current pandalog line
+    :return: 
+    """
+
+    current_instruction, pid, process_name, registry_key, query = panda_utils.data_from_line(line, registry_query=True)
+
+    corrupted_process = get_corrupted_process(process_name, pid)
+
+    if corrupted_process:
+        # In order for a query to take place the key must have already been opened
+        if registry_key not in corrupted_process.registry_activity:
+            print('WTF')
+            print(registry_key)
+
+        # corrupted_process.registry_activity[registry_key].append(query)

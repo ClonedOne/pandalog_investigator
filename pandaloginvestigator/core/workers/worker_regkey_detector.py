@@ -1,6 +1,7 @@
 from pandaloginvestigator.core.domain.clue_object import Clue
 from pandaloginvestigator.core.utils import panda_utils
 from pandaloginvestigator.core.utils import string_utils
+from pandaloginvestigator.core.io import file_input
 from os import path
 import logging
 
@@ -36,8 +37,8 @@ def work(data_pack):
     # Performance optimization
     tag_open_key = string_utils.tag_open_key
     tag_query_key = string_utils.tag_query_key
-    tag_keys = string_utils.tag_keys
-    tag_values = string_utils.tag_values
+    tag_keys = file_input.get_registry_keys()['keys']
+    tag_values = file_input.get_registry_keys()['values']
 
     total_files = len(file_names)
     logger.info('WorkerId {} detecting {} log files'.format(worker_id, total_files))
@@ -54,12 +55,12 @@ def work(data_pack):
                 if tag_open_key in line:
                     for tag in tag_keys:
                         if tag in line:
-                            current_instruction, subject_pid, subject_name = panda_utils.data_from_line_basic(line)
+                            current_instruction, subject_pid, subject_name = panda_utils.data_from_line(line)
                             cur_clue.add_opened_key((subject_name, subject_pid), tag)
                 elif tag_query_key in line:
                     for tag in tag_values:
                         if tag in line:
-                            current_instruction, subject_pid, subject_name = panda_utils.data_from_line_basic(line)
+                            current_instruction, subject_pid, subject_name = panda_utils.data_from_line(line)
                             cur_clue.add_queried_key_value((subject_name, subject_pid), tag)
 
         if small_disk:

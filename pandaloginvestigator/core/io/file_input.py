@@ -1,11 +1,12 @@
+import json
 import ast
 
 """
-This file contains methods used to read partial and global results from file. 
+This file contains methods used to read from application related files.
 """
 
 
-def values_from_analysis(line: str) -> list:
+def values_from_analysis(line):
     """
     Utility method to obtain the instruction count values from the relative line in the final analysis output text
     file.
@@ -18,7 +19,7 @@ def values_from_analysis(line: str) -> list:
     return [int(val) for val in values]
 
 
-def filename_from_analysis(line: str) -> str:
+def filename_from_analysis(line):
     """
     Utility method to obtain the file name value from the relative line in the final analysis output text file.
 
@@ -28,7 +29,7 @@ def filename_from_analysis(line: str) -> str:
     return line.split()[2].strip()
 
 
-def status_from_analysis(line: str) -> list:
+def status_from_analysis(line):
     """
     Utility method to obtain the process status boolean flags from the relative line in the final analysis output
     text file.
@@ -44,7 +45,7 @@ def status_from_analysis(line: str) -> list:
             ast.literal_eval(line[9])]
 
 
-def values_from_syscalls(line: str) -> int:
+def values_from_syscalls(line):
     """
     Utility method to obtain the system call count values from the relative line in the final analysis output text
     file.
@@ -53,3 +54,15 @@ def values_from_syscalls(line: str) -> int:
     :return: int corresponding to system call frequency
     """
     return int(line.strip().split('\t')[1])
+
+
+def get_registry_keys():
+    """
+    Utility method to obtain the list of dangerous registry keys and values from the included file.
+    
+    :return: dictionary containing registry keys and values lists. 
+    """
+
+    with open("registry_keys.json", "r", encoding='utf-8', errors='replace') as reg_file:
+        registry_keys = json.load(reg_file)
+    return registry_keys

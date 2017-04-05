@@ -78,7 +78,7 @@ def get_written_file_path(line):
     return os.path.normpath(line.strip().split(',')[1].split(')')[0])
 
 
-def data_from_line(line, creating=False):
+def data_from_line_double(line, creating=False):
     """
     Given a line of the log file returns:
      * instruction counter
@@ -98,14 +98,15 @@ def data_from_line(line, creating=False):
     subject_name = commas[3].split(')')[0].strip()
     object_pid = int(commas[5].strip())
     object_name = commas[6].split(')')[0].strip()
+
     if creating:
         new_path = get_new_path(line)
         return current_instruction, subject_pid, subject_name, object_pid, object_name, new_path
-    else:
-        return current_instruction, subject_pid, subject_name, object_pid, object_name
+
+    return current_instruction, subject_pid, subject_name, object_pid, object_name
 
 
-def data_from_line_basic(line, writing=False):
+def data_from_line(line, writing=False, registry=False, registry_query=False):
     """
     Given a line of the log file returns:
      * instruction counter
@@ -114,15 +115,27 @@ def data_from_line_basic(line, writing=False):
      * optionally path to the written file if present
 
     :param line: current line of the pandalog
-    :param writing: flag retrieve path written file
+    :param writing: flag, retrieve path written file
+    :param registry: flag, retrieve registry key
+    :param registry_query: flag, retrieve registry query parameters
     :return: list of elements of the panda log file line
     """
     commas = line.strip().split(',')
     current_instruction = int((commas[0].split()[0].split('='))[1])
     pid = int(commas[2].strip())
     process_name = commas[3].split(')')[0].strip()
+
     if writing:
         file_path = get_written_file_path(line)
         return current_instruction, pid, process_name, file_path
-    else:
-        return current_instruction, pid, process_name
+
+    if registry:
+        registry_key = commas[4].split(')')[0].strip()
+        return current_instruction, pid, process_name, registry_key
+
+    if registry_query:
+        registry_key = commas[4].split(')')[0].strip()
+        query_parameters = commas[5].split(')')[0].strip()
+        return current_instruction, pid, process_name, registry_key, query_parameters
+
+    return current_instruction, pid, process_name
