@@ -22,7 +22,7 @@ def work(data_pack):
     corrupted_dict = data_pack[3]
     j = 0.0
     clues_dict = {}
-    total_files = len(filenames) if len(filenames) > 0 else -1
+    total_files = len(filenames)
     logger.info('WorkerId {} reading {} clues files'.format(worker_id, total_files))
 
     for filename in filenames:

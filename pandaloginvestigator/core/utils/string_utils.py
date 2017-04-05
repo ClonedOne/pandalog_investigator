@@ -74,6 +74,8 @@ target_s = 'syscalls'
 
 # System calls used to access registry keys
 tag_open_key = 'nt_open_key'
+tag_open_key_ex = 'nt_open_key_ex'
+tag_access_key = ['nt_open_key', 'nt_create_key']
 tag_query_key = 'nt_query_value_key'
 
 # Particularly dangerous instruction tags

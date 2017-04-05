@@ -105,7 +105,7 @@ def analyze_log(file_name):
     global current_sample
 
     # Performance optimization
-    tag_open_key = string_utils.tag_open_key
+    tag_access_key = string_utils.tag_access_key
     tag_query_key = string_utils.tag_query_key
     tag_context_switch = string_utils.tag_context_switch
     tag_system_call = string_utils.tag_system_call
@@ -133,7 +133,7 @@ def analyze_log(file_name):
                     writing_memory(line)
                 elif tag_write_file in line:
                     writing_file(line)
-                elif tag_open_key in line:
+                elif any(tag in line for tag in tag_access_key):
                     open_registry_key(line)
                 elif tag_query_key in line:
                     query_registry_key(line)
@@ -392,7 +392,7 @@ def open_registry_key(line):
 
     if corrupted_process:
         if registry_key not in corrupted_process.registry_activity:
-            corrupted_process.registry_activity[registry_key] = []
+            corrupted_process.registry_activity[registry_key] = set()
 
 
 def query_registry_key(line):
@@ -409,8 +409,4 @@ def query_registry_key(line):
 
     if corrupted_process:
         # In order for a query to take place the key must have already been opened
-        if registry_key not in corrupted_process.registry_activity:
-            print('WTF')
-            print(registry_key)
-
-        # corrupted_process.registry_activity[registry_key].append(query)
+        corrupted_process.registry_activity[registry_key].add(query)
