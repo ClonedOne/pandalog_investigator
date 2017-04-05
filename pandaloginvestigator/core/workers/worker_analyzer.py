@@ -408,5 +408,8 @@ def query_registry_key(line):
     corrupted_process = get_corrupted_process(process_name, pid)
 
     if corrupted_process:
-        # In order for a query to take place the key must have already been opened
+        # Processes whose memory have been overwritten may still have open registry keys
+        if registry_key not in corrupted_process.registry_activity:
+            corrupted_process.registry_activity[registry_key] = set()
+
         corrupted_process.registry_activity[registry_key].add(query)
