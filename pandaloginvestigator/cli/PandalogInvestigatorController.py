@@ -12,7 +12,7 @@ help_n = 'Specify the number of logs to operate on'
 help_u = 'Unpack log files before operation'
 help_f = 'Unpack the log files listed in the specified file'
 help_r = 'Detect the use of specific registry key to discover Qemu emulation'
-help_sd = 'Disk size is too small to contain unpacked logs. Remove each log after analysis'
+help_s = 'Disk size is too small to contain unpacked logs. Remove each log after analysis'
 
 
 class PandalogInvestigatorController(ArgparseController):
@@ -24,7 +24,7 @@ class PandalogInvestigatorController(ArgparseController):
             (['-n', '--num'], dict(help=help_n, action='store')),
             (['-u', '--unpack'], dict(help=help_u, action='store_true')),
             (['-f', '--file'], dict(help=help_f, action='store')),
-            (['--small-disk'], dict(help=help_sd, action='store_true'))
+            (['-s', '--small-disk'], dict(help=help_s, action='store_true'))
 
         ]
 
@@ -60,7 +60,7 @@ class PandalogInvestigatorController(ArgparseController):
             arguments=[
                 (['-n', '--num'], dict(help=help_n, action='store')),
                 (['-u', '--unpack'], dict(help=help_u, action='store_true')),
-                (['--small-disk'], dict(help=help_sd, action='store_true'))
+                (['-s', '--small-disk'], dict(help=help_s, action='store_true'))
             ])
     def translate(self):
         logger.info(
@@ -93,7 +93,7 @@ class PandalogInvestigatorController(ArgparseController):
             arguments=[
                 (['-n', '--num'], dict(help=help_n, action='store')),
                 (['-u', '--unpack'], dict(help=help_u, action='store_true')),
-                (['--small-disk'], dict(help=help_sd, action='store_true'))
+                (['-s', '--small-disk'], dict(help=help_s, action='store_true'))
             ])
     def analyze(self):
         logger.info(
@@ -124,7 +124,7 @@ class PandalogInvestigatorController(ArgparseController):
     look for, or leave blank for all. Requires previous analysis.''',
             arguments=[
                 (['-n', '--num'], dict(help=help_n, action='store')),
-                (['--small-disk'], dict(help=help_sd, action='store_true')),
+                (['-s', '--small-disk'], dict(help=help_s, action='store_true')),
                 (['-u', '--unpack'], dict(help=help_u, action='store_true'))
             ])
     def detect(self):
