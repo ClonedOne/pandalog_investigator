@@ -1,5 +1,6 @@
 from pandaloginvestigator.core.domain.corrupted_process_object import CorruptedProcess
 from pandaloginvestigator.core.domain.sample_object import Sample
+from pandaloginvestigator.core.domain.sample_object import ReducedSample
 from pandaloginvestigator.core.io import file_output
 from pandaloginvestigator.core.utils import panda_utils
 from pandaloginvestigator.core.utils import string_utils
@@ -66,8 +67,9 @@ def work(data_pack):
 
         if file_name in db_file_malware_name_map:
             current_sample = Sample(file_name, db_file_malware_name_map[file_name])
-            analyzed_samples[file_name] = current_sample
             analyze_log(file_name)
+            reduced_sample = ReducedSample(current_sample)
+            analyzed_samples[file_name] = reduced_sample
             current_sample.active_corrupted_process = None
             file_output.output_json(file_name, current_sample, dir_analyzed_logs)
         else:

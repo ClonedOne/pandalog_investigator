@@ -176,6 +176,16 @@ class ReducedSample:
         self.error_all = sample.error_all()
         self.write_file = sample.write_file()
 
+        self.corrupted_processes = []
+        for process_info, process in sample.corrupted_processes.items():
+            self.corrupted_processes.append((
+                process_info[0],
+                process_info[1],
+                process.origin,
+                process.parent[0],
+                process.parent[1]
+            ))
+
     def __eq__(self, other):
         return isinstance(other, self.__class__) and other.sample_uuid == self.sample_uuid
 

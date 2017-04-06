@@ -76,7 +76,7 @@ def final_output_analysis(samples_dict, dir_results_path):
      * for each sample it shows the numeric values collected for system calls
      * for each sample it shows the structure of corrupted processes observed
     
-    :param samples_dict: dictionary of Sample objects 
+    :param samples_dict: dictionary of ReducedSample objects 
     :param dir_results_path: path to results directory
     :return: 
     """
@@ -84,32 +84,31 @@ def final_output_analysis(samples_dict, dir_results_path):
         with open(path.join(dir_results_path, 'analysis.txt'), 'w', encoding='utf-8', errors='replace') as i_out:
             with open(path.join(dir_results_path, 'syscalls.txt'), 'w', encoding='utf-8', errors='replace') as s_out:
                 for uuid in sorted(samples_dict.keys()):
-                    current_sample = samples_dict[uuid]
+                    reduced_sample = samples_dict[uuid]
 
                     i_out.write('{} {}\n'.format(string_utils.filename, uuid))
                     s_out.write('{} {}\n'.format(string_utils.filename, uuid))
                     c_out.write('{} {}\n'.format(string_utils.filename, uuid))
 
-                    process_repr = '\t\t{:15s}\t{:10d}\t{:15s}\tby:\t{:15s}\t{:10d}\n'
-
                     # corrupted processes section
-                    for process_info, process in current_sample.corrupted_processes.items():
-                        c_out.write(process_repr.format(process_info[0],
-                                                        process_info[1],
-                                                        process.origin,
-                                                        process.parent[0],
-                                                        process.parent[1]))
+                    process_repr = '\t\t{:15s}\t{:10d}\t{:15s}\tby:\t{:15s}\t{:10d}\n'
+                    for process in reduced_sample.corrupted_processes:
+                        c_out.write(process_repr.format(process[0],
+                                                        process[1],
+                                                        process[2],
+                                                        process[3],
+                                                        process[4]))
 
                     # instruction count section
-                    i_out.write(string_utils.out_final + '\t' + str(current_sample.total_instruction()) + '\n')
-                    i_out.write(string_utils.out_terminating + '\t' + str(current_sample.terminate_all()) + '\t')
-                    i_out.write(string_utils.out_sleeping + '\t' + str(current_sample.sleep_all()) + '\t')
-                    i_out.write(string_utils.out_crashing + '\t' + str(current_sample.crash_all()) + '\t')
-                    i_out.write(string_utils.out_raising_error + '\t' + str(current_sample.error_all()) + '\t')
-                    i_out.write(string_utils.out_writes_file + '\t' + str(current_sample.write_file()) + '\n')
+                    i_out.write(string_utils.out_final + '\t' + str(reduced_sample.total_instruction) + '\n')
+                    i_out.write(string_utils.out_terminating + '\t' + str(reduced_sample.terminate_all) + '\t')
+                    i_out.write(string_utils.out_sleeping + '\t' + str(reduced_sample.sleep_all) + '\t')
+                    i_out.write(string_utils.out_crashing + '\t' + str(reduced_sample.crash_all) + '\t')
+                    i_out.write(string_utils.out_raising_error + '\t' + str(reduced_sample.error_all) + '\t')
+                    i_out.write(string_utils.out_writes_file + '\t' + str(reduced_sample.write_file) + '\n')
 
                     # system calls count section
-                    s_out.write(string_utils.syscall_final + '\t' + str(current_sample.total_syscalls()) + '\n')
+                    s_out.write(string_utils.syscall_final + '\t' + str(reduced_sample.total_syscalls) + '\n')
 
                     i_out.write('\n')
                     s_out.write('\n')
