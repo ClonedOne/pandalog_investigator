@@ -1,4 +1,5 @@
-import json
+from os import path
+import jsonpickle
 import ast
 
 """
@@ -64,5 +65,19 @@ def get_registry_keys():
     """
 
     with open("registry_keys.json", "r", encoding='utf-8', errors='replace') as reg_file:
-        registry_keys = json.load(reg_file)
+        registry_keys = jsonpickle.decode(reg_file.read())
     return registry_keys
+
+
+def load_sample(sample_uuid, dir_analyzed):
+    """
+    Utility method to read a json file containing the Sample object representation and return it.
+    
+    :param sample_uuid: uuid of the sample
+    :param dir_analyzed: path to the analyzed pandalog files
+    :return: Sample object
+    """
+
+    with open(path.join(dir_analyzed, sample_uuid + '.json'), "r", encoding='utf-8', errors='replace') as sample_file:
+        sample = jsonpickle.decode(sample_file.read())
+    return sample

@@ -1,10 +1,10 @@
 {
     "pandaloginvestigator": {
-        "dir_database_path" : "/home/yogaub/projects/seminar/database",
-        "dir_pandalogs_path" : "/home/yogaub/projects/seminar/pandalogs",
-        "dir_panda_path" : "/home/yogaub/projects/seminar/panda/qemu/panda",
-        "dir_clues_path" : "/home/yogaub/projects/seminar/clues",
-        "created_dirs_path": "/home/yogaub/projects/seminar/created_dirs",
+        "dir_database_path" : "/home/homeub/projects/investigator/database",
+        "dir_pandalogs_path" : "/home/homeub/projects/investigator/pandalogs",
+        "dir_panda_path" : "/home/homeub/projects/investigator/panda/qemu/panda",
+        "dir_clues_path" : "/home/homeub/projects/investigator/clues",
+        "created_dirs_path": "/home/homeub/projects/investigator/created_dirs",
         "core_num" : 4
     }
 }

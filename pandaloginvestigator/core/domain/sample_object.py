@@ -151,3 +151,33 @@ class Sample:
                     total[i] += process.syscalls_executed
 
         return total
+
+
+class ReducedSample:
+    """
+    This class corresponds to a smaller and simplified version of the Sample object containing only aggregated values.
+    Its purpose is to reduce memory usage during the analysis process.
+    Since it is just a representation object, its constructor requires a full Sample object.
+    """
+
+    def __init__(self, sample):
+        """
+        From a given Sample object constructs a new ReducedSample object containing only aggregated Sample data.
+        
+        :param sample: original Sample object 
+        """
+        self.sample_uuid = sample.sample_uuid
+        self.malware_name = sample.malware_name
+        self.total_instruction = sample.total_instruction()
+        self.total_syscalls = sample.total_syscalls()
+        self.sleep_all = sample.sleep_all()
+        self.terminate_all = sample.terminate_all()
+        self.crash_all = sample.crash_all()
+        self.error_all = sample.error_all()
+        self.write_file = sample.write_file()
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and other.sample_uuid == self.sample_uuid
+
+    def __hash__(self):
+        return hash(self.sample_uuid)
