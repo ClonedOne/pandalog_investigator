@@ -1,13 +1,12 @@
-from pandaloginvestigator.core.workers import worker_analyzer
-from pandaloginvestigator.core.io import file_output
-from pandaloginvestigator.core.io import file_input
-from pandaloginvestigator.core.io import db_manager
-from pandaloginvestigator.core.utils import domain_utils
-from pandaloginvestigator.core.utils import utils
-from multiprocessing import Pool
 import logging
 import time
+from multiprocessing import Pool
 
+from pandaloginvestigator.core.domain import domain_utils
+from pandaloginvestigator.core.io import db_manager
+from pandaloginvestigator.core.io import file_output
+from pandaloginvestigator.core.utils import utils
+from pandaloginvestigator.core.workers import worker_analyzer
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +38,6 @@ def analyze_logs(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_anal
     # Retrieve data needed for processing
     db_file_malware_name_map = db_manager.acquire_malware_file_dict(dir_database_path)
     sys_call_dict = domain_utils.get_syscalls()
-    registry_keys = file_input.get_registry_keys()
 
     filenames, max_num = utils.input_with_modifiers(dir_unpacked_path, dir_pandalogs_path, small_disk=small_disk,
                                                     max_num=max_num)
@@ -54,8 +52,7 @@ def analyze_logs(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_anal
             small_disk,
             dir_panda_path,
             dir_pandalogs_path,
-            sys_call_dict,
-            registry_keys
+            sys_call_dict
         )
     )
     pool = Pool(processes=core_num)

@@ -2,7 +2,7 @@ import logging
 import os
 
 from pandaloginvestigator.core.analysis import log_translator
-from pandaloginvestigator.core.utils import domain_utils
+from pandaloginvestigator.core.domain import domain_utils
 from pandaloginvestigator.core.utils import string_utils
 
 logger = logging.getLogger(__name__)

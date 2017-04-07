@@ -79,5 +79,5 @@ def load_sample(sample_uuid, dir_analyzed):
     """
 
     with open(path.join(dir_analyzed, sample_uuid + '.json'), "r", encoding='utf-8', errors='replace') as sample_file:
-        sample = jsonpickle.decode(sample_file.read())
+        sample = jsonpickle.decode(sample_file.read(), keys=True)
     return sample

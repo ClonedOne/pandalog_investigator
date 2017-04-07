@@ -122,32 +122,10 @@ class PandalogInvestigatorController(ArgparseController):
     @expose(help='''Detect attempts of sandbox detection: Generates a final
     statistics file. Please specify the kind of detection method you wish to
     look for, or leave blank for all. Requires previous analysis.''',
-            arguments=[
-                (['-n', '--num'], dict(help=help_n, action='store')),
-                (['-s', '--small-disk'], dict(help=help_s, action='store_true')),
-                (['-u', '--unpack'], dict(help=help_u, action='store_true'))
-            ])
+            arguments=[])
     def detect(self):
-        logger.info(
-            'Detecting sandbox detection techniques. Received options num:{}'.format(
-                self.app.pargs.num
-            )
-        )
-        unpack = False
-        max_num = None
-        small_disk = False
-        if self.app.pargs.unpack:
-            unpack = True
-        if self.app.pargs.num:
-            max_num = self.app.pargs.num
-        if self.app.pargs.small_disk:
-            small_disk = True
-            if unpack:
-                unpack = False
-        if unpack:
-            self.unpack()
-
-        detect_command(self.app, max_num, small_disk)
+        logger.info('Detecting sandbox detection/evasion.')
+        detect_command(self.app)
 
     @expose(help='''Represent corrupted processes as graphs, and output graph files
     compatible with visualization libraries. Requires previous analysis.''',

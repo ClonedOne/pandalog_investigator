@@ -1,8 +1,9 @@
-from pandaloginvestigator.core.utils import domain_utils
-from pandaloginvestigator.core.utils import string_utils
 from os import path
+
 import jsonpickle
 
+from pandaloginvestigator.core.domain import domain_utils
+from pandaloginvestigator.core.utils import string_utils
 
 """
 This file contains methods used to output partial and global results on file. 

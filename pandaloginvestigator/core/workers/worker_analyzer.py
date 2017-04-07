@@ -19,7 +19,6 @@ current_sample = None
 dir_unpacked_path = None
 dir_analyzed_logs = None
 system_call_dict = {}
-registry_keys = {}
 
 
 def work(data_pack):
@@ -40,9 +39,9 @@ def work(data_pack):
     :return: dictionary of analyzed samples
     """
 
-    global current_sample, system_call_dict, registry_keys, dir_unpacked_path, dir_analyzed_logs
-    starting_time = time.time()
+    global current_sample, system_call_dict, dir_unpacked_path, dir_analyzed_logs
     j = 0.0
+    starting_time = time.time()
 
     # Unpacking of the passed data
     worker_id = data_pack[0]
@@ -54,7 +53,6 @@ def work(data_pack):
     dir_panda_path = data_pack[6]
     dir_pandalogs_path = data_pack[7]
     system_call_dict = data_pack[8]
-    registry_keys = data_pack[9]
 
     # the analyzed samples dictionary maps pandalog uuids with the related Sample object
     analyzed_samples = {}
@@ -73,7 +71,7 @@ def work(data_pack):
             current_sample.active_corrupted_process = None
             file_output.output_json(file_name, current_sample, dir_analyzed_logs)
         else:
-            logger.error(str(worker_id) + ' ERROR file_name not in db: ' + str(file_name))
+            logger.error(str(worker_id) + ' ERROR sample uuid not in db: ' + str(file_name))
 
         if small_disk:
             panda_utils.remove_log_file(file_name, dir_unpacked_path)
