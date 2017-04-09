@@ -13,8 +13,7 @@ dir_unpacked_path = 'dir_unpacked'
 dir_translated_path = 'dir_translated'
 dir_results_path = 'dir_results'
 dir_analyzed_path = 'dir_analyzed'
-dir_syscall_path = 'dir_syscall'
-
+dir_clues_path = 'dir_clues'
 
 # Strings used to identify section of interest in panda log files.
 tag_context_switch = u'new_pid,'

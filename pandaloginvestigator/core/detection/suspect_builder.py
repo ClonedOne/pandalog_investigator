@@ -6,20 +6,21 @@ from multiprocessing import Pool
 import logging
 import time
 import os
-import pprint
 
 
 logger = logging.getLogger(__name__)
+PAFISH_VALUE = 11.0
 
 
-def build_suspects(dir_results_path, dir_clues_path, dir_analyzed_path, core_num):
+def build_suspects(dir_results_path, dir_redpills_path, dir_analyzed_path, dir_clues_path, core_num):
     """
     Builds the final list of suspect processes. The outcome is based on the analysis output and the red-pills
     discovered. It ends by passing the computed list to the on file output handler.
 
     :param dir_results_path: path to the result directory
-    :param dir_clues_path: path to the Investigator plugin results directory
+    :param dir_redpills_path: path to the Investigator plugin results directory
     :param dir_analyzed_path: path to the analysis results
+    :param dir_clues_path: path to the clues files directory
     :param core_num: number of cores available
     :return:
     """
@@ -36,8 +37,9 @@ def build_suspects(dir_results_path, dir_clues_path, dir_analyzed_path, core_num
         core_num,
         file_names_sublists,
         (
-            dir_clues_path,
+            dir_redpills_path,
             dir_analyzed_path,
+            dir_clues_path,
             registry_keys
         )
     )
@@ -47,14 +49,10 @@ def build_suspects(dir_results_path, dir_clues_path, dir_analyzed_path, core_num
     pool.join()
     utils.update_results(results, clues_dict)
 
-    # file_output.output_clues(dir_results_path, clues_dict, 'total_clues.txt')
-
     suspects = sum_suspects(clues_dict)
     normalize_suspects(suspects)
 
-    # file_output.output_suspects(dir_results_path, suspects)
-
-    pprint.pprint(suspects)
+    file_output.output_suspects(dir_results_path, suspects)
 
     logger.info('Total suspects gathering time: ' + str(time.time() - t1))
 
@@ -66,6 +64,7 @@ def sum_suspects(clues):
     :param clues: Dictionary of clues object by sample uuid
     :return: dictionary mapping file names to int
     """
+
     suspects = {}
 
     # Particularly dangerous instructions
@@ -110,7 +109,7 @@ def normalize_suspects(suspects):
     :param suspects:
     :return:
     """
-    PAFISH_VALUE = 11.0
+
     for filename, cur_val in suspects.items():
         suspects[filename] = cur_val / PAFISH_VALUE
 

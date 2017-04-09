@@ -1,8 +1,8 @@
 import logging
 import os
 
+import pandaloginvestigator.core.io.file_input
 from pandaloginvestigator.core.analysis import log_translator
-from pandaloginvestigator.core.domain import domain_utils
 from pandaloginvestigator.core.utils import string_utils
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ def translate_command(app, file_list=None, max_num=None):
             str(max_num),
         )
     )
-    syscall_dict = domain_utils.get_syscalls()
+    syscall_dict = pandaloginvestigator.core.io.file_input.get_syscalls()
     log_translator.translate_logs(
         dir_pandalogs_path,
         dir_unpacked_path,

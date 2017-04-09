@@ -1,29 +1,11 @@
+from pandaloginvestigator.core.utils import string_utils
 from os import path
-
 import jsonpickle
 
-from pandaloginvestigator.core.domain import domain_utils
-from pandaloginvestigator.core.utils import string_utils
 
 """
 This file contains methods used to output partial and global results on file. 
 """
-
-
-def output_clues(dir_results_path: str, clues_dict: dict, out_file_name: str):
-    """
-    Prints the list of suspect log files with the clue elements to a file.
-
-    :param dir_results_path: path to the result folder
-    :param clues_dict:
-    :param out_file_name:
-    :return:
-    """
-    with open(dir_results_path + '/' + out_file_name, 'w', encoding='utf-8', errors='replace') as clues_file:
-        filenames = sorted(list(clues_dict.keys()))
-        for filename in filenames:
-            clue = clues_dict[filename]
-            clues_file.write(domain_utils.repr_clue(clue) + '\n\n')
 
 
 def output_suspects(dir_results_path, suspects):
@@ -34,22 +16,11 @@ def output_suspects(dir_results_path, suspects):
     :param suspects:
     :return:
     """
-    with open(dir_results_path + '/suspects.txt', 'w', encoding='utf-8', errors='replace') as suspects_file:
-        sorted_filenames = sorted(list(suspects.keys()))
-        for filename in sorted_filenames:
-            suspects_file.write(
-                '{}\t{}\n'.format(string_utils.filename, filename)
-            )
-            for orig_mal, index in suspects[filename].items():
-                if orig_mal is not None:
-                    suspects_file.write(
-                        '{}\t{}\t{}\n'.format(string_utils.original_mal, orig_mal[0], orig_mal[1])
-                    )
-                    suspects_file.write(
-                        '{}\t{}\n\n'.format(string_utils.suspect_ind, index)
-                    )
-                else:
-                    suspects_file.write('\n\n\n')
+    with open(path.join(dir_results_path, 'suspects.txt'), 'w', encoding='utf-8', errors='replace') as suspects_file:
+        sorted_file_names = sorted(list(suspects.keys()))
+        for file_name in sorted_file_names:
+            suspects_file.write('{}\t{}\n'.format(string_utils.filename, file_name))
+            suspects_file.write('{}\t{}\n\n'.format(string_utils.suspect_ind, suspects[file_name]))
 
 
 def output_json(file_name, domain_object, output_dir):

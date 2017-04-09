@@ -3,7 +3,7 @@
         "dir_database_path" : "/home/homeub/projects/investigator/database",
         "dir_pandalogs_path" : "/home/homeub/projects/investigator/pandalogs",
         "dir_panda_path" : "/home/homeub/projects/investigator/panda/qemu/panda",
-        "dir_clues_path" : "/home/homeub/projects/investigator/clues",
+        "dir_redpills_path": "/home/homeub/projects/investigator/red_pills",
         "created_dirs_path": "/home/homeub/projects/investigator/created_dirs",
         "core_num" : 4
     }

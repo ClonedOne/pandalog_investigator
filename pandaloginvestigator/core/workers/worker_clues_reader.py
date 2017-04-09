@@ -1,11 +1,10 @@
 from pandaloginvestigator.core.domain.clue_object import Clue
 from pandaloginvestigator.core.utils import string_utils
 from pandaloginvestigator.core.io import file_input
+from pandaloginvestigator.core.io import file_output
 import logging
 import time
 import os
-import pprint
-import jsonpickle
 
 logger = logging.getLogger(__name__)
 
@@ -15,9 +14,10 @@ def work(data_pack):
      Pandalog detection worker main method. The data passed to each worker contains:
      * worker id - 0
      * list of file names to analyze - 1
-     * path to the clues files directory - 2
+     * path to the Investigator plugin results - 2 
      * path to the analyzed logs directory - 3
      * dictionary containing dangerous registry keys and values - 4
+     * path to the clues files directory - 5
     
     :param data_pack: data needed by the worker  
     :return: dictionary of Clue objects
@@ -31,10 +31,11 @@ def work(data_pack):
     # Unpacking of the passed data
     worker_id = data_pack[0]
     file_names = data_pack[1]
-    dir_clues_path = data_pack[2]
+    dir_redpills_path = data_pack[2]
     dir_analyzed_path = data_pack[3]
-    registry_keys = data_pack[4]['keys']
-    registry_values = data_pack[4]['values']
+    dir_clues_path = data_pack[4]
+    registry_keys = data_pack[5]['keys']
+    registry_values = data_pack[5]['values']
 
     # performance optimization
     features = [
@@ -50,7 +51,7 @@ def work(data_pack):
     total_files = len(file_names)
     logger.info('WorkerId {} reading {} clues files'.format(worker_id, total_files))
 
-    if os.path.exists(dir_clues_path):
+    if os.path.exists(dir_redpills_path):
         red_pills = True
 
     for file_name in file_names:
@@ -65,11 +66,12 @@ def work(data_pack):
         examine_registry_activity(current_clue, current_sample, registry_keys, registry_values)
 
         if red_pills:
-            examine_red_pills(current_clue, current_sample, dir_clues_path, file_name, features)
+            examine_red_pills(current_clue, current_sample, dir_redpills_path, file_name, features)
 
         examine_special_status(current_clue, current_sample)
 
         clues_dict[file_name] = current_clue
+        file_output.output_json(file_name, current_clue, dir_clues_path)
 
         j += 1
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
@@ -108,19 +110,19 @@ def examine_registry_activity(clue, sample, registry_keys, registry_values):
                 clue.queried_values[process_info].add(registry_value)
 
 
-def examine_red_pills(clue, sample, dir_clues_path, file_name, features):
+def examine_red_pills(clue, sample, dir_redpills_path, file_name, features):
     """
     Gather information about red pills discovered by the PANDA plugin.
     
     :param clue: Clue object to modify
     :param sample: Sample object examined
-    :param dir_clues_path: path to the clues files directory
+    :param dir_redpills_path: Investigator plugin results
     :param file_name: name of the clues file
     :param features: fixed elements of the clues file
     :return: 
     """
 
-    with open(os.path.join(dir_clues_path, file_name + '_ss.txt'), encoding='utf-8', errors='replace') as clue_file:
+    with open(os.path.join(dir_redpills_path, file_name + '_ss.txt'), encoding='utf-8', errors='replace') as clue_file:
         cur_features = [None] * 7
 
         for line in clue_file:

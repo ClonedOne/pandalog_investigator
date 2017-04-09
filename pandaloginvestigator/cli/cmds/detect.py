@@ -19,9 +19,9 @@ def detect_command(app):
         logger.error('created_dirs_path not set in configuration file')
         return
     try:
-        dir_clues_path = app.config.get('pandaloginvestigator', 'dir_clues_path')
+        dir_redpills_path = app.config.get('pandaloginvestigator', 'dir_redpills_path')
     except:
-        logger.error('dir_clues_path not set in configuration file')
+        logger.error('dir_redpills_path not set in configuration file')
         return
 
     dir_results_path = created_dirs_path + '/' + string_utils.dir_results_path
@@ -32,13 +32,18 @@ def detect_command(app):
     if not os.path.exists(dir_analyzed_path):
         os.makedirs(dir_analyzed_path)
 
+    dir_clues_path = created_dirs_path + '/' + string_utils.dir_clues_path
+    if not os.path.exists(dir_clues_path):
+        os.makedirs(dir_clues_path)
+
     logger.debug(
-        'Detect command with parameters: {}, {}, {}, {}'.format(
+        'Detect command with parameters: {}, {}, {}, {}, {}'.format(
             dir_results_path,
-            dir_clues_path,
+            dir_redpills_path,
             dir_analyzed_path,
+            dir_clues_path,
             core_num,
         )
     )
 
-    suspect_builder.build_suspects(dir_results_path, dir_clues_path, dir_analyzed_path, core_num)
+    suspect_builder.build_suspects(dir_results_path, dir_redpills_path, dir_analyzed_path, dir_clues_path, core_num)

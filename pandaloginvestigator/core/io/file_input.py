@@ -81,3 +81,18 @@ def load_sample(sample_uuid, dir_analyzed):
     with open(path.join(dir_analyzed, sample_uuid + '.json'), "r", encoding='utf-8', errors='replace') as sample_file:
         sample = jsonpickle.decode(sample_file.read(), keys=True)
     return sample
+
+
+def get_syscalls():
+    """
+    Use the provided table of system calls to generate a system call number -> system call name dictionary. Reference
+    system is Windows 7 SP 01.
+
+    :return: dictionary of system calls
+    """
+    syscall_dict = {}
+    with open('syscalls.tsv', 'r', encoding='utf-8', errors='replace') as syscall_file:
+        for line in syscall_file:
+            line = line.split('\t')
+            syscall_dict[int(line[0])] = line[1].strip()
+    return syscall_dict
