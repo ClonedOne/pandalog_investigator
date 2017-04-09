@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pandaloginvestigator',
-    version='0.1',
+    version='0.2',
     author='Giorgio Severi',
     description='Panda logs analysis tool',
     url='https://github.com/ClonedOne/pandalog_investigator',
