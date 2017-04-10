@@ -7,7 +7,7 @@ from pandaloginvestigator.core.utils import string_utils
 logger = logging.getLogger(__name__)
 
 
-def read_result_corrupted(dir_results_path: str) -> dict:
+def read_result_corrupted(dir_results_path):
     """
     Reads the corrupted processes list form the results file in the specified directory. Returns a dictionary
     containing as key the log file name. The value of each key is given by a list of tuples in the form (malware,
@@ -23,10 +23,10 @@ def read_result_corrupted(dir_results_path: str) -> dict:
         logger.error('ERROR: corrupted_processes.txt file  not found')
         quit()
 
-    with open(file_path, 'r', encoding='utf-8', errors='replace') as resfile:
+    with open(file_path, 'r', encoding='utf-8', errors='replace') as corrupted_file:
         last_file_name = ''
 
-        for line in resfile:
+        for line in corrupted_file:
             if string_utils.filename in line:
                 last_file_name = pandaloginvestigator.core.io.file_input.filename_from_analysis(line)
                 corrupted_dict[last_file_name] = []
@@ -38,3 +38,8 @@ def read_result_corrupted(dir_results_path: str) -> dict:
                 corrupted_dict[last_file_name].append([malware, origin, parent])
 
     return corrupted_dict
+
+
+def read_result_suspect(dir_results_path):
+    suspects_dict = {}
+    file_path = os.path.join(dir_results_path, 'suspects.txt')

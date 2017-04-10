@@ -5,6 +5,7 @@ from pandaloginvestigator.core.io import file_output
 import logging
 import time
 import os
+from pprint import pprint
 
 logger = logging.getLogger(__name__)
 
@@ -92,22 +93,23 @@ def examine_registry_activity(clue, sample, registry_keys, registry_values):
     :return: 
     """
 
+    accessed_keys = set()
+    queried_values = set()
+
     for process_info, process in sample.corrupted_processes.items():
-        accessed_keys = set()
-        queried_values = set()
         for accessed_key, queried_value in process.registry_activity.items():
-            accessed_keys.add(accessed_key)
+            accessed_keys.add(os.path.normpath(accessed_key))
             queried_values |= queried_value
 
-        for registry_key in registry_keys:
-            if registry_key in accessed_keys:
-                clue.opened_keys[process_info] = clue.opened_keys.get(process_info, set())
-                clue.opened_keys[process_info].add(registry_key)
+    for registry_key in registry_keys:
+        if any(registry_key in accessed_key for accessed_key in accessed_keys):
+            clue.opened_keys[process_info] = clue.opened_keys.get(process_info, set())
+            clue.opened_keys[process_info].add(registry_key)
 
-        for registry_value in registry_values:
-            if registry_value in queried_values:
-                clue.queried_values[process_info] = clue.queried_values.get(process_info, set())
-                clue.queried_values[process_info].add(registry_value)
+    for registry_value in registry_values:
+        if registry_value in queried_values:
+            clue.queried_values[process_info] = clue.queried_values.get(process_info, set())
+            clue.queried_values[process_info].add(registry_value)
 
 
 def examine_red_pills(clue, sample, dir_redpills_path, file_name, features):

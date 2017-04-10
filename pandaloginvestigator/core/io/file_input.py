@@ -66,6 +66,7 @@ def get_registry_keys():
 
     with open("registry_keys.json", "r", encoding='utf-8', errors='replace') as reg_file:
         registry_keys = jsonpickle.decode(reg_file.read())
+        registry_keys['keys'] = [path.normpath(key) for key in registry_keys['keys']]
     return registry_keys
 
 
