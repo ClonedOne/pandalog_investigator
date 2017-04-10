@@ -1,7 +1,7 @@
 import logging
 import os
 
-import pandaloginvestigator.core.io.file_input
+from pandaloginvestigator.core.io import file_input
 from pandaloginvestigator.core.utils import string_utils
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ def read_result_corrupted(dir_results_path):
 
         for line in corrupted_file:
             if string_utils.filename in line:
-                last_file_name = pandaloginvestigator.core.io.file_input.filename_from_analysis(line)
+                last_file_name = file_input.filename_from_analysis(line)
                 corrupted_dict[last_file_name] = []
             elif line.strip():
                 line = line.split('\t')
@@ -41,5 +41,22 @@ def read_result_corrupted(dir_results_path):
 
 
 def read_result_suspect(dir_results_path):
+    """
+    Reads and returns the dictionary of suspects from the result file. 
+    
+    :param dir_results_path: path to the results files directory
+    :return: dictionary mapping suspect indices to samples uuid
+    """
     suspects_dict = {}
-    file_path = os.path.join(dir_results_path, 'suspects.txt')
+
+    with open(os.path.join(dir_results_path, 'suspects.txt'), 'r', encoding='utf-8', errors='replace') as s_file:
+        last_file_name = ''
+
+        for line in s_file:
+            if string_utils.filename in line:
+                last_file_name = file_input.filename_from_analysis(line)
+            elif string_utils.suspect_ind in line:
+                index = float(line.split('\t')[1].strip())
+                suspects_dict[last_file_name] = index
+
+    return suspects_dict
