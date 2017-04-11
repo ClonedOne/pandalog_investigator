@@ -23,7 +23,15 @@ threshold = 0.9
 def main():
     suspects_dict = results_reader.read_result_suspect(dir_results_path)
     md5_index = map_to_md5(suspects_dict)
+    print('total suspects: {}'.format(len(suspects_dict)))
+    print('total md5: {}'.format(len(md5_index)))
     total_files = len(os.listdir(dir_vt_path))
+
+    distribution = Counter(md5_index.values())
+    # pprint(distribution)
+    pprint([(i, round(i[1] / float(len(md5_index)), 2) * 100.0) for i in distribution.most_common()])
+    pprint(sum(float(i[0]) * i[1] for i in distribution.most_common()) / float(len(md5_index)))
+    # pprint([(i, i[1] / float(len(md5_index)) * 100.0) for i in distribution.most_common()])
 
     written_file_frequencies = Counter()
     runtime_dll_frequencies = Counter()
@@ -33,6 +41,7 @@ def main():
     above_threshold = 0
     with_behavior = 0
     not_analyzed = 0
+    analyzed = 0
     j = 0.0
 
     for file_name in sorted(os.listdir(dir_vt_path)):
@@ -46,6 +55,7 @@ def main():
             above_threshold += 1
 
             if file_name in md5_index:
+                analyzed += 1
                 index_frequencies[md5_index[file_name]] += 1
             else:
                 not_analyzed += 1
@@ -70,16 +80,17 @@ def main():
                         dns_frequencies[(entry['ip'], entry['hostname'])] += 1
 
         j += 1
-        # if j % 100 == 0:
-        #     print('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
 
     pprint('Above threshold: {}'.format(above_threshold))
     pprint('With behavior: {}'.format(with_behavior))
+    pprint('Analyzed: {}'.format(analyzed))
     pprint('Not analyzed: {}'.format(not_analyzed))
     # pprint(written_file_frequencies.most_common(100))
     # pprint(runtime_dll_frequencies.most_common(100))
     # pprint(dns_frequencies.most_common(100))
-    pprint(index_frequencies.most_common(20))
+    # pprint(index_frequencies.most_common())
+    pprint([(i, round(i[1] / float(analyzed), 2) * 100.0) for i in index_frequencies.most_common()])
+    pprint(sum(float(i[0]) * i[1] for i in index_frequencies.most_common()) / float(analyzed))
 
 
 def out_file_names(file_list, label):
@@ -98,9 +109,12 @@ def map_to_md5(suspects_dict):
 
     md5_index_map = {}
     uuid_md5_map = db_manager.acquire_malware_file_dict_full(dir_database_path)
+    print(len(suspects_dict), len(uuid_md5_map))
 
     for uuid, index in suspects_dict.items():
         md5 = uuid_md5_map[uuid]
+        if md5 in md5_index_map:
+            print('Collision: ', md5)
         md5_index_map[md5] = index
 
     return md5_index_map
