@@ -6,17 +6,17 @@ import json
 import os
 
 # dir_vt_path = '/home/homeub/projects/investigator/vt'
-dir_vt_path = '/home/yogaub/projects/seminar/vt'
-dir_results_path = '/home/yogaub/projects/seminar/created_dirs/dir_results'
-dir_database_path = '/home/yogaub/projects/seminar/database'
+dir_vt_path = '/home/homeub/projects/investigator/vt'
+dir_results_path = '/home/homeub/projects/investigator/created_dirs/dir_results'
+dir_database_path = '/home/homeub/projects/investigator/database'
 
 worker_id = 'test vt'
-positive_identification = 'positives'
 total_scans = 'total'
 behavior = 'behaviour-v1'
 info = 'additional_info'
 file_sys = 'filesystem'
 written = 'written'
+avs = ['Avast', 'BitDefender', 'Secure', 'GData', 'Kaspersky', 'Symantec']
 threshold = 0.9
 
 
@@ -37,6 +37,7 @@ def main():
     runtime_dll_frequencies = Counter()
     dns_frequencies = Counter()
     index_frequencies = Counter()
+    md5_lables = {}
 
     above_threshold = 0
     with_behavior = 0
@@ -47,7 +48,7 @@ def main():
     for file_name in sorted(os.listdir(dir_vt_path)):
         json_report = json.loads(open(os.path.join(dir_vt_path, file_name)).read())
 
-        positives = float(json_report[positive_identification])
+        positives = float(json_report['positives'])
         scans = float(json_report[total_scans])
         identification_percentage = positives / scans
 
@@ -79,7 +80,11 @@ def main():
                     for entry in dns:
                         dns_frequencies[(entry['ip'], entry['hostname'])] += 1
 
-        j += 1
+            labels = []
+            for scan in json_report['scans']:
+                if scan in avs:
+                    labels.append(json_report['scans'][scan]['result'])
+            md5_lables[file_name] = labels
 
     pprint('Above threshold: {}'.format(above_threshold))
     pprint('With behavior: {}'.format(with_behavior))
@@ -91,6 +96,7 @@ def main():
     # pprint(index_frequencies.most_common())
     pprint([(i, round(i[1] / float(analyzed), 2) * 100.0) for i in index_frequencies.most_common()])
     pprint(sum(float(i[0]) * i[1] for i in index_frequencies.most_common()) / float(analyzed))
+    pprint(md5_lables)
 
 
 def out_file_names(file_list, label):
@@ -108,14 +114,18 @@ def map_to_md5(suspects_dict):
     """
 
     md5_index_map = {}
+    collisions = set()
     uuid_md5_map = db_manager.acquire_malware_file_dict_full(dir_database_path)
     print(len(suspects_dict), len(uuid_md5_map))
 
     for uuid, index in suspects_dict.items():
         md5 = uuid_md5_map[uuid]
         if md5 in md5_index_map:
-            print('Collision: ', md5)
+            collisions.add(md5)
         md5_index_map[md5] = index
+
+    for md5 in collisions:
+        md5_index_map.pop(md5, None)
 
     return md5_index_map
 
