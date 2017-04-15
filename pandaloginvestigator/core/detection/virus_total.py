@@ -16,7 +16,7 @@ behavior = 'behaviour-v1'
 info = 'additional_info'
 file_sys = 'filesystem'
 written = 'written'
-avs = ['Avast', 'BitDefender', 'Secure', 'GData', 'Kaspersky', 'Symantec']
+avs = ['Avast', 'BitDefender', 'Secure', 'GData', 'Kaspersky', 'Symantec', 'TrendMicro', 'Microsoft']
 threshold = 0.9
 
 
@@ -80,10 +80,10 @@ def main():
                     for entry in dns:
                         dns_frequencies[(entry['ip'], entry['hostname'])] += 1
 
-            labels = []
+            labels = {}
             for scan in json_report['scans']:
                 if scan in avs:
-                    labels.append(json_report['scans'][scan]['result'])
+                    labels[scan] = (json_report['scans'][scan]['result'])
             md5_lables[file_name] = labels
 
     pprint('Above threshold: {}'.format(above_threshold))
