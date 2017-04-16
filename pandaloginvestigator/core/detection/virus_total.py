@@ -6,7 +6,6 @@ import json
 import os
 import re
 
-# dir_vt_path = '/home/homeub/projects/investigator/vt'
 dir_vt_path = '/home/homeub/projects/investigator/vt'
 dir_results_path = '/home/homeub/projects/investigator/created_dirs/dir_results'
 dir_database_path = '/home/homeub/projects/investigator/database'
@@ -23,19 +22,22 @@ threshold = 0.9
 def main():
     suspects_dict = results_reader.read_result_suspect(dir_results_path)
     md5_index = map_to_md5(suspects_dict)
-    print('total suspects: {}'.format(len(suspects_dict)))
-    print('total md5: {}'.format(len(md5_index)))
-    print('total vts: {}'.format(len(os.listdir(dir_vt_path))))
-
     md5_label = get_sample_labels()
-    print(len(md5_label))
+    md5_behavior = get_number_behavior()
+    md5_indexed_labeled = set(md5_index.keys()) & set(md5_label.keys())
+    md5_indexed_labeled_behavior = md5_indexed_labeled & set(md5_behavior)
+    print('total suspects: {}'.format(len(suspects_dict)))
+    print('total indexed: {}'.format(len(md5_index)))
+    print('total vts: {}'.format(len(os.listdir(dir_vt_path))))
+    print('total labeled: {}'.format(len(md5_label)))
+    print('total with behavior: {}'.format(len(md5_behavior)))
+    print('total indexed and labeled: {}'.format(len(md5_indexed_labeled)))
+    print('total indexed and labeled with behavior: {}'.format(len(md5_indexed_labeled_behavior)))
 
     exit()
     distribution = Counter(md5_index.values())
-    # pprint(distribution)
     pprint([(i, round(i[1] / float(len(md5_index)), 2) * 100.0) for i in distribution.most_common()])
     pprint(sum(float(i[0]) * i[1] for i in distribution.most_common()) / float(len(md5_index)))
-    # pprint([(i, i[1] / float(len(md5_index)) * 100.0) for i in distribution.most_common()])
 
     written_file_frequencies = Counter()
     runtime_dll_frequencies = Counter()
@@ -46,7 +48,6 @@ def main():
     with_behavior = 0
     not_analyzed = 0
     analyzed = 0
-    j = 0.0
 
     for file_name in sorted(os.listdir(dir_vt_path)):
         json_report = json.loads(open(os.path.join(dir_vt_path, file_name)).read())
@@ -112,7 +113,6 @@ def map_to_md5(suspects_dict):
     md5_index_map = {}
     collisions = set()
     uuid_md5_map = db_manager.acquire_malware_file_dict_full(dir_database_path)
-    print(len(suspects_dict), len(uuid_md5_map))
 
     for uuid, index in suspects_dict.items():
         md5 = uuid_md5_map[uuid]
@@ -174,6 +174,34 @@ def get_sample_labels():
         json.dump(md5_labels, out_file, indent=2)
 
     return md5_labels
+
+
+def get_number_behavior():
+    """
+    Retrieves the list of VT reports containing the behavior field.
+    Generates a json file containing the dictionary to speed up successive calls. 
+    
+    :return: set of md5s
+    """
+
+    md5_set = []
+
+    # Checks if labels file is already available
+    if os.path.isfile('with_behavior.json'):
+        with open('with_behavior.json', 'r', encoding='utf-8', errors='replace') as in_file:
+            md5_set = json.load(in_file)
+        return md5_set
+
+    for md5 in sorted(os.listdir(dir_vt_path)):
+        json_report = json.loads(open(os.path.join(dir_vt_path, md5)).read())
+        if behavior in json_report[info]:
+            md5_set.append(md5)
+
+    with open('with_behavior.json', 'w', encoding='utf-8', errors='replace') as out_file:
+        json.dump(md5_set, out_file, indent=2)
+
+    return md5_set
+
 
 if __name__ == '__main__':
     main()
