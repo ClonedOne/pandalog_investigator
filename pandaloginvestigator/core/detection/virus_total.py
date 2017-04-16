@@ -4,6 +4,7 @@ from collections import Counter
 from pprint import pprint
 import json
 import os
+import re
 
 # dir_vt_path = '/home/homeub/projects/investigator/vt'
 dir_vt_path = '/home/homeub/projects/investigator/vt'
@@ -16,7 +17,6 @@ behavior = 'behaviour-v1'
 info = 'additional_info'
 file_sys = 'filesystem'
 written = 'written'
-avs = ['Avast', 'BitDefender', 'Secure', 'GData', 'Kaspersky', 'Symantec', 'TrendMicro', 'Microsoft']
 threshold = 0.9
 
 
@@ -25,8 +25,12 @@ def main():
     md5_index = map_to_md5(suspects_dict)
     print('total suspects: {}'.format(len(suspects_dict)))
     print('total md5: {}'.format(len(md5_index)))
-    total_files = len(os.listdir(dir_vt_path))
+    print('total vts: {}'.format(len(os.listdir(dir_vt_path))))
 
+    md5_label = get_sample_labels()
+    print(len(md5_label))
+
+    exit()
     distribution = Counter(md5_index.values())
     # pprint(distribution)
     pprint([(i, round(i[1] / float(len(md5_index)), 2) * 100.0) for i in distribution.most_common()])
@@ -37,7 +41,6 @@ def main():
     runtime_dll_frequencies = Counter()
     dns_frequencies = Counter()
     index_frequencies = Counter()
-    md5_lables = {}
 
     above_threshold = 0
     with_behavior = 0
@@ -80,12 +83,6 @@ def main():
                     for entry in dns:
                         dns_frequencies[(entry['ip'], entry['hostname'])] += 1
 
-            labels = {}
-            for scan in json_report['scans']:
-                if scan in avs:
-                    labels[scan] = (json_report['scans'][scan]['result'])
-            md5_lables[file_name] = labels
-
     pprint('Above threshold: {}'.format(above_threshold))
     pprint('With behavior: {}'.format(with_behavior))
     pprint('Analyzed: {}'.format(analyzed))
@@ -96,7 +93,6 @@ def main():
     # pprint(index_frequencies.most_common())
     pprint([(i, round(i[1] / float(analyzed), 2) * 100.0) for i in index_frequencies.most_common()])
     pprint(sum(float(i[0]) * i[1] for i in index_frequencies.most_common()) / float(analyzed))
-    pprint(md5_lables)
 
 
 def out_file_names(file_list, label):
@@ -129,6 +125,55 @@ def map_to_md5(suspects_dict):
 
     return md5_index_map
 
+
+def get_sample_labels():
+    """
+    Examines the VirusTotal reports looking for the labels assigned to the sample by a subset of the most famous AVs.
+    If the majority reach consensus on the family of the malicious software, adds it to a md5-family mapping.
+    Generates a json file containing the dictionary to speed up successive calls. 
+    
+    :return: dictionary mapping md5s to malware family names
+    """
+
+    # For each AV this dictionary contains:
+    #  * the regex pattern used to split the full label
+    #  * the position of the malware family name in the split
+    avs = {
+        'Kaspersky': ('[\.!]', 2),
+        'Symantec': ('[\.!]', 1),
+        'Microsoft': ('[\./!:]', 2),
+        'Avast': ('[-:\s]', 1),
+        'TrendMicro': ('[\._]', 1)
+    }
+    majority = (len(avs) // 2) + 1
+    md5_labels = {}
+
+    # Checks if labels file is already available
+    if os.path.isfile('av_labels.json'):
+        with open('av_labels.json', 'r', encoding='utf-8', errors='replace') as in_file:
+            md5_labels = json.load(in_file)
+        return md5_labels
+
+    # Otherwise retrieves the labels
+    for md5 in sorted(os.listdir(dir_vt_path)):
+        json_report = json.loads(open(os.path.join(dir_vt_path, md5)).read())
+        label_counter = Counter()
+
+        for av in json_report['scans']:
+            if av in avs:
+                result = json_report['scans'][av]['result']
+                split = list(filter(None, re.split(avs[av][0], result) if result else []))
+                mal_family = (split[avs[av][1]]).strip().lower() if len(split) > avs[av][1] else None
+                if mal_family:
+                    label_counter[mal_family] += 1
+
+        if label_counter and label_counter.most_common(1)[0][1] >= majority:
+            md5_labels[md5] = label_counter.most_common(1)[0][0]
+
+    with open('av_labels.json', 'w', encoding='utf-8', errors='replace') as out_file:
+        json.dump(md5_labels, out_file, indent=2)
+
+    return md5_labels
 
 if __name__ == '__main__':
     main()
