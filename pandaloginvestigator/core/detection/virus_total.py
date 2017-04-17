@@ -16,23 +16,29 @@ behavior = 'behaviour-v1'
 info = 'additional_info'
 file_sys = 'filesystem'
 written = 'written'
-threshold = 0.9
+threshold = 0.75
 
 
 def main():
+
     suspects_dict = results_reader.read_result_suspect(dir_results_path)
     md5_index = map_to_md5(suspects_dict)
     md5_label = get_sample_labels()
     md5_behavior = get_number_behavior()
+    md5_non_evasive = get_non_evasive()
     md5_indexed_labeled = set(md5_index.keys()) & set(md5_label.keys())
     md5_indexed_labeled_behavior = md5_indexed_labeled & set(md5_behavior)
+    md5_indexed_labeled_behavior_non_evasive = md5_indexed_labeled_behavior & set(md5_non_evasive)
+
     print('total suspects: {}'.format(len(suspects_dict)))
     print('total indexed: {}'.format(len(md5_index)))
     print('total vts: {}'.format(len(os.listdir(dir_vt_path))))
     print('total labeled: {}'.format(len(md5_label)))
     print('total with behavior: {}'.format(len(md5_behavior)))
+    print('total non evasive: {}'.format(len(md5_non_evasive)))
     print('total indexed and labeled: {}'.format(len(md5_indexed_labeled)))
     print('total indexed and labeled with behavior: {}'.format(len(md5_indexed_labeled_behavior)))
+    print('total indexed and labeled with behavior non evasive: {}'.format(len(md5_indexed_labeled_behavior_non_evasive)))
 
     exit()
     distribution = Counter(md5_index.values())
@@ -179,28 +185,60 @@ def get_sample_labels():
 def get_number_behavior():
     """
     Retrieves the list of VT reports containing the behavior field.
-    Generates a json file containing the dictionary to speed up successive calls. 
+    Generates a json file containing the list to speed up successive calls. 
     
-    :return: set of md5s
+    :return: list of md5s
     """
 
-    md5_set = []
+    md5s = []
 
     # Checks if labels file is already available
     if os.path.isfile('with_behavior.json'):
         with open('with_behavior.json', 'r', encoding='utf-8', errors='replace') as in_file:
-            md5_set = json.load(in_file)
-        return md5_set
+            md5s = json.load(in_file)
+        return md5s
 
     for md5 in sorted(os.listdir(dir_vt_path)):
         json_report = json.loads(open(os.path.join(dir_vt_path, md5)).read())
         if behavior in json_report[info]:
-            md5_set.append(md5)
+            md5s.append(md5)
 
     with open('with_behavior.json', 'w', encoding='utf-8', errors='replace') as out_file:
-        json.dump(md5_set, out_file, indent=2)
+        json.dump(md5s, out_file, indent=2)
 
-    return md5_set
+    return md5s
+
+
+def get_non_evasive():
+    """
+    Examines the VT reports looking for those samples which are identified by a large number of the AVs.
+    Returns a list of probably non evasive samples.
+    Generates a json file containing the list to speed up successive calls.
+    
+    :return: list of md5s
+    """
+
+    md5s = []
+
+    # Checks if labels file is already available
+    if os.path.isfile('non_evasive.json'):
+        with open('non_evasive.json', 'r', encoding='utf-8', errors='replace') as in_file:
+            md5s = json.load(in_file)
+        return md5s
+
+    for md5 in sorted(os.listdir(dir_vt_path)):
+        json_report = json.loads(open(os.path.join(dir_vt_path, md5)).read())
+        positives = float(json_report['positives'])
+        scans = float(json_report['total'])
+        identification_percentage = positives / scans
+
+        if identification_percentage >= threshold:
+            md5s.append(md5)
+
+    with open('non_evasive.json', 'w', encoding='utf-8', errors='replace') as out_file:
+        json.dump(md5s, out_file, indent=2)
+
+    return md5s
 
 
 if __name__ == '__main__':
