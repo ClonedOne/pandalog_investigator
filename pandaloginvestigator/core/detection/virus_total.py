@@ -20,15 +20,22 @@ threshold = 0.75
 
 
 def main():
-
+    print('Getting uuid indices')
     suspects_dict = results_reader.read_result_suspect(dir_results_path)
+    print('Getting md5 indices')
     md5_index = map_to_md5(suspects_dict)
+    print('Getting md5 labels')
     md5_label = get_sample_labels()
+    print('Getting md5 with behavior')
     md5_behavior = get_number_behavior()
+    print('Getting md5 non evasive')
     md5_non_evasive = get_non_evasive()
+
     md5_indexed_labeled = set(md5_index.keys()) & set(md5_label.keys())
     md5_indexed_labeled_behavior = md5_indexed_labeled & set(md5_behavior)
     md5_indexed_labeled_behavior_non_evasive = md5_indexed_labeled_behavior & set(md5_non_evasive)
+
+    out_to_file('ind_lab_beh', list(md5_indexed_labeled_behavior))
 
     print('total suspects: {}'.format(len(suspects_dict)))
     print('total indexed: {}'.format(len(md5_index)))
@@ -102,12 +109,6 @@ def main():
     pprint(sum(float(i[0]) * i[1] for i in index_frequencies.most_common()) / float(analyzed))
 
 
-def out_file_names(file_list, label):
-    with open(label, 'w', encoding='utf-8', errors='replace') as out_file:
-        for file_name in file_list:
-            out_file.write(file_name + '\n')
-
-
 def map_to_md5(suspects_dict):
     """
     Uses the database to build a dictionary mapping md5s to suspect indices, instead of files uuid.
@@ -153,10 +154,12 @@ def get_sample_labels():
     }
     majority = (len(avs) // 2) + 1
     md5_labels = {}
+    file_name = 'av_labels'
+    file_path = os.path.join(dir_results_path, file_name + '.json')
 
     # Checks if labels file is already available
-    if os.path.isfile('av_labels.json'):
-        with open('av_labels.json', 'r', encoding='utf-8', errors='replace') as in_file:
+    if os.path.isfile(file_path):
+        with open(file_path, 'r', encoding='utf-8', errors='replace') as in_file:
             md5_labels = json.load(in_file)
         return md5_labels
 
@@ -176,9 +179,7 @@ def get_sample_labels():
         if label_counter and label_counter.most_common(1)[0][1] >= majority:
             md5_labels[md5] = label_counter.most_common(1)[0][0]
 
-    with open('av_labels.json', 'w', encoding='utf-8', errors='replace') as out_file:
-        json.dump(md5_labels, out_file, indent=2)
-
+    out_to_file(file_name, md5_labels)
     return md5_labels
 
 
@@ -190,11 +191,13 @@ def get_number_behavior():
     :return: list of md5s
     """
 
+    file_name = 'with_behavior'
+    file_path = os.path.join(dir_results_path, file_name + '.json')
     md5s = []
 
     # Checks if labels file is already available
-    if os.path.isfile('with_behavior.json'):
-        with open('with_behavior.json', 'r', encoding='utf-8', errors='replace') as in_file:
+    if os.path.isfile(file_path):
+        with open(file_path, 'r', encoding='utf-8', errors='replace') as in_file:
             md5s = json.load(in_file)
         return md5s
 
@@ -203,9 +206,7 @@ def get_number_behavior():
         if behavior in json_report[info]:
             md5s.append(md5)
 
-    with open('with_behavior.json', 'w', encoding='utf-8', errors='replace') as out_file:
-        json.dump(md5s, out_file, indent=2)
-
+    out_to_file(file_name, md5s)
     return md5s
 
 
@@ -218,11 +219,13 @@ def get_non_evasive():
     :return: list of md5s
     """
 
+    file_name = 'non_evasive'
+    file_path = os.path.join(dir_results_path, file_name + '.json')
     md5s = []
 
     # Checks if labels file is already available
-    if os.path.isfile('non_evasive.json'):
-        with open('non_evasive.json', 'r', encoding='utf-8', errors='replace') as in_file:
+    if os.path.isfile(file_path):
+        with open(file_path, 'r', encoding='utf-8', errors='replace') as in_file:
             md5s = json.load(in_file)
         return md5s
 
@@ -235,10 +238,21 @@ def get_non_evasive():
         if identification_percentage >= threshold:
             md5s.append(md5)
 
-    with open('non_evasive.json', 'w', encoding='utf-8', errors='replace') as out_file:
-        json.dump(md5s, out_file, indent=2)
-
+    out_to_file(file_name, md5s)
     return md5s
+
+
+def out_to_file(f_name, data):
+    """
+    Outputs to file the specified data.
+    
+    :param f_name: name of the file to create
+    :param data: data to output
+    :return: 
+    """
+
+    with open(os.path.join(dir_results_path, f_name + '.json'), 'w', encoding='utf-8', errors='replace') as out_file:
+        json.dump(data, out_file, indent=2)
 
 
 if __name__ == '__main__':
