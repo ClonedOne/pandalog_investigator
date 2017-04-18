@@ -129,7 +129,7 @@ def input_with_modifiers(dir_unpacked_path, dir_pandalogs_path, small_disk=None,
         with open(file_list, 'r', encoding='utf-8', errors='replace') as list_file:
             for line in list_file:
                 file_names.append(line.strip())
-                file_names = sorted(file_names)
+        file_names = sorted(file_names)
     elif small_disk:
         logger.info('Input modifier: small_disk')
         file_names = sorted(strip_filename_ext(os.listdir(dir_pandalogs_path)))

@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def analyze_logs(dir_panda_path, dir_pandalogs_path, dir_unpacked_path, dir_analyzed_path,
-                 dir_results_path, dir_database_path, core_num, max_num, small_disk):
+                 dir_results_path, dir_database_path, core_num, max_num=None, small_disk=False):
     """
     Analyzes each pandalog file. 
     Iterates through all the log files in the folder specified in the configuration.
