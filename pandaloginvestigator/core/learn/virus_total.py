@@ -6,11 +6,6 @@ import json
 import os
 import re
 
-dir_vt_path = '/home/yogaub/projects/seminar/vt'
-dir_results_path = '/home/yogaub/projects/seminar/created_dirs/dir_results'
-dir_database_path = '/home/yogaub/projects/seminar/database'
-dir_pandalogs_path = '/home/yogaub/projects/seminar/pandalogs'
-
 worker_id = 'test vt'
 total_scans = 'total'
 behavior = 'behaviour-v1'
@@ -20,43 +15,44 @@ written = 'written'
 threshold = 0.75
 
 
-def main():
+def main(dir_vt_path, dir_results_path, dir_database_path, dir_pandalogs_path):
     print('Getting uuid indices')
     suspects_dict = results_reader.read_result_suspect(dir_results_path)
     print('Getting md5 indices')
-    md5_index = map_to_md5(suspects_dict)
+    md5_index = map_to_md5(suspects_dict, dir_database_path)
     print('Getting md5 labels')
-    md5_label = get_sample_labels()
+    md5_label = get_sample_labels(dir_results_path, dir_vt_path)
     print('Getting md5 with behavior')
-    md5_behavior = get_number_behavior()
+    md5_behavior = get_number_behavior(dir_results_path, dir_vt_path)
     print('Getting md5 non evasive')
-    md5_non_evasive = get_non_evasive()
+    md5_non_evasive = get_non_evasive(dir_results_path, dir_vt_path)
 
     md5_indexed_labeled = set(md5_index.keys()) & set(md5_label.keys())
     md5_indexed_labeled_behavior = md5_indexed_labeled & set(md5_behavior)
     md5_indexed_labeled_behavior_non_evasive = md5_indexed_labeled_behavior & set(md5_non_evasive)
 
-    uuid_available = find_available_pandalogs(md5_indexed_labeled_behavior_non_evasive, md5_label)
-    out_to_file('ind_lab_beh_ne', list(md5_indexed_labeled_behavior_non_evasive))
-    out_to_file('uuid_available', uuid_available)
+    uuid_available = find_available_pandalogs(md5_indexed_labeled_behavior_non_evasive, md5_label, dir_database_path,
+                                              dir_pandalogs_path)
+    out_to_file('ind_lab_beh_ne', list(md5_indexed_labeled_behavior_non_evasive), dir_results_path)
+    out_to_file('uuid_available', uuid_available, dir_results_path)
 
-    print('total suspects: {}'.format(len(suspects_dict)))
-    print('total indexed: {}'.format(len(md5_index)))
-    print('total vts: {}'.format(len(os.listdir(dir_vt_path))))
-    print('total labeled: {}'.format(len(md5_label)))
-    print('total with behavior: {}'.format(len(md5_behavior)))
-    print('total non evasive: {}'.format(len(md5_non_evasive)))
-    print('total indexed and labeled: {}'.format(len(md5_indexed_labeled)))
-    print('total indexed and labeled with behavior: {}'.format(len(md5_indexed_labeled_behavior)))
-    print(
-        'total indexed and labeled with behavior non evasive: {}'.format(len(md5_indexed_labeled_behavior_non_evasive)))
+    print('suspects: {}'.format(len(suspects_dict)))
+    print('indexed: {}'.format(len(md5_index)))
+    print('vts: {}'.format(len(os.listdir(dir_vt_path))))
+    print('labeled: {}'.format(len(md5_label)))
+    print('with behavior: {}'.format(len(md5_behavior)))
+    print('non evasive: {}'.format(len(md5_non_evasive)))
+    print('indexed and labeled: {}'.format(len(md5_indexed_labeled)))
+    print('indexed and labeled with behavior: {}'.format(len(md5_indexed_labeled_behavior)))
+    print('indexed and labeled with behavior non evasive: {}'.format(len(md5_indexed_labeled_behavior_non_evasive)))
 
 
-def map_to_md5(suspects_dict):
+def map_to_md5(suspects_dict, dir_database_path):
     """
     Uses the database to build a dictionary mapping md5s to suspect indices, instead of files uuid.
 
     :param suspects_dict: dictionary mapping uuid to suspects
+    :param dir_database_path: path to the sample database
     :return: dictionary mapping md5 to suspects
     """
 
@@ -76,12 +72,14 @@ def map_to_md5(suspects_dict):
     return md5_index_map
 
 
-def get_sample_labels():
+def get_sample_labels(dir_results_path, dir_vt_path):
     """
     Examines the VirusTotal reports looking for the labels assigned to the sample by a subset of the most famous AVs.
     If the majority reach consensus on the family of the malicious software, adds it to a md5-family mapping.
     Generates a json file containing the dictionary to speed up successive calls. 
 
+    :param dir_results_path: path to the global results
+    :param dir_vt_path: path to the VirusTotal reports
     :return: dictionary mapping md5s to malware family names
     """
 
@@ -122,15 +120,17 @@ def get_sample_labels():
         if label_counter and label_counter.most_common(1)[0][1] >= majority:
             md5_labels[md5] = label_counter.most_common(1)[0][0]
 
-    out_to_file(file_name, md5_labels)
+    out_to_file(file_name, md5_labels, dir_results_path)
     return md5_labels
 
 
-def get_number_behavior():
+def get_number_behavior(dir_results_path, dir_vt_path):
     """
     Retrieves the list of VT reports containing the behavior field.
     Generates a json file containing the list to speed up successive calls. 
 
+    :param dir_results_path: path to the global results
+    :param dir_vt_path: path to the VirusTotal reports
     :return: list of md5s
     """
 
@@ -149,16 +149,18 @@ def get_number_behavior():
         if behavior in json_report[info]:
             md5s.append(md5)
 
-    out_to_file(file_name, md5s)
+    out_to_file(file_name, md5s, dir_results_path)
     return md5s
 
 
-def get_non_evasive():
+def get_non_evasive(dir_results_path, dir_vt_path):
     """
     Examines the VT reports looking for those samples which are identified by a large number of the AVs.
     Returns a list of probably non evasive samples.
     Generates a json file containing the list to speed up successive calls.
 
+    :param dir_results_path: path to the global results
+    :param dir_vt_path: path to the VirusTotal reports
     :return: list of md5s
     """
 
@@ -181,16 +183,17 @@ def get_non_evasive():
         if identification_percentage >= threshold:
             md5s.append(md5)
 
-    out_to_file(file_name, md5s)
+    out_to_file(file_name, md5s, dir_results_path)
     return md5s
 
 
-def out_to_file(f_name, data):
+def out_to_file(f_name, data, dir_results_path):
     """
     Outputs to file the specified data.
 
     :param f_name: name of the file to create
     :param data: data to output
+    :param dir_results_path: path to the global results
     :return: 
     """
 
@@ -198,13 +201,15 @@ def out_to_file(f_name, data):
         json.dump(data, out_file, indent=2)
 
 
-def find_available_pandalogs(md5s, md5_labels):
+def find_available_pandalogs(md5s, md5_labels, dir_database_path, dir_pandalogs_path):
     """
     Temporary method to find the list of pandalogs available given a list of md5s.
     Then matches the available uuids with the malware family of their md5.
 
     :param md5s: md5s to find 
     :param md5_labels: md5 to label mapping
+    :param dir_database_path: path to the sample database
+    :param dir_pandalogs_path: path to the packed pandalogs 
     :return: dictionary of uuid and malware labels
     """
 
@@ -237,7 +242,7 @@ def find_available_pandalogs(md5s, md5_labels):
     return label_uuids
 
 
-def find_frequencies(md5_index):
+def find_frequencies(md5_index, dir_vt_path):
     distribution = Counter(md5_index.values())
     pprint([(i, round(i[1] / float(len(md5_index)), 2) * 100.0) for i in distribution.most_common()])
     pprint(sum(float(i[0]) * i[1] for i in distribution.most_common()) / float(len(md5_index)))
@@ -297,7 +302,3 @@ def find_frequencies(md5_index):
     pprint(index_frequencies.most_common())
     pprint([(i, round(i[1] / float(analyzed), 2) * 100.0) for i in index_frequencies.most_common()])
     pprint(sum(float(i[0]) * i[1] for i in index_frequencies.most_common()) / float(analyzed))
-
-
-if __name__ == '__main__':
-    main()
