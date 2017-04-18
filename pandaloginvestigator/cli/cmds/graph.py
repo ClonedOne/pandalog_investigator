@@ -14,7 +14,7 @@ def graph_command(app):
         logger.error('created_dirs_path not set in configuration file')
         return
 
-    dir_results_path = created_dirs_path + '/' + string_utils.dir_results_path
+    dir_results_path = os.path.join(created_dirs_path, string_utils.dir_results_path)
     if not os.path.exists(dir_results_path):
         os.makedirs(dir_results_path)
 

@@ -25,11 +25,11 @@ def translate_command(app, file_list=None, max_num=None):
         logger.error('created_dirs_path not set in configuration file')
         return
 
-    dir_unpacked_path = created_dirs_path + '/' + string_utils.dir_unpacked_path
+    dir_unpacked_path = os.path.join(created_dirs_path, string_utils.dir_unpacked_path)
     if not os.path.exists(dir_unpacked_path):
         os.makedirs(dir_unpacked_path)
 
-    dir_translated_path = created_dirs_path + '/' + string_utils.dir_translated_path
+    dir_translated_path = os.path.join(created_dirs_path, string_utils.dir_translated_path)
     if not os.path.exists(dir_translated_path):
         os.makedirs(dir_translated_path)
 

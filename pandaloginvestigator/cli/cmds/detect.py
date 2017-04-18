@@ -24,15 +24,15 @@ def detect_command(app):
         logger.error('dir_redpills_path not set in configuration file')
         return
 
-    dir_results_path = created_dirs_path + '/' + string_utils.dir_results_path
+    dir_results_path = os.path.join(created_dirs_path, string_utils.dir_results_path)
     if not os.path.exists(dir_results_path):
         os.makedirs(dir_results_path)
 
-    dir_analyzed_path = created_dirs_path + '/' + string_utils.dir_analyzed_path
+    dir_analyzed_path = os.path.join(created_dirs_path, string_utils.dir_analyzed_path)
     if not os.path.exists(dir_analyzed_path):
         os.makedirs(dir_analyzed_path)
 
-    dir_clues_path = created_dirs_path + '/' + string_utils.dir_clues_path
+    dir_clues_path = os.path.join(created_dirs_path, string_utils.dir_clues_path)
     if not os.path.exists(dir_clues_path):
         os.makedirs(dir_clues_path)
 

@@ -34,15 +34,15 @@ def analyze_command(app, max_num=None, small_disk=False):
         logger.error('dir_panda_path not set in configuration file')
         return
 
-    dir_unpacked_path = created_dirs_path + '/' + string_utils.dir_unpacked_path
+    dir_unpacked_path = os.path.join(created_dirs_path, string_utils.dir_unpacked_path)
     if not os.path.exists(dir_unpacked_path):
         os.makedirs(dir_unpacked_path)
 
-    dir_analyzed_path = created_dirs_path + '/' + string_utils.dir_analyzed_path
+    dir_analyzed_path = os.path.join(created_dirs_path, string_utils.dir_analyzed_path)
     if not os.path.exists(dir_analyzed_path):
         os.makedirs(dir_analyzed_path)
 
-    dir_results_path = created_dirs_path + '/' + string_utils.dir_results_path
+    dir_results_path = os.path.join(created_dirs_path, string_utils.dir_results_path)
     if not os.path.exists(dir_results_path):
         os.makedirs(dir_results_path)
 
