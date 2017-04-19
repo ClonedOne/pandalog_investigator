@@ -36,8 +36,13 @@ def main():
         mydooms_dict[uuid] = file_input.load_sample(uuid, dir_analyzed_path)
 
     for uuid, sample in mydooms_dict.items():
+
         for process_info, process in sample.corrupted_processes.items():
-            pass
+            registry_activity = process.registry_activity
+
+            for registry_key, queries in registry_activity.items():
+                key_componentes = list(filter(None, (os.path.normpath(registry_key)).split('\\')))
+                pprint(key_componentes)
 
 
 if __name__ == '__main__':
