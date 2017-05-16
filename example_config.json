@@ -1,0 +1,10 @@
+{
+    "pandaloginvestigator": {
+        "dir_database_path" : "",
+        "dir_pandalogs_path" : "",
+        "dir_panda_path" : "",
+        "dir_redpills_path": "",
+        "created_dirs_path": "",
+        "core_num" : 0
+    }
+}

@@ -43,6 +43,9 @@ class CorruptedProcess:
         self.origin = origin
         self.parent = parent_process
 
+        # Logs the range of instructions in which the process is active
+        self.activity_ranges = list()
+
     def __eq__(self, other):
         return isinstance(other, self.__class__) and other.process_info == self.process_info
 

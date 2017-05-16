@@ -19,6 +19,7 @@ class Sample:
         self.sample_uuid = sample_uuid
         self.malware_name = malware_name
         self.corrupted_processes = {}
+        self.activity_ranges = []
         self.active_corrupted_process = None
 
     def __eq__(self, other):
@@ -151,6 +152,24 @@ class Sample:
                     total[i] += process.syscalls_executed
 
         return total
+
+    def total_activity_ranges(self):
+        """
+        Produces a single list comprehending all the instruction ranges where a corrupted process was active. 
+        
+        :return: 
+        """
+
+        activities = {}
+
+        for process_info, process in self.corrupted_processes.items():
+            for activity in process.activity_ranges:
+                activities[activity[0]] = activity[1]
+
+        self.activity_ranges = [(start_inst, end_inst) for start_inst, end_inst in sorted(activities.items())]
+        self.active_corrupted_process = None
+
+
 
 
 class ReducedSample:

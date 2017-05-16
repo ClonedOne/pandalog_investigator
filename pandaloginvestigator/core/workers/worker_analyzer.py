@@ -66,9 +66,17 @@ def work(data_pack):
         if file_name in db_file_malware_name_map:
             current_sample = Sample(file_name, db_file_malware_name_map[file_name])
             analyze_log(file_name)
+
+            # Used to track activity windows of corrupted process at end of log
+            if current_sample.active_corrupted_process:
+                current_sample.active_corrupted_process.activity_ranges.append(
+                    (current_sample.active_corrupted_process.last_starting_instruction, - 1)
+                )
+            current_sample.total_activity_ranges()
+
             reduced_sample = ReducedSample(current_sample)
             analyzed_samples[file_name] = reduced_sample
-            current_sample.active_corrupted_process = None
+
             file_output.output_json(file_name, current_sample, dir_analyzed_logs)
         else:
             logger.error(str(worker_id) + ' ERROR sample uuid not in db: ' + str(file_name))
@@ -116,6 +124,7 @@ def analyze_log(file_name):
     tag_write_file = string_utils.tag_write_file
     error_manager = string_utils.error_manager
 
+    # Read the log file line by line
     with open(os.path.join(dir_unpacked_path, file_name), 'r', encoding='utf-8', errors='replace') as logfile:
         for line in logfile:
             try:
@@ -215,6 +224,8 @@ def update_process_instruction_count(current_instruction):
     starting_instruction = corrupted_process.last_starting_instruction
     instruction_delta = current_instruction - starting_instruction
     corrupted_process.instruction_executed += instruction_delta
+
+    corrupted_process.activity_ranges.append((starting_instruction, current_instruction))
 
     current_sample.active_corrupted_process = None
 

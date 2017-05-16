@@ -1,10 +1,10 @@
 {
     "pandaloginvestigator": {
-        "dir_database_path" : "/home/homeub/projects/investigator/database",
+        "dir_database_path" : "/home/homeub/data/database",
         "dir_pandalogs_path" : "/home/homeub/projects/investigator/pandalogs",
         "dir_panda_path" : "/home/homeub/projects/investigator/panda/qemu/panda",
         "dir_redpills_path": "/home/homeub/projects/investigator/red_pills",
-        "created_dirs_path": "/home/homeub/projects/investigator/created_dirs",
+        "created_dirs_path": "/home/homeub/data/investigator/created_dirs",
         "core_num" : 4
     }
 }
