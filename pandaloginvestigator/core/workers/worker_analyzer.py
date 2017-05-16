@@ -61,7 +61,7 @@ def work(data_pack):
 
     for file_name in file_names:
         if small_disk:
-            panda_utils.unpack_log(dir_panda_path, file_name + '.txz.plog', dir_pandalogs_path, dir_unpacked_path)
+            panda_utils.unpack_log(dir_panda_path, file_name + '.plog', dir_pandalogs_path, dir_unpacked_path)
 
         if file_name in db_file_malware_name_map:
             current_sample = Sample(file_name, db_file_malware_name_map[file_name])

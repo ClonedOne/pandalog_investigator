@@ -25,7 +25,7 @@ def work(params_pack):
     total_files = len(filenames)
     logger.info('WorkerId = ' + str(worker_id) + ' unpacking ' + str(total_files) + ' log files')
     for filename in filenames:
-        filename = filename + '.txz.plog' if filename[-9:] != '.txz.plog' else filename
+        filename = filename + '.txz.plog' if filename[-5:] != '.plog' else filename
         j += 1
         logger.info('WorkerId {} {:.2%}'.format(str(worker_id), (j / total_files)))
         panda_utils.unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path)
