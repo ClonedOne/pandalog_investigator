@@ -25,7 +25,7 @@ def unpack_log(dir_panda_path, filename, dir_pandalogs_path, dir_unpacked_path):
     """
 
     unpack_command = 'pandalog_reader'
-    reduced_filename = filename[:-9] if string_utils.ext_pandalog_file in filename else filename
+    reduced_filename = filename[:-5] if string_utils.ext_pandalog_file in filename else filename
     logger.debug('unpacking = ' + str(filename))
     return_code = subprocess.call(os.path.join(dir_panda_path, unpack_command) + " " +
                                   os.path.join(dir_pandalogs_path, filename) + " > " +

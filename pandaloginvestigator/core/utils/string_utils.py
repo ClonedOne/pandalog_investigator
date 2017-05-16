@@ -5,7 +5,7 @@ This module contains fixed string parameters used by different modules inside th
 
 # File extensions
 ext_investigator_clue = '_ss.txt'
-ext_pandalog_file = '.txz.plog'
+ext_pandalog_file = '.plog'
 
 
 # Paths relevant to the application.

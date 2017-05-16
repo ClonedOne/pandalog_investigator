@@ -17,7 +17,7 @@ def strip_filename_ext(file_names):
     :return: list of log file names without the extension
     """
 
-    return [filename[:-9] for filename in file_names]
+    return [filename[:-5] for filename in file_names]
 
 
 def update_results(results, global_dict):
